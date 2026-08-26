@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.5
+# Papa Golf Photo Prototype — v0.5.1
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
 
@@ -96,3 +96,11 @@ Fixes the iPhone detail-view image placeholder that could appear immediately aft
 - Open the exact coordinates in Google Maps.
 - The embedded prototype map uses OpenStreetMap/Leaflet and requires no API key.
 - Existing IndexedDB photo records remain unchanged.
+
+## v0.5.1 iPhone map patch
+
+- Waits for the Map tab to finish layout before initializing/resizing Leaflet.
+- Forces Leaflet to recalculate its viewport before fitting pins.
+- Re-fits a single photo pin after Safari finishes painting the map.
+- Fixes the custom marker positioning.
+- Keeps all existing IndexedDB photo records unchanged.

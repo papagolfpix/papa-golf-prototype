@@ -157,7 +157,7 @@ menu { padding: 12px 0 0; margin: 10px 0 0; display: flex; gap: 10px; justify-co
 .leaflet-control-zoom a { background: #171717 !important; color: #fff !important; border-color: #333 !important; }
 .leaflet-control-attribution { font-size: 9px; }
 .pg-marker-wrap { background: transparent; border: 0; }
-.pg-marker { width: 30px; height: 30px; border-radius: 50% 50% 50% 8px; transform: rotate(-45deg); background: var(--gold); border: 3px solid #fff; box-shadow: 0 3px 10px rgba(0,0,0,.45); }
+.pg-marker { position: relative; width: 30px; height: 30px; border-radius: 50% 50% 50% 8px; transform: rotate(-45deg); background: var(--gold); border: 3px solid #fff; box-shadow: 0 3px 10px rgba(0,0,0,.45); }
 .pg-marker::after { content: ''; position: absolute; width: 9px; height: 9px; border-radius: 50%; background: #17120a; top: 7px; left: 7px; }
 .pg-popup .leaflet-popup-content-wrapper, .pg-popup .leaflet-popup-tip { background: #171717; color: #fff; }
 .pg-popup .leaflet-popup-content-wrapper { border: 1px solid #333; border-radius: 14px; overflow: hidden; }
@@ -171,3 +171,6 @@ menu { padding: 12px 0 0; margin: 10px 0 0; display: flex; gap: 10px; justify-co
 .map-popup-actions button, .map-popup-actions a { min-height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 9px; border: 1px solid #383838; background: #252525; color: #fff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 0 6px; }
 .map-popup-actions a { background: var(--gold); border-color: var(--gold); color: #17120a; }
 @media (max-width: 390px) { .photo-map { min-height: 390px; height: 58vh; } }
+
+/* v0.5.1 iPhone map sizing/touch patch */
+.photo-map.leaflet-container { touch-action: none; }

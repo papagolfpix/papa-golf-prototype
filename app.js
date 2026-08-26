@@ -745,12 +745,27 @@ function popupNode(record) {
   return wrap;
 }
 
+function waitForMapLayout() {
+  return new Promise(resolve => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(resolve);
+    });
+  });
+}
+
 async function renderMap() {
+  await waitForMapLayout();
   ensureMap();
   if (!photoMap || !mapLayer) {
     mapStatus.textContent = 'Map library could not load. Check your internet connection and refresh.';
     return;
   }
+
+  // iPhone Safari can report a zero/incorrect map size immediately after
+  // switching from a hidden tab. Force Leaflet to recalculate before
+  // setting the camera or adding/fitting markers.
+  photoMap.invalidateSize({ pan: false, animate: false });
+
   const records = await getRecords();
   const geotagged = records.filter(record => Number.isFinite(record.metadata?.latitude) && Number.isFinite(record.metadata?.longitude));
   mapPinCount.textContent = String(geotagged.length);
@@ -776,10 +791,24 @@ async function renderMap() {
     points.push([lat, lon]);
   });
   mapBounds = L.latLngBounds(points);
-  if (points.length === 1) photoMap.setView(points[0], 15);
-  else photoMap.fitBounds(mapBounds, { padding: [28, 28], maxZoom: 16 });
+
+  await waitForMapLayout();
+  photoMap.invalidateSize({ pan: false, animate: false });
+
+  if (points.length === 1) {
+    photoMap.setView(points[0], 15, { animate: false });
+  } else {
+    photoMap.fitBounds(mapBounds, { padding: [28, 28], maxZoom: 16, animate: false });
+  }
+
   mapStatus.textContent = `${geotagged.length} photo location${geotagged.length === 1 ? '' : 's'} shown. Tap a pin to open the photo.`;
-  setTimeout(() => photoMap.invalidateSize(), 50);
+
+  // One final resize after tiles/controls have had a chance to paint.
+  setTimeout(() => {
+    if (!photoMap) return;
+    photoMap.invalidateSize({ pan: false, animate: false });
+    if (points.length === 1) photoMap.setView(points[0], 15, { animate: false });
+  }, 180);
 }
 
 async function switchView(view) {
