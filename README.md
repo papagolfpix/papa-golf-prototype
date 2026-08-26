@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.10
+# Papa Golf Photo Prototype — v0.11
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -207,3 +207,6 @@ v0.9.1 restores the saved-location marker/popup path and adds:
 
 ## v0.10 Public / Visitor Preview
 Adds a mobile-first Visitor view for any saved record. It hides all admin/upload/edit/backup controls and presents the photo, title, category, Area / Place, specific location, description, populated custom fields, location map, Google Maps link, and optional temporary visitor phone location. This is preview-only; permanent public URLs and QR publishing come next.
+
+## v0.11 First public page + QR prototype
+Adds `Publish QR` to saved records. It generates a standalone mobile visitor HTML page containing the selected record's photo and public information, calculates the permanent GitHub Pages URL from the current repository path, displays a QR code for that URL, and downloads the page as `<slug>.html`. Upload that generated HTML file to the repository root and commit it; after GitHub Pages publishes, the QR opens the visitor page from any phone. This is intentionally manual for the first end-to-end test before automating publishing.
