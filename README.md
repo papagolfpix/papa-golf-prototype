@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.8.1
+# Papa Golf Photo Prototype — v0.8.2
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -175,3 +175,9 @@ v0.8.1:
 - leaves IndexedDB and saved photo blobs untouched;
 - cache-busts app.js and styles.css;
 - keeps Photos, Map and Areas filtering consistent.
+
+## v0.8.2 map filter fix
+
+The Photos and Areas views were using the active filter state, but renderMap()
+was still reading every saved record directly. The Map now applies the same
+`filtered()` record set before placing GPS pins.

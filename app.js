@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.8.1';
+const RUNTIME_VERSION = '0.8.2';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -1088,7 +1088,7 @@ async function renderMap() {
   // setting the camera or adding/fitting markers.
   photoMap.invalidateSize({ pan: false, animate: false });
 
-  const records = await getRecords();
+  const records = filtered(await getRecords());
   const geotagged = records.filter(record => Number.isFinite(record.metadata?.latitude) && Number.isFinite(record.metadata?.longitude));
   mapPinCount.textContent = String(geotagged.length);
   mapEmptyState.classList.toggle('hidden', geotagged.length > 0);
