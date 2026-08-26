@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.12.3';
+const RUNTIME_VERSION = '0.12.4';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -674,7 +674,7 @@ function closeDetail() {
 
 
 async function savePublicationRecord(record) {
-  const db = await dbPromise;
+  const db = await openDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);

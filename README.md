@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.12.3
+# Papa Golf Photo Prototype — v0.12.4
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -259,3 +259,12 @@ photo blobs, gallery loading, maps, filters, backup/restore or QR publishing.
 - Refreshes the detail status immediately.
 - Re-renders the gallery after the publication state changes.
 - Leaves photo blobs, record fields, gallery loading, map, filters, backup/restore and QR generation unchanged.
+
+## v0.12.4 publication write fix
+
+The Mark Published handler was using a non-existent `dbPromise` variable.
+The rest of Papa Golf uses `openDb()`. v0.12.4 changes only the publication
+write helper to use the existing `openDb()` database connection.
+
+No changes to photos, gallery loading, maps, filters, visitor pages, QR generation,
+backup/restore or IndexedDB schema.
