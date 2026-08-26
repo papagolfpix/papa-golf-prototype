@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.8
+# Papa Golf Photo Prototype — v0.8.1
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -164,3 +164,14 @@ Adds a lightweight hierarchy without rewriting the photo database:
 
 ## v0.8 Search + filters
 Live text search plus Area / Place, Location, Category, minimum rating and GPS-only filters. Filters apply to Photos, Map and Areas views without changing stored records.
+
+## v0.8.1 rendering fix
+
+v0.8 referenced the `filtered()` helper without including the search/filter helper block in `app.js`.
+That caused the library renderer to stop before displaying existing IndexedDB records.
+
+v0.8.1:
+- restores the missing search/filter helper functions;
+- leaves IndexedDB and saved photo blobs untouched;
+- cache-busts app.js and styles.css;
+- keeps Photos, Map and Areas filtering consistent.

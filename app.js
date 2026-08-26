@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.8';
+const RUNTIME_VERSION = '0.8.1';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -778,6 +778,182 @@ detailDialog.addEventListener('close', () => {
   }
   detailImage.removeAttribute('src');
 });
+
+
+// ---------- v0.8.1 Search + filtering ----------
+const librarySearch = document.querySelector('#librarySearch');
+const filterBtn = document.querySelector('#filterBtn');
+const filterDialog = document.querySelector('#filterDialog');
+const closeFilterBtn = document.querySelector('#closeFilterBtn');
+const applyFilterBtn = document.querySelector('#applyFilterBtn');
+const resetFilterBtn = document.querySelector('#resetFilterBtn');
+const clearFiltersBtn = document.querySelector('#clearFiltersBtn');
+const activeFilterBar = document.querySelector('#activeFilterBar');
+const activeFilterSummary = document.querySelector('#activeFilterSummary');
+const filterArea = document.querySelector('#filterArea');
+const filterLocation = document.querySelector('#filterLocation');
+const filterCategory = document.querySelector('#filterCategory');
+const filterRating = document.querySelector('#filterRating');
+const filterGps = document.querySelector('#filterGps');
+
+let libraryQuery = '';
+let activeFilters = { area: '', location: '', category: '', rating: '', gps: false };
+
+function ratingOf(record) {
+  for (const [key, value] of Object.entries(record.fields || {})) {
+    if (!/rating/i.test(key)) continue;
+    const match = String(value ?? '').match(/[1-5](?:\.\d+)?/);
+    if (match) return Number(match[0]);
+  }
+  return 0;
+}
+
+function recordMatchesFilters(record) {
+  const fields = record.fields || {};
+
+  if (libraryQuery) {
+    const values = Object.values(fields).flatMap(value => Array.isArray(value) ? value : [value]);
+    const haystack = [
+      ...values,
+      record.metadata?.filename || '',
+      record.metadata?.device || ''
+    ].join(' ').toLocaleLowerCase();
+
+    if (!haystack.includes(libraryQuery)) return false;
+  }
+
+  if (activeFilters.area && String(fields.areaName || '') !== activeFilters.area) return false;
+  if (activeFilters.location && String(fields.locationName || '') !== activeFilters.location) return false;
+
+  if (activeFilters.category) {
+    const categories = Array.isArray(fields.category) ? fields.category : [fields.category];
+    if (!categories.map(value => String(value || '')).includes(activeFilters.category)) return false;
+  }
+
+  if (activeFilters.rating && ratingOf(record) < Number(activeFilters.rating)) return false;
+  if (activeFilters.gps && !Number.isFinite(record.metadata?.latitude)) return false;
+
+  return true;
+}
+
+function filtered(records) {
+  return records.filter(recordMatchesFilters);
+}
+
+function fillFilterSelect(select, values, firstLabel) {
+  if (!select) return;
+  const current = select.value;
+  select.innerHTML = '';
+
+  const first = document.createElement('option');
+  first.value = '';
+  first.textContent = firstLabel;
+  select.appendChild(first);
+
+  [...new Set(values.filter(Boolean).map(value => String(value).trim()).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b))
+    .forEach(value => {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = value;
+      select.appendChild(option);
+    });
+
+  if ([...select.options].some(option => option.value === current)) {
+    select.value = current;
+  }
+}
+
+async function populateFilterOptions() {
+  const records = await getRecords();
+  fillFilterSelect(filterArea, records.map(record => record.fields?.areaName), 'All areas');
+  fillFilterSelect(filterLocation, records.map(record => record.fields?.locationName), 'All locations');
+  fillFilterSelect(
+    filterCategory,
+    records.flatMap(record => Array.isArray(record.fields?.category) ? record.fields.category : [record.fields?.category]),
+    'All categories'
+  );
+
+  if (filterArea) filterArea.value = activeFilters.area;
+  if (filterLocation) filterLocation.value = activeFilters.location;
+  if (filterCategory) filterCategory.value = activeFilters.category;
+  if (filterRating) filterRating.value = activeFilters.rating;
+  if (filterGps) filterGps.checked = activeFilters.gps;
+}
+
+function updateFilterSummary() {
+  if (!activeFilterBar || !activeFilterSummary) return;
+  const parts = [];
+
+  if (activeFilters.area) parts.push(activeFilters.area);
+  if (activeFilters.location) parts.push(activeFilters.location);
+  if (activeFilters.category) parts.push(activeFilters.category);
+  if (activeFilters.rating) parts.push(`Rating ${activeFilters.rating}+`);
+  if (activeFilters.gps) parts.push('GPS only');
+  if (libraryQuery) parts.push(`Search: “${libraryQuery}”`);
+
+  activeFilterBar.classList.toggle('hidden', parts.length === 0);
+  activeFilterSummary.textContent = parts.join(' · ');
+}
+
+async function refreshFilteredViews() {
+  await renderGallery();
+  if (!mapView.classList.contains('hidden')) await renderMap();
+  if (!areasView.classList.contains('hidden')) await renderAreas();
+  updateFilterSummary();
+}
+
+if (librarySearch) {
+  librarySearch.addEventListener('input', () => {
+    libraryQuery = librarySearch.value.trim().toLocaleLowerCase();
+    refreshFilteredViews();
+  });
+}
+
+if (filterBtn && filterDialog) {
+  filterBtn.addEventListener('click', async () => {
+    await populateFilterOptions();
+    filterDialog.showModal();
+  });
+}
+
+if (closeFilterBtn && filterDialog) {
+  closeFilterBtn.addEventListener('click', () => filterDialog.close());
+}
+
+if (applyFilterBtn && filterDialog) {
+  applyFilterBtn.addEventListener('click', () => {
+    activeFilters = {
+      area: filterArea?.value || '',
+      location: filterLocation?.value || '',
+      category: filterCategory?.value || '',
+      rating: filterRating?.value || '',
+      gps: Boolean(filterGps?.checked)
+    };
+    filterDialog.close();
+    refreshFilteredViews();
+  });
+}
+
+if (resetFilterBtn) {
+  resetFilterBtn.addEventListener('click', () => {
+    if (filterArea) filterArea.value = '';
+    if (filterLocation) filterLocation.value = '';
+    if (filterCategory) filterCategory.value = '';
+    if (filterRating) filterRating.value = '';
+    if (filterGps) filterGps.checked = false;
+  });
+}
+
+if (clearFiltersBtn) {
+  clearFiltersBtn.addEventListener('click', () => {
+    activeFilters = { area: '', location: '', category: '', rating: '', gps: false };
+    libraryQuery = '';
+    if (librarySearch) librarySearch.value = '';
+    refreshFilteredViews();
+  });
+}
+
 
 async function renderGallery() {
   const records = filtered(await getRecords());
