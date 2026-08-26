@@ -115,3 +115,14 @@ menu { padding: 12px 0 0; margin: 10px 0 0; display: flex; gap: 10px; justify-co
 .detail-key { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 4px; }
 .detail-value { font-size: 15px; line-height: 1.4; overflow-wrap: anywhere; white-space: pre-wrap; }
 .detail-value a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+
+
+/* v0.3 editing */
+.detail-actions-top { display: flex; align-items: center; gap: 8px; }
+.compact-button { min-height: 44px; padding: 0 14px; }
+.edit-dialog { width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: #0d0d0d; color: #fff; }
+.edit-dialog::backdrop { background: #0d0d0d; }
+.edit-card { width: min(760px, 100%); min-height: 100%; margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom)); }
+.edit-fields { margin-top: 16px; }
+.edit-note { margin: 16px 2px 0; }
+.sticky-edit-actions { position: sticky; bottom: 0; padding: 12px 0 max(6px, env(safe-area-inset-bottom)); background: rgba(13,13,13,.96); backdrop-filter: blur(14px); }

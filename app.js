@@ -28,7 +28,16 @@ const detailImage = document.querySelector('#detailImage');
 const detailCustomFields = document.querySelector('#detailCustomFields');
 const detailMetadata = document.querySelector('#detailMetadata');
 const closeDetailBtn = document.querySelector('#closeDetailBtn');
+const editDetailBtn = document.querySelector('#editDetailBtn');
+const editDialog = document.querySelector('#editDialog');
+const editForm = document.querySelector('#editForm');
+const editTitle = document.querySelector('#editTitle');
+const editFields = document.querySelector('#editFields');
+const closeEditBtn = document.querySelector('#closeEditBtn');
+const cancelEditBtn = document.querySelector('#cancelEditBtn');
+const editStatus = document.querySelector('#editStatus');
 let detailImageUrl = null;
+let activeRecord = null;
 
 let pending = [];
 let customFields = loadFields();
@@ -350,6 +359,7 @@ function fieldLabelFor(id) {
 }
 
 function closeDetail() {
+  activeRecord = null;
   if (detailDialog.open) detailDialog.close();
   if (detailImageUrl) {
     URL.revokeObjectURL(detailImageUrl);
@@ -359,6 +369,7 @@ function closeDetail() {
 }
 
 function openDetail(record) {
+  activeRecord = record;
   if (detailImageUrl) URL.revokeObjectURL(detailImageUrl);
   detailImageUrl = URL.createObjectURL(record.image);
   detailImage.src = detailImageUrl;
@@ -383,7 +394,7 @@ function openDetail(record) {
   const gps = gpsDisplay(m.latitude, m.longitude);
   const rows = [
     ['Date/time taken', formatTakenDate(m.dateTime)],
-    ['GPS coordinates', gps, m.latitude != null && m.longitude != null ? `https://maps.apple.com/?ll=${m.latitude},${m.longitude}` : null],
+    ['GPS coordinates', gps, m.latitude != null && m.longitude != null ? `https://www.google.com/maps/search/?api=1&query=${m.latitude},${m.longitude}` : null],
     ['Device', [m.make, m.model].filter(Boolean).join(' ') || 'Not found'],
     ['Filename', m.filename || '—'],
     ['Dimensions', m.width && m.height ? `${m.width} × ${m.height}` : 'Not found'],
@@ -394,6 +405,57 @@ function openDetail(record) {
   rows.forEach(([label, value, href]) => detailMetadata.appendChild(detailRow(label, value, { href })));
   detailDialog.showModal();
 }
+
+
+function openEdit(record) {
+  if (!record) return;
+  activeRecord = record;
+  editTitle.textContent = record.fields?.title || record.metadata?.filename || 'Edit photo';
+  editFields.innerHTML = '';
+  const recordFields = record.fields || {};
+  const fieldIds = new Set(customFields.map(field => field.id));
+  const fieldsToShow = [...customFields];
+  Object.keys(recordFields).forEach(id => {
+    if (!fieldIds.has(id)) {
+      fieldsToShow.push({ id, label: fieldLabelFor(id), type: id === 'description' ? 'textarea' : 'text' });
+    }
+  });
+  fieldsToShow.forEach(field => editFields.appendChild(makeField(field, recordFields[field.id] || ''));
+  editStatus.textContent = '';
+  editDialog.showModal();
+}
+
+function closeEdit() {
+  if (editDialog.open) editDialog.close();
+  editStatus.textContent = '';
+}
+
+editDetailBtn.addEventListener('click', () => openEdit(activeRecord));
+closeEditBtn.addEventListener('click', closeEdit);
+cancelEditBtn.addEventListener('click', closeEdit);
+editDialog.addEventListener('click', event => {
+  if (event.target === editDialog) closeEdit();
+});
+editForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  if (!activeRecord) return;
+  const values = { ...(activeRecord.fields || {}) };
+  editFields.querySelectorAll('[data-field-id]').forEach(input => {
+    values[input.dataset.fieldId] = input.value.trim();
+  });
+  editStatus.textContent = 'Saving changes…';
+  try {
+    const updated = { ...activeRecord, fields: values, updatedAt: new Date().toISOString() };
+    await putRecord(updated);
+    activeRecord = updated;
+    editStatus.textContent = 'Changes saved.';
+    await renderGallery();
+    closeEdit();
+    openDetail(updated);
+  } catch (error) {
+    editStatus.textContent = `Could not save: ${error.message || error}`;
+  }
+});
 
 closeDetailBtn.addEventListener('click', closeDetail);
 detailDialog.addEventListener('click', event => {
