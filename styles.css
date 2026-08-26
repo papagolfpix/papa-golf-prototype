@@ -617,5 +617,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .publish-status{margin:14px 0 10px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:#111;color:var(--text);font-size:13px;line-height:1.4}
 .generated-page-link{margin-top:10px;min-height:48px}
 
-/* v0.12 publication status */
-.publication-panel{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#111}.publication-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.publication-badge{display:inline-flex;align-items:center;min-height:28px;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:850;letter-spacing:.04em;text-transform:uppercase}.publication-badge.draft{background:#222;color:#bbb}.publication-badge.published{background:rgba(60,179,113,.15);color:#7ee2a8;border:1px solid rgba(126,226,168,.3)}.publication-badge.stale{background:rgba(224,188,102,.12);color:#e0bc66;border:1px solid rgba(224,188,102,.35)}.publication-updated{color:var(--muted);font-size:11px}.publication-url{margin-top:10px;padding:9px;border-radius:10px;background:#0b0b0b;color:#ddd;font-size:12px;overflow-wrap:anywhere}.publication-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.card-pub-badge{position:absolute;right:10px;top:10px;z-index:2;padding:4px 7px;border-radius:999px;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.04em}.card-pub-badge.published{background:rgba(20,80,45,.92);color:#9af0bd;border:1px solid rgba(154,240,189,.3)}.card-pub-badge.stale{background:rgba(85,65,20,.95);color:#f1d27f;border:1px solid rgba(241,210,127,.3)}.photo-card{position:relative}
+/* v0.12.1 minimal publication status */
+.publication-status-block{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.publication-status-badge{display:inline-flex;align-items:center;min-height:28px;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.04em}
+.publication-status-badge.draft{background:#222;color:#bbb}
+.publication-status-badge.published{background:rgba(60,179,113,.15);color:#7ee2a8;border:1px solid rgba(126,226,168,.3)}
+.publication-status-badge.stale{background:rgba(224,188,102,.12);color:#e0bc66;border:1px solid rgba(224,188,102,.35)}

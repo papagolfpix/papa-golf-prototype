@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.12
+# Papa Golf Photo Prototype — v0.12.1
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -230,12 +230,15 @@ Restores the missing `escapeHtml()` helper used by the standalone public-page
 generator. No changes to IndexedDB, photos, QR URL generation, visitor view,
 map, filters, or export/share logic.
 
-## v0.12 Draft / Published status
-Adds publication metadata to each record without changing the photo database structure.
-- Draft / Published badge in the detail view.
-- Public URL shown for published records.
-- View public page button.
-- Marks a record as Published after a public page is successfully created.
-- Detects edits made after publication and shows Published · Update needed.
-- Published badge appears on photo cards.
-- Existing Pig Beach records remain Draft until you publish/mark them in v0.12; the existing live pig-beach.html can be associated by using the same slug.
+## v0.12.1 safe publication-status patch
+
+Rebuilt from the known-good v0.11.3 baseline after v0.12 stopped displaying the existing library.
+
+This patch deliberately does not modify:
+- IndexedDB name or schema;
+- getRecords/renderGallery;
+- photo blobs;
+- map/filter code;
+- backup/restore code.
+
+It only adds Draft / Published / Published · update needed metadata and a public-page link inside the detail view.
