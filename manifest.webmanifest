@@ -1,0 +1,9 @@
+{
+  "name": "Papa Golf Photo Prototype",
+  "short_name": "Papa Golf",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0d0d0d",
+  "theme_color": "#111111",
+  "icons": []
+}

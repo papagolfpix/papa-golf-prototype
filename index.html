@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111111" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Papa Golf Photo Prototype</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <div class="eyebrow">PAPA GOLF · V0.1</div>
+      <h1>Photo Upload Prototype</h1>
+    </div>
+    <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
+  </header>
+
+  <main>
+    <section class="card upload-card">
+      <h2>Add photos</h2>
+      <p class="muted">Choose photos from the iPhone library or take a new photo.</p>
+      <label class="primary-button file-button">
+        Select photos
+        <input id="photoInput" type="file" accept="image/*" multiple />
+      </label>
+      <p class="small muted">Tip: on iPhone, location metadata may be omitted if Photos sharing options remove Location.</p>
+    </section>
+
+    <section id="editorSection" class="hidden"></section>
+
+    <section class="gallery-section">
+      <div class="section-heading">
+        <div>
+          <div class="eyebrow">SAVED ON THIS DEVICE</div>
+          <h2>Photo library</h2>
+        </div>
+        <button id="clearAllBtn" class="danger-link" type="button">Clear all</button>
+      </div>
+      <div id="gallery" class="gallery"></div>
+      <div id="emptyState" class="empty-state">No photos saved yet.</div>
+    </section>
+  </main>
+
+  <dialog id="fieldsDialog">
+    <form method="dialog" class="dialog-card" id="fieldsForm">
+      <div class="section-heading">
+        <div>
+          <div class="eyebrow">CONFIGURATION</div>
+          <h2>Custom fields</h2>
+        </div>
+        <button class="icon-button" value="cancel" aria-label="Close">×</button>
+      </div>
+      <p class="muted">These fields appear on every uploaded photo.</p>
+      <div id="fieldList"></div>
+      <button id="addFieldBtn" class="secondary-button" type="button">+ Add field</button>
+      <menu>
+        <button class="ghost-button" value="cancel">Cancel</button>
+        <button id="saveFieldsBtn" class="primary-button" value="default">Save fields</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <template id="photoEditorTemplate">
+    <article class="card photo-editor">
+      <img class="preview" alt="Selected photo preview" />
+      <div class="metadata-grid"></div>
+      <div class="fields"></div>
+      <div class="editor-actions">
+        <button class="ghost-button remove-photo" type="button">Remove</button>
+        <button class="primary-button save-photo" type="button">Save photo</button>
+      </div>
+      <div class="save-status small"></div>
+    </article>
+  </template>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
