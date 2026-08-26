@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.11.3';
+const RUNTIME_VERSION = '0.12';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -667,6 +667,7 @@ function closeDetail() {
 
 function openDetail(record) {
   activeRecord = record;
+  renderPublicationPanel(record);
   if (detailImageUrl) URL.revokeObjectURL(detailImageUrl);
   detailImageUrl = null;
   detailImage.removeAttribute('src');
@@ -837,7 +838,7 @@ async function downloadPublishedPage(){
             files:[file],
             title:`Papa Golf — ${slug}`
           });
-          publishStatus.textContent=`${slug}.html created. If you selected “Save to Files”, it is ready to upload to GitHub.`;
+          publishStatus.textContent=`${slug}.html created. If you selected “Save to Files”, it is ready to upload to GitHub.`; await markRecordPublished(publishRecord, slug); renderPublicationPanel(activeRecord);
           return;
         }catch(err){
           if(err?.name==='AbortError'){
@@ -849,7 +850,7 @@ async function downloadPublishedPage(){
     }
 
     // Fallback: keep the generated page link visible.
-    publishStatus.textContent='Public page created. Tap “Open generated page” below, then use Safari Share → Save to Files.';
+    publishStatus.textContent='Public page created. Tap “Open generated page” below, then use Safari Share → Save to Files.'; await markRecordPublished(publishRecord, slug); renderPublicationPanel(activeRecord);
   }catch(e){
     publishStatus.textContent=`Could not create public page: ${e?.message||e}`;
   }finally{
@@ -861,7 +862,24 @@ async function downloadPublishedPage(){
     }
   }
 }
-publishQrBtn.addEventListener('click',()=>{if(!activeRecord)return;publishRecord=activeRecord;publishSlug.value=slugifyPublic(activeRecord.fields?.locationName||activeRecord.fields?.title||activeRecord.metadata?.filename);generatedPageLink.classList.add('hidden');generatedPageLink.removeAttribute('href');updatePublishUrl();publishStatus.textContent=`Ready to create ${publishSlug.value}.html.`;publishDialog.showModal();});
+
+markPublishedBtn?.addEventListener('click', async () => {
+  if (!activeRecord) return;
+  const pub = getPublication(activeRecord);
+
+  if (pub.status === 'published' && !publicationNeedsUpdate(activeRecord)) return;
+
+  const slug = pub.slug || slugifyPublic(
+    activeRecord.fields?.locationName ||
+    activeRecord.fields?.title ||
+    activeRecord.metadata?.filename
+  );
+
+  const updated = await markRecordPublished(activeRecord, slug);
+  renderPublicationPanel(updated);
+});
+
+publishQrBtn.addEventListener('click',()=>{if(!activeRecord)return;publishRecord=activeRecord;publishSlug.value=slugifyPublic(activeRecord.publication?.slug||activeRecord.fields?.locationName||activeRecord.fields?.title||activeRecord.metadata?.filename);generatedPageLink.classList.add('hidden');generatedPageLink.removeAttribute('href');updatePublishUrl();publishStatus.textContent=`Ready to create ${publishSlug.value}.html.`;publishDialog.showModal();});
 publishSlug.addEventListener('input',updatePublishUrl);
 generatePageBtn.addEventListener('click',downloadPublishedPage);
 closePublishBtn.addEventListener('click',()=>publishDialog.close());
@@ -941,6 +959,7 @@ editForm.addEventListener('submit', async event => {
     const updated = { ...activeRecord, image: safeImage, fields: values, updatedAt: new Date().toISOString() };
     await putRecord(updated);
     activeRecord = updated;
+    renderPublicationPanel(updated);
     editStatus.textContent = 'Changes saved.';
     await renderGallery();
     if (!areasView.classList.contains('hidden')) await renderAreas();
