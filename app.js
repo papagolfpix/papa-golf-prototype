@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.9.1';
+const RUNTIME_VERSION = '0.10';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -35,6 +35,23 @@ const detailCustomFields = document.querySelector('#detailCustomFields');
 const detailMetadata = document.querySelector('#detailMetadata');
 const closeDetailBtn = document.querySelector('#closeDetailBtn');
 const editDetailBtn = document.querySelector('#editDetailBtn');
+const visitorPreviewBtn = document.querySelector('#visitorPreviewBtn');
+const visitorDialog = document.querySelector('#visitorDialog');
+const closeVisitorBtn = document.querySelector('#closeVisitorBtn');
+const visitorHeroWrap = document.querySelector('#visitorHeroWrap');
+const visitorHero = document.querySelector('#visitorHero');
+const visitorCategory = document.querySelector('#visitorCategory');
+const visitorTitle = document.querySelector('#visitorTitle');
+const visitorPlace = document.querySelector('#visitorPlace');
+const visitorDescription = document.querySelector('#visitorDescription');
+const visitorFields = document.querySelector('#visitorFields');
+const visitorMapSection = document.querySelector('#visitorMapSection');
+const visitorMiniMap = document.querySelector('#visitorMiniMap');
+const visitorGoogleMaps = document.querySelector('#visitorGoogleMaps');
+const visitorLocateBtn = document.querySelector('#visitorLocateBtn');
+const visitorLocationStatus = document.querySelector('#visitorLocationStatus');
+let visitorImageUrl=null, visitorMap=null, visitorUserMarker=null, visitorAccuracyCircle=null;
+
 const editDialog = document.querySelector('#editDialog');
 const editForm = document.querySelector('#editForm');
 const editTitle = document.querySelector('#editTitle');
@@ -705,6 +722,57 @@ function closeEdit() {
   if (editDialog.open) editDialog.close();
   editStatus.textContent = '';
 }
+
+
+function closeVisitorPreview(){
+  if(visitorImageUrl){URL.revokeObjectURL(visitorImageUrl);visitorImageUrl=null;}
+  if(visitorMap){visitorMap.remove();visitorMap=null;visitorUserMarker=null;visitorAccuracyCircle=null;}
+  if(visitorDialog.open)visitorDialog.close();
+}
+function visitorText(v){return Array.isArray(v)?v.join(', '):String(v??'').trim();}
+function openVisitorPreview(record){
+  if(visitorImageUrl)URL.revokeObjectURL(visitorImageUrl);
+  visitorImageUrl=null;
+  if(record.image instanceof Blob&&record.image.size){
+    visitorImageUrl=URL.createObjectURL(record.image);visitorHero.src=visitorImageUrl;visitorHeroWrap.classList.remove('hidden');
+  }else visitorHeroWrap.classList.add('hidden');
+  visitorCategory.textContent=visitorText(record.fields?.category);visitorCategory.classList.toggle('hidden',!visitorCategory.textContent);
+  visitorTitle.textContent=visitorText(record.fields?.title)||visitorText(record.fields?.locationName)||'Papa Golf location';
+  visitorPlace.textContent=[visitorText(record.fields?.locationName),visitorText(record.fields?.areaName)].filter(Boolean).join(' · ');
+  visitorDescription.textContent=visitorText(record.fields?.description);visitorDescription.classList.toggle('hidden',!visitorDescription.textContent);
+  visitorFields.innerHTML='';
+  customFields.forEach(field=>{
+    if(['title','description','category','areaName','locationName'].includes(field.id))return;
+    const value=visitorText(normalizeSavedValue(field,record.fields?.[field.id]));if(!value)return;
+    const row=document.createElement('div');row.className='visitor-info-row';
+    const label=document.createElement('div');label.className='visitor-info-label';label.textContent=field.label;
+    const text=document.createElement('div');text.className='visitor-info-value';text.textContent=value;
+    row.append(label,text);visitorFields.append(row);
+  });
+  const lat=Number(record.metadata?.latitude),lng=Number(record.metadata?.longitude),hasGps=Number.isFinite(lat)&&Number.isFinite(lng);
+  visitorMapSection.classList.toggle('hidden',!hasGps);visitorLocationStatus.textContent='';
+  visitorDialog.showModal();
+  if(visitorMap){visitorMap.remove();visitorMap=null;}
+  if(hasGps&&window.L){
+    visitorGoogleMaps.href=`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    visitorMap=L.map(visitorMiniMap,{scrollWheelZoom:false}).setView([lat,lng],15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(visitorMap);
+    L.marker([lat,lng],{icon:mapMarkerIcon(record)}).addTo(visitorMap);
+    setTimeout(()=>visitorMap?.invalidateSize(false),80);
+    visitorLocateBtn.onclick=()=>navigator.geolocation.getCurrentPosition(pos=>{
+      const ulat=pos.coords.latitude,ulng=pos.coords.longitude,acc=Math.max(Number(pos.coords.accuracy)||0,5);
+      if(visitorUserMarker)visitorMap.removeLayer(visitorUserMarker);if(visitorAccuracyCircle)visitorMap.removeLayer(visitorAccuracyCircle);
+      visitorAccuracyCircle=L.circle([ulat,ulng],{radius:acc,className:'pg-user-accuracy',interactive:false}).addTo(visitorMap);
+      const icon=L.divIcon({className:'pg-user-location-icon',html:'<div class="pg-user-dot"><span></span></div><div class="pg-user-label">You are here</div>',iconSize:[120,44],iconAnchor:[14,14]});
+      visitorUserMarker=L.marker([ulat,ulng],{icon,zIndexOffset:1000}).addTo(visitorMap);
+      visitorMap.fitBounds([[lat,lng],[ulat,ulng]],{padding:[34,34],maxZoom:16,animate:false});
+      visitorLocationStatus.textContent=`Your location shown · accuracy about ${Math.round(acc)} m`;
+    },()=>visitorLocationStatus.textContent='Could not get your location.',{enableHighAccuracy:true,timeout:12000,maximumAge:15000});
+  }
+}
+visitorPreviewBtn.addEventListener('click',()=>{if(!activeRecord)return;detailDialog.close();openVisitorPreview(activeRecord);});
+closeVisitorBtn.addEventListener('click',closeVisitorPreview);
+visitorDialog.addEventListener('cancel',e=>{e.preventDefault();closeVisitorPreview();});
 
 editDetailBtn.addEventListener('click', () => openEdit(activeRecord));
 closeEditBtn.addEventListener('click', closeEdit);

@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.9.1
+# Papa Golf Photo Prototype — v0.10
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -204,3 +204,6 @@ v0.9.1 restores the saved-location marker/popup path and adds:
 - persistent Location name labels beside saved-location pins;
 - existing photo popup, Photo details and Google Maps actions;
 - no changes to IndexedDB, stored photos, filters, Satellite or Locate Me.
+
+## v0.10 Public / Visitor Preview
+Adds a mobile-first Visitor view for any saved record. It hides all admin/upload/edit/backup controls and presents the photo, title, category, Area / Place, specific location, description, populated custom fields, location map, Google Maps link, and optional temporary visitor phone location. This is preview-only; permanent public URLs and QR publishing come next.

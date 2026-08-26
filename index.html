@@ -8,12 +8,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=0.9.1" />
+  <link rel="stylesheet" href="styles.css?v=0.10" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.9.1</div>
+      <div class="eyebrow">PAPA GOLF · V0.10</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -141,6 +141,7 @@
           <h2 id="detailTitle">Photo details</h2>
         </div>
         <div class="detail-actions-top">
+          <button id="visitorPreviewBtn" class="ghost-button compact-button" type="button">Visitor view</button>
           <button id="editDetailBtn" class="ghost-button compact-button" type="button">Edit</button>
           <button id="closeDetailBtn" class="icon-button" type="button" aria-label="Close">×</button>
         </div>
@@ -154,7 +155,32 @@
     </div>
   </dialog>
 
-  <dialog id="editDialog" class="edit-dialog">
+  
+  <dialog id="visitorDialog" class="detail-dialog">
+    <article class="visitor-card">
+      <div class="visitor-topbar"><div class="visitor-brand">PAPA GOLF</div><button id="closeVisitorBtn" class="icon-button" type="button">×</button></div>
+      <div id="visitorHeroWrap"><img id="visitorHero" class="visitor-hero" alt=""></div>
+      <div class="visitor-content">
+        <div id="visitorCategory" class="visitor-category"></div>
+        <h1 id="visitorTitle"></h1>
+        <div id="visitorPlace" class="visitor-place"></div>
+        <div id="visitorDescription" class="visitor-description"></div>
+        <div id="visitorFields" class="visitor-fields"></div>
+        <section id="visitorMapSection" class="visitor-map-section hidden">
+          <div class="visitor-section-title">Location</div>
+          <div id="visitorMiniMap" class="visitor-mini-map"></div>
+          <div class="visitor-actions">
+            <a id="visitorGoogleMaps" class="primary-button visitor-link" target="_blank" rel="noopener">Open in Google Maps</a>
+            <button id="visitorLocateBtn" class="ghost-button" type="button">Show where I am</button>
+          </div>
+          <div id="visitorLocationStatus" class="small muted"></div>
+        </section>
+        <div class="visitor-footer">Papa Golf · Explore the story behind the place</div>
+      </div>
+    </article>
+  </dialog>
+
+<dialog id="editDialog" class="edit-dialog">
     <form id="editForm" class="edit-card">
       <div class="detail-topbar">
         <div>
@@ -187,6 +213,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.9.1" defer></script>
+  <script src="app.js?v=0.10" defer></script>
 </body>
 </html>
