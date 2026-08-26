@@ -450,3 +450,5 @@ svg.leaflet-image-layer.leaflet-interactive path {
   text-overflow: ellipsis;
 }
 .area-location-copy span { color: var(--muted); font-size: 12px; }
+
+.library-tools{margin:0 0 14px}.search-row{display:grid;grid-template-columns:1fr auto;gap:10px}.search-row input{min-width:0;width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:13px;background:#111;color:var(--text);font:inherit}.active-filter-bar{margin-top:9px;display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 11px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:12px}.filter-card{max-height:82vh;overflow:auto}.filter-grid{display:grid;gap:14px;margin:18px 0}.filter-grid label{display:grid;gap:7px;font-weight:700}.filter-grid select{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#111;color:var(--text);font:inherit}.gps-check{grid-template-columns:auto 1fr!important;align-items:center}.gps-check input{width:22px;height:22px}

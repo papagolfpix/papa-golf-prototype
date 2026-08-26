@@ -8,12 +8,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=0.7" />
+  <link rel="stylesheet" href="styles.css?v=0.8" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.7</div>
+      <div class="eyebrow">PAPA GOLF · V0.8</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -25,6 +25,14 @@
       <button id="mapTabBtn" class="view-tab" type="button">Map</button>
       <button id="areasTabBtn" class="view-tab" type="button">Areas</button>
     </nav>
+    <section class="library-tools">
+      <div class="search-row">
+        <input id="librarySearch" type="search" placeholder="Search photos, places, tags…" autocomplete="off">
+        <button id="filterBtn" class="secondary" type="button">Filter</button>
+      </div>
+      <div id="activeFilterBar" class="active-filter-bar hidden"><span id="activeFilterSummary"></span><button id="clearFiltersBtn" class="text-danger" type="button">Clear</button></div>
+    </section>
+
 
     <div id="photosView">
     <section class="card upload-card">
@@ -111,7 +119,21 @@
     </form>
   </dialog>
 
-  <dialog id="detailDialog" class="detail-dialog">
+  
+  <dialog id="filterDialog" class="detail-dialog">
+    <div class="detail-card filter-card">
+      <div class="detail-topbar"><div><div class="eyebrow">LIBRARY</div><h2>Filter records</h2></div><button id="closeFilterBtn" class="icon-button" type="button">×</button></div>
+      <div class="filter-grid">
+        <label>Area / Place<select id="filterArea"><option value="">All areas</option></select></label>
+        <label>Location<select id="filterLocation"><option value="">All locations</option></select></label>
+        <label>Category<select id="filterCategory"><option value="">All categories</option></select></label>
+        <label>Minimum rating<select id="filterRating"><option value="">Any rating</option><option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option><option value="5">5</option></select></label>
+        <label class="gps-check"><input id="filterGps" type="checkbox"> GPS records only</label>
+      </div>
+      <div class="form-actions"><button id="resetFilterBtn" class="secondary" type="button">Reset</button><button id="applyFilterBtn" class="primary" type="button">Apply filters</button></div>
+    </div>
+  </dialog>
+<dialog id="detailDialog" class="detail-dialog">
     <div class="detail-card">
       <div class="detail-topbar">
         <div>
@@ -165,6 +187,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.7" defer></script>
+  <script src="app.js?v=0.8" defer></script>
 </body>
 </html>

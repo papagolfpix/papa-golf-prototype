@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.7';
+const RUNTIME_VERSION = '0.8';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -780,7 +780,7 @@ detailDialog.addEventListener('close', () => {
 });
 
 async function renderGallery() {
-  const records = await getRecords();
+  const records = filtered(await getRecords());
   gallery.innerHTML = '';
   emptyState.classList.toggle('hidden', records.length > 0);
   clearAllBtn.classList.toggle('hidden', records.length === 0);
@@ -962,7 +962,7 @@ function areaDisplayName(record) {
 }
 
 async function renderAreas() {
-  const records = await getRecords();
+  const records = filtered(await getRecords());
   const grouped = new Map();
 
   records.forEach(record => {

@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.7
+# Papa Golf Photo Prototype — v0.8
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -161,3 +161,6 @@ Adds a lightweight hierarchy without rewriting the photo database:
 - Existing records remain valid and simply appear ungrouped until an Area / Place is assigned.
 - Map pins remain based on each individual photo's GPS metadata.
 - Tapping a location inside an Area opens the existing full photo record.
+
+## v0.8 Search + filters
+Live text search plus Area / Place, Location, Category, minimum rating and GPS-only filters. Filters apply to Photos, Map and Areas views without changing stored records.
