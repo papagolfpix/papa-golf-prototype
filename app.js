@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.12.4';
+const RUNTIME_VERSION = '0.12.5';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -673,15 +673,64 @@ function closeDetail() {
 
 
 
+
+async function materializeSafeBlob(blob, fallbackType='image/jpeg') {
+  if (!(blob instanceof Blob) || !blob.size) {
+    throw new Error('The stored photo has no image bytes. Restore the last backup before editing.');
+  }
+
+  // Preferred path.
+  try {
+    if (typeof blob.arrayBuffer === 'function') {
+      const bytes = await blob.arrayBuffer();
+      if (bytes.byteLength) return new Blob([bytes], { type: blob.type || fallbackType });
+    }
+  } catch {}
+
+  // Safari fallback 1: FileReader.
+  try {
+    const bytes = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error || new Error('FileReader failed'));
+      reader.readAsArrayBuffer(blob);
+    });
+    if (bytes && bytes.byteLength) return new Blob([bytes], { type: blob.type || fallbackType });
+  } catch {}
+
+  // Safari fallback 2: re-read through a blob: object URL.
+  let url = null;
+  try {
+    url = URL.createObjectURL(blob);
+    const response = await fetch(url, { cache: 'no-store' });
+    if (!response.ok) throw new Error('Blob URL read failed');
+    const recovered = await response.blob();
+    if (recovered.size) {
+      const bytes = await recovered.arrayBuffer();
+      if (bytes.byteLength) return new Blob([bytes], { type: recovered.type || blob.type || fallbackType });
+    }
+  } catch {}
+  finally {
+    if (url) URL.revokeObjectURL(url);
+  }
+
+  throw new Error('Safari could display this photo but could not safely re-read its stored bytes. Restore the last backup before editing.');
+}
+
 async function savePublicationRecord(record) {
+  const safeImage = await materializeSafeBlob(
+    record.image,
+    record.metadata?.type || 'image/jpeg'
+  );
+  const safeRecord = { ...record, image: safeImage };
+
   const db = await openDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
-    const req = store.put(record);
-    req.onsuccess = () => {};
+    const req = store.put(safeRecord);
     req.onerror = () => reject(req.error);
-    tx.oncomplete = () => resolve(record);
+    tx.oncomplete = () => resolve(safeRecord);
     tx.onerror = () => reject(tx.error);
   });
 }
@@ -748,13 +797,13 @@ async function markPublicationState(record) {
     }
   };
 
-  await savePublicationRecord(updated);
-  activeRecord = updated;
-  renderPublicationStatus(updated);
+  const saved = await savePublicationRecord(updated);
+  activeRecord = saved;
+  renderPublicationStatus(saved);
 
   // Re-render the gallery so any publication badges/status can refresh.
   await renderGallery();
-  return updated;
+  return saved;
 }
 
 function renderPublicationStatus(record) {
@@ -1080,14 +1129,11 @@ editForm.addEventListener('submit', async event => {
   Object.assign(values, normalizeRecordFieldValues(readFieldValues(editFields)));
   editStatus.textContent = 'Saving changes…';
   try {
-    // Safari/iOS can produce unreliable IndexedDB File objects after a read→write cycle.
-    // Materialize the stored bytes and always write back a plain Blob.
-    let safeImage = activeRecord.image;
-    if (activeRecord.image && typeof activeRecord.image.arrayBuffer === 'function') {
-      const bytes = await activeRecord.image.arrayBuffer();
-      if (!bytes.byteLength) throw new Error('The stored photo has no image bytes. Restore the last backup before editing.');
-      safeImage = new Blob([bytes], { type: activeRecord.image.type || activeRecord.metadata?.type || 'image/jpeg' });
-    }
+    // Always materialize a fresh plain Blob before rewriting an IndexedDB record.
+    const safeImage = await materializeSafeBlob(
+      activeRecord.image,
+      activeRecord.metadata?.type || 'image/jpeg'
+    );
     const updated = { ...activeRecord, image: safeImage, fields: values, updatedAt: new Date().toISOString() };
     await putRecord(updated);
     activeRecord = updated;

@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.12.4
+# Papa Golf Photo Prototype — v0.12.5
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -268,3 +268,13 @@ write helper to use the existing `openDb()` database connection.
 
 No changes to photos, gallery loading, maps, filters, visitor pages, QR generation,
 backup/restore or IndexedDB schema.
+
+## v0.12.5 Safari Blob safety fix
+Publishing a record was rewriting Safari's stored IndexedDB Blob directly. On iPhone the photo could still display, but a later metadata edit could fail with `The object cannot be found here`.
+
+v0.12.5:
+- materializes a fresh plain Blob before every publication write;
+- uses the same safe materialization before metadata/custom-field edits;
+- adds FileReader and blob-URL fallbacks if Safari rejects Blob.arrayBuffer();
+- uses the safely persisted record as the active record after publishing;
+- leaves field values, QR/public pages, gallery, map, filters and database schema unchanged.
