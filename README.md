@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.4.2
+# Papa Golf Photo Prototype — v0.5
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
 
@@ -82,6 +82,17 @@ Add cloud storage and a shared database so Millie's uploads are visible from ano
 For prototype testing, export a backup before replacing application files or making major changes. Browser-managed storage should not be treated as the sole permanent copy.
 
 
-## v0.4.2 fix
+## v0.5 fix
 
 Fixes the iPhone detail-view image placeholder that could appear immediately after editing and saving custom fields. Editing no longer recreates/revokes the photo object URL; the image blob remains untouched while the text and metadata view refreshes.
+
+
+## v0.5 Map module
+
+- Adds Photos / Map tabs.
+- Any saved photo with GPS metadata appears automatically as a map pin.
+- Tap a pin to see the photo thumbnail, title and location.
+- Open the full Papa Golf photo record from the pin popup.
+- Open the exact coordinates in Google Maps.
+- The embedded prototype map uses OpenStreetMap/Leaflet and requires no API key.
+- Existing IndexedDB photo records remain unchanged.

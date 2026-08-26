@@ -8,18 +8,25 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=0.4" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ3ynhhpOQqK7E8Dr3FcCSqR1T1kT7E=" crossorigin="" />
+  <link rel="stylesheet" href="styles.css?v=0.5" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.4.2</div>
+      <div class="eyebrow">PAPA GOLF · V0.5</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
   </header>
 
   <main>
+    <nav class="view-tabs" aria-label="Main views">
+      <button id="photosTabBtn" class="view-tab active" type="button">Photos</button>
+      <button id="mapTabBtn" class="view-tab" type="button">Map</button>
+    </nav>
+
+    <div id="photosView">
     <section class="card upload-card">
       <h2>Add photos</h2>
       <p class="muted">Choose photos from the iPhone library or take a new photo.</p>
@@ -55,6 +62,20 @@
       <div id="gallery" class="gallery"></div>
       <button id="clearAllBtn" class="danger-link clear-all-bottom" type="button">Clear all saved photos</button>
       <div id="emptyState" class="empty-state">No photos saved yet.</div>
+    </section>
+    </div>
+
+    <section id="mapView" class="map-view hidden" aria-label="Photo map">
+      <div class="map-heading">
+        <div>
+          <div class="eyebrow">PHOTO LOCATIONS · <span id="mapPinCount">0</span></div>
+          <h2>Map</h2>
+        </div>
+        <button id="fitMapBtn" class="ghost-button compact-button" type="button">Fit pins</button>
+      </div>
+      <p id="mapStatus" class="small muted map-status">Photos with GPS coordinates appear here automatically.</p>
+      <div id="photoMap" class="photo-map" role="application" aria-label="Map of saved photo locations"></div>
+      <div id="mapEmptyState" class="empty-state hidden">No saved photos with GPS coordinates yet.</div>
     </section>
   </main>
 
@@ -130,6 +151,7 @@
     </article>
   </template>
 
-  <script src="app.js?v=0.4" defer></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="app.js?v=0.5" defer></script>
 </body>
 </html>

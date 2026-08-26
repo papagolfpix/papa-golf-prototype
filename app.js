@@ -40,8 +40,21 @@ const editFields = document.querySelector('#editFields');
 const closeEditBtn = document.querySelector('#closeEditBtn');
 const cancelEditBtn = document.querySelector('#cancelEditBtn');
 const editStatus = document.querySelector('#editStatus');
+const photosTabBtn = document.querySelector('#photosTabBtn');
+const mapTabBtn = document.querySelector('#mapTabBtn');
+const photosView = document.querySelector('#photosView');
+const mapView = document.querySelector('#mapView');
+const photoMapEl = document.querySelector('#photoMap');
+const mapPinCount = document.querySelector('#mapPinCount');
+const mapStatus = document.querySelector('#mapStatus');
+const mapEmptyState = document.querySelector('#mapEmptyState');
+const fitMapBtn = document.querySelector('#fitMapBtn');
 let detailImageUrl = null;
 let activeRecord = null;
+let photoMap = null;
+let mapLayer = null;
+let mapBounds = null;
+let mapImageUrls = [];
 
 let pending = [];
 let customFields = loadFields();
@@ -669,6 +682,124 @@ async function renderGallery() {
     gallery.appendChild(card);
   }
 }
+
+
+function clearMapImageUrls() {
+  mapImageUrls.forEach(url => URL.revokeObjectURL(url));
+  mapImageUrls = [];
+}
+
+function ensureMap() {
+  if (photoMap || typeof L === 'undefined') return;
+  photoMap = L.map(photoMapEl, { zoomControl: true, attributionControl: true }).setView([9.5, 100.0], 9);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(photoMap);
+  mapLayer = L.layerGroup().addTo(photoMap);
+}
+
+function mapMarkerIcon() {
+  return L.divIcon({
+    className: 'pg-marker-wrap',
+    html: '<div class="pg-marker"></div>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 30],
+    popupAnchor: [0, -28],
+  });
+}
+
+function popupNode(record) {
+  const wrap = document.createElement('div');
+  wrap.className = 'map-popup';
+  if (record.image instanceof Blob && record.image.size > 0) {
+    const img = document.createElement('img');
+    const url = URL.createObjectURL(record.image);
+    mapImageUrls.push(url);
+    img.src = url;
+    img.alt = record.fields?.title || record.metadata?.filename || 'Saved photo';
+    wrap.appendChild(img);
+  }
+  const body = document.createElement('div');
+  body.className = 'map-popup-body';
+  const title = document.createElement('div');
+  title.className = 'map-popup-title';
+  title.textContent = record.fields?.title || record.metadata?.filename || 'Untitled';
+  const location = document.createElement('div');
+  location.className = 'map-popup-location';
+  location.textContent = record.fields?.locationName || gpsDisplay(record.metadata?.latitude, record.metadata?.longitude);
+  const actions = document.createElement('div');
+  actions.className = 'map-popup-actions';
+  const details = document.createElement('button');
+  details.type = 'button';
+  details.textContent = 'Photo details';
+  details.addEventListener('click', () => openDetail(record));
+  const google = document.createElement('a');
+  google.textContent = 'Google Maps';
+  google.href = `https://www.google.com/maps/search/?api=1&query=${record.metadata.latitude},${record.metadata.longitude}`;
+  google.target = '_blank';
+  google.rel = 'noopener';
+  actions.append(details, google);
+  body.append(title, location, actions);
+  wrap.appendChild(body);
+  return wrap;
+}
+
+async function renderMap() {
+  ensureMap();
+  if (!photoMap || !mapLayer) {
+    mapStatus.textContent = 'Map library could not load. Check your internet connection and refresh.';
+    return;
+  }
+  const records = await getRecords();
+  const geotagged = records.filter(record => Number.isFinite(record.metadata?.latitude) && Number.isFinite(record.metadata?.longitude));
+  mapPinCount.textContent = String(geotagged.length);
+  mapEmptyState.classList.toggle('hidden', geotagged.length > 0);
+  photoMapEl.classList.toggle('hidden', geotagged.length === 0);
+  fitMapBtn.classList.toggle('hidden', geotagged.length === 0);
+  mapLayer.clearLayers();
+  clearMapImageUrls();
+  mapBounds = null;
+
+  if (!geotagged.length) {
+    mapStatus.textContent = records.length ? 'Your saved photos do not contain GPS coordinates.' : 'Photos with GPS coordinates appear here automatically.';
+    return;
+  }
+
+  const points = [];
+  geotagged.forEach(record => {
+    const lat = record.metadata.latitude;
+    const lon = record.metadata.longitude;
+    const marker = L.marker([lat, lon], { icon: mapMarkerIcon(), title: record.fields?.title || 'Papa Golf photo' });
+    marker.bindPopup(() => popupNode(record), { className: 'pg-popup', maxWidth: 240 });
+    marker.addTo(mapLayer);
+    points.push([lat, lon]);
+  });
+  mapBounds = L.latLngBounds(points);
+  if (points.length === 1) photoMap.setView(points[0], 15);
+  else photoMap.fitBounds(mapBounds, { padding: [28, 28], maxZoom: 16 });
+  mapStatus.textContent = `${geotagged.length} photo location${geotagged.length === 1 ? '' : 's'} shown. Tap a pin to open the photo.`;
+  setTimeout(() => photoMap.invalidateSize(), 50);
+}
+
+async function switchView(view) {
+  const showMap = view === 'map';
+  photosView.classList.toggle('hidden', showMap);
+  mapView.classList.toggle('hidden', !showMap);
+  photosTabBtn.classList.toggle('active', !showMap);
+  mapTabBtn.classList.toggle('active', showMap);
+  photosTabBtn.setAttribute('aria-selected', String(!showMap));
+  mapTabBtn.setAttribute('aria-selected', String(showMap));
+  if (showMap) await renderMap();
+}
+
+photosTabBtn.addEventListener('click', () => switchView('photos'));
+mapTabBtn.addEventListener('click', () => switchView('map'));
+fitMapBtn.addEventListener('click', () => {
+  if (!photoMap || !mapBounds) return;
+  if (mapBounds.getNorthEast().equals(mapBounds.getSouthWest())) photoMap.setView(mapBounds.getCenter(), 15);
+  else photoMap.fitBounds(mapBounds, { padding: [28, 28], maxZoom: 16 });
+});
 
 function renderFieldManager() {
   fieldList.innerHTML = '';
