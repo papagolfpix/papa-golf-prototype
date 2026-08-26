@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.12.2
+# Papa Golf Photo Prototype — v0.12.3
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -251,3 +251,11 @@ JavaScript error before the detail dialog opened.
 
 v0.12.2 restores those display-only helpers. It does not modify IndexedDB,
 photo blobs, gallery loading, maps, filters, backup/restore or QR publishing.
+
+## v0.12.3 Mark Published button fix
+
+- Adds a dedicated IndexedDB write helper for publication metadata.
+- Makes Mark published / Mark updated persist the publication state.
+- Refreshes the detail status immediately.
+- Re-renders the gallery after the publication state changes.
+- Leaves photo blobs, record fields, gallery loading, map, filters, backup/restore and QR generation unchanged.

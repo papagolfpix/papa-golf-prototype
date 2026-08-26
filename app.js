@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.12.2';
+const RUNTIME_VERSION = '0.12.3';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -672,6 +672,20 @@ function closeDetail() {
 }
 
 
+
+async function savePublicationRecord(record) {
+  const db = await dbPromise;
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.put(record);
+    req.onsuccess = () => {};
+    req.onerror = () => reject(req.error);
+    tx.oncomplete = () => resolve(record);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
 function publicationInfo(record) {
   const pub = record?.publication || {};
   return {
@@ -709,6 +723,38 @@ function publicationUrlForSlug(slug) {
     ? window.location.pathname
     : window.location.pathname.replace(/[^/]*$/, '');
   return `${window.location.origin}${path}${slug}.html`;
+}
+
+
+async function markPublicationState(record) {
+  const existing = publicationInfo(record);
+
+  const slug = slugifyPublic(
+    existing.slug ||
+    record.fields?.locationName ||
+    record.fields?.title ||
+    record.metadata?.filename ||
+    'papa-golf-location'
+  );
+
+  const updated = {
+    ...record,
+    publication: {
+      status: 'published',
+      slug,
+      publicUrl: publicationUrlForSlug(slug),
+      publishedAt: new Date().toISOString(),
+      snapshot: publicationSnapshot(record)
+    }
+  };
+
+  await savePublicationRecord(updated);
+  activeRecord = updated;
+  renderPublicationStatus(updated);
+
+  // Re-render the gallery so any publication badges/status can refresh.
+  await renderGallery();
+  return updated;
 }
 
 function renderPublicationStatus(record) {
@@ -944,6 +990,26 @@ publicationMarkBtn?.addEventListener('click', async () => {
   if (!activeRecord) return;
   await savePublicationStatus(activeRecord);
 });
+
+
+if (publicationMarkBtn) {
+  publicationMarkBtn.addEventListener('click', async () => {
+    if (!activeRecord) return;
+
+    const original = publicationMarkBtn.textContent;
+    publicationMarkBtn.disabled = true;
+    publicationMarkBtn.textContent = 'Saving…';
+
+    try {
+      await markPublicationState(activeRecord);
+    } catch (error) {
+      console.error('Could not mark published:', error);
+      publicationMarkBtn.disabled = false;
+      publicationMarkBtn.textContent = original;
+      alert(`Could not mark published: ${error?.message || error}`);
+    }
+  });
+}
 
 publishQrBtn.addEventListener('click',()=>{if(!activeRecord)return;publishRecord=activeRecord;publishSlug.value=slugifyPublic(activeRecord.fields?.locationName||activeRecord.fields?.title||activeRecord.metadata?.filename);generatedPageLink.classList.add('hidden');generatedPageLink.removeAttribute('href');updatePublishUrl();publishStatus.textContent=`Ready to create ${publishSlug.value}.html.`;publishDialog.showModal();});
 publishSlug.addEventListener('input',updatePublishUrl);
