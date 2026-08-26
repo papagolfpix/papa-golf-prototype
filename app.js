@@ -22,6 +22,13 @@ const manageFieldsBtn = document.querySelector('#manageFieldsBtn');
 const fieldList = document.querySelector('#fieldList');
 const addFieldBtn = document.querySelector('#addFieldBtn');
 const saveFieldsBtn = document.querySelector('#saveFieldsBtn');
+const detailDialog = document.querySelector('#detailDialog');
+const detailTitle = document.querySelector('#detailTitle');
+const detailImage = document.querySelector('#detailImage');
+const detailCustomFields = document.querySelector('#detailCustomFields');
+const detailMetadata = document.querySelector('#detailMetadata');
+const closeDetailBtn = document.querySelector('#closeDetailBtn');
+let detailImageUrl = null;
 
 let pending = [];
 let customFields = loadFields();
@@ -314,6 +321,92 @@ photoInput.addEventListener('change', async () => {
   photoInput.value = '';
 });
 
+function detailRow(label, value, options = {}) {
+  const row = document.createElement('div');
+  row.className = 'detail-row';
+  const key = document.createElement('div');
+  key.className = 'detail-key';
+  key.textContent = label;
+  const val = document.createElement('div');
+  val.className = 'detail-value';
+  if (options.href && value && value !== 'Not found' && value !== '—') {
+    const link = document.createElement('a');
+    link.href = options.href;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = value;
+    val.appendChild(link);
+  } else {
+    val.textContent = value || '—';
+  }
+  row.append(key, val);
+  return row;
+}
+
+function fieldLabelFor(id) {
+  return customFields.find(field => field.id === id)?.label ||
+    defaultFields.find(field => field.id === id)?.label ||
+    id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function closeDetail() {
+  if (detailDialog.open) detailDialog.close();
+  if (detailImageUrl) {
+    URL.revokeObjectURL(detailImageUrl);
+    detailImageUrl = null;
+  }
+  detailImage.removeAttribute('src');
+}
+
+function openDetail(record) {
+  if (detailImageUrl) URL.revokeObjectURL(detailImageUrl);
+  detailImageUrl = URL.createObjectURL(record.image);
+  detailImage.src = detailImageUrl;
+  detailTitle.textContent = record.fields?.title || record.metadata?.filename || 'Photo details';
+
+  detailCustomFields.innerHTML = '';
+  const fieldEntries = Object.entries(record.fields || {});
+  const populated = fieldEntries.filter(([, value]) => String(value || '').trim());
+  if (populated.length) {
+    const heading = document.createElement('div');
+    heading.className = 'detail-section-title';
+    heading.textContent = 'Your information';
+    detailCustomFields.appendChild(heading);
+    const list = document.createElement('div');
+    list.className = 'detail-list';
+    populated.forEach(([id, value]) => list.appendChild(detailRow(fieldLabelFor(id), value)));
+    detailCustomFields.appendChild(list);
+  }
+
+  const m = record.metadata || {};
+  detailMetadata.innerHTML = '';
+  const gps = gpsDisplay(m.latitude, m.longitude);
+  const rows = [
+    ['Date/time taken', formatTakenDate(m.dateTime)],
+    ['GPS coordinates', gps, m.latitude != null && m.longitude != null ? `https://maps.apple.com/?ll=${m.latitude},${m.longitude}` : null],
+    ['Device', [m.make, m.model].filter(Boolean).join(' ') || 'Not found'],
+    ['Filename', m.filename || '—'],
+    ['Dimensions', m.width && m.height ? `${m.width} × ${m.height}` : 'Not found'],
+    ['File size', prettyBytes(m.fileSize)],
+    ['File type', m.type || 'Not found'],
+    ['Saved to prototype', record.savedAt ? new Date(record.savedAt).toLocaleString() : 'Not found'],
+  ];
+  rows.forEach(([label, value, href]) => detailMetadata.appendChild(detailRow(label, value, { href })));
+  detailDialog.showModal();
+}
+
+closeDetailBtn.addEventListener('click', closeDetail);
+detailDialog.addEventListener('click', event => {
+  if (event.target === detailDialog) closeDetail();
+});
+detailDialog.addEventListener('close', () => {
+  if (detailImageUrl) {
+    URL.revokeObjectURL(detailImageUrl);
+    detailImageUrl = null;
+  }
+  detailImage.removeAttribute('src');
+});
+
 async function renderGallery() {
   const records = await getRecords();
   gallery.innerHTML = '';
@@ -331,13 +424,21 @@ async function renderGallery() {
     title.textContent = record.fields.title || record.metadata.filename || 'Untitled';
     const meta = document.createElement('div'); meta.className = 'gallery-meta';
     const gps = record.metadata.latitude != null ? ' · GPS ✓' : '';
-    meta.textContent = `${new Date(record.savedAt).toLocaleDateString()}${gps}`;
+    const location = record.fields.locationName ? `${record.fields.locationName} · ` : '';
+    meta.textContent = `${location}${new Date(record.savedAt).toLocaleDateString()}${gps}`;
     const actions = document.createElement('div'); actions.className = 'gallery-actions';
     const del = document.createElement('button'); del.className = 'delete-record'; del.type = 'button'; del.textContent = 'Delete';
-    del.addEventListener('click', async () => {
+    del.addEventListener('click', async (event) => {
+      event.stopPropagation();
       if (confirm('Delete this saved photo from this device?')) { await deleteRecord(record.id); await renderGallery(); }
     });
-    actions.appendChild(del); info.append(title, meta, actions); card.append(img, info); gallery.appendChild(card);
+    actions.appendChild(del); info.append(title, meta, actions); card.append(img, info);
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', `Open ${title.textContent} details`);
+    card.addEventListener('click', () => openDetail(record));
+    card.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openDetail(record); } });
+    gallery.appendChild(card);
   }
 }
 

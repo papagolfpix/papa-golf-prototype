@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.1
+# Papa Golf Photo Prototype — v0.2
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
 
@@ -17,7 +17,7 @@ A deliberately small, iPhone-first prototype for the Papa Golf Platform.
 5. View saved photos in a simple gallery.
 6. Add/remove custom fields without changing source code.
 
-## Important v0.1 limitation
+## Important v0.2 limitation
 
 There is **no cloud backend yet**. Photos saved by Millie on her iPhone remain on that iPhone/browser. This is intentional for the first prototype so the user flow can be tested before adding accounts, cloud storage, shared access, mapping, QR, or other modules.
 
@@ -38,7 +38,7 @@ python3 -m http.server 8080
 
 Open `http://localhost:8080` on the computer running it.
 
-For an iPhone, deploy it to an HTTPS host such as GitHub Pages, Netlify, Cloudflare Pages, or similar. GitHub Pages is sufficient for v0.1 because storage is local to the browser.
+For an iPhone, deploy it to an HTTPS host such as GitHub Pages, Netlify, Cloudflare Pages, or similar. GitHub Pages is sufficient for v0.2 because storage is local to the browser.
 
 ## GitHub Pages
 
@@ -52,3 +52,11 @@ For an iPhone, deploy it to an HTTPS host such as GitHub Pages, Netlify, Cloudfl
 ## Suggested next module — v0.2
 
 Add cloud storage and a shared database so Millie's uploads are visible from another device. The current UI and record structure can remain; only the storage adapter needs to change.
+
+
+## v0.2
+- Saved photo cards are tappable on iPhone.
+- Full-screen detail view shows all populated custom fields and photo metadata.
+- GPS coordinates open Apple Maps.
+- Location name is shown on the gallery card.
+- Existing v0.1 IndexedDB records remain compatible.
