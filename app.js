@@ -402,8 +402,10 @@ function makeField(field, value = '') {
   input.required = field.required;
   input.autocomplete = 'off';
 
+  value = normalizeSavedValue(field, value);
+
   if (field.type === 'multiselect') {
-    const selected = new Set(Array.isArray(value) ? value : String(value || '').split(',').map(v=>v.trim()).filter(Boolean));
+    const selected = new Set(Array.isArray(value) ? value : []);
     [...input.options].forEach(o => o.selected = selected.has(o.value));
   } else {
     input.value = value ?? '';
@@ -421,6 +423,53 @@ function readFieldValues(container) {
     else values[input.dataset.fieldId] = String(input.value || '').trim();
   });
   return values;
+}
+
+function normalizeSavedValue(field, value) {
+  field = normalizeField(field);
+
+  if (field.type === 'multiselect') {
+    if (Array.isArray(value)) {
+      return value.filter(v => field.options.includes(String(v)));
+    }
+    const parts = String(value || '').split(',').map(v => v.trim()).filter(Boolean);
+    return parts.filter(v => field.options.includes(v));
+  }
+
+  if (field.type === 'select') {
+    if (Array.isArray(value)) {
+      const match = value.find(v => field.options.includes(String(v)));
+      return match ? String(match) : '';
+    }
+    const str = String(value || '').trim();
+
+    // Repair the v0.6 bug where every option could be persisted/displayed.
+    if (field.options.includes(str)) return str;
+
+    const lines = str.split(/\n|,/).map(v => v.trim()).filter(Boolean);
+    const match = lines.find(v => field.options.includes(v));
+    return match || '';
+  }
+
+  if (field.type === 'rating') {
+    const str = String(value || '').trim();
+    return ['1','2','3','4','5'].includes(str) ? str : '';
+  }
+
+  if (field.type === 'boolean') {
+    const str = String(value || '').trim();
+    return ['Yes','No'].includes(str) ? str : '';
+  }
+
+  return value == null ? '' : String(value);
+}
+
+function normalizeRecordFieldValues(values = {}) {
+  const out = {};
+  customFields.forEach(field => {
+    out[field.id] = normalizeSavedValue(field, values[field.id]);
+  });
+  return out;
 }
 function metadataItems(meta) {
   return [
@@ -452,7 +501,7 @@ function renderEditor(item) {
 
   node.querySelector('.remove-photo').addEventListener('click', () => removePending(item.id));
   node.querySelector('.save-photo').addEventListener('click', async () => {
-    const values = readFieldValues(node);
+    const values = normalizeRecordFieldValues(readFieldValues(node));
     const status = node.querySelector('.save-status');
     status.textContent = 'Saving…';
     try {
@@ -624,7 +673,7 @@ editForm.addEventListener('submit', async event => {
   event.preventDefault();
   if (!activeRecord) return;
   const values = { ...(activeRecord.fields || {}) };
-  Object.assign(values, readFieldValues(editFields));
+  Object.assign(values, normalizeRecordFieldValues(readFieldValues(editFields)));
   editStatus.textContent = 'Saving changes…';
   try {
     // Safari/iOS can produce unreliable IndexedDB File objects after a read→write cycle.

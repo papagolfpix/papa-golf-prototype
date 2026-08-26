@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.6
+# Papa Golf Photo Prototype — v0.6.1
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -119,3 +119,12 @@ Adds field types: short text, long text, number, date, yes/no, single choice,
 multiple choice, 1–5 rating, URL/website and phone number. Fields can be marked
 Required. Choice fields accept user-defined options, one per line. Existing
 field configuration and photo records are retained.
+
+## v0.6.1 choice-field bug fix
+
+- Single-choice fields now save and display only the selected option.
+- Multiple-choice fields now save and display only selected options.
+- Rating and Yes/No values are validated before saving/displaying.
+- Edit mode restores the correct previously selected values.
+- Adds compatibility repair for v0.6 records that may contain the full option list.
+- Existing photo records and IndexedDB storage are preserved.
