@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.6.1
+# Papa Golf Photo Prototype — v0.6.2
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -128,3 +128,14 @@ field configuration and photo records are retained.
 - Edit mode restores the correct previously selected values.
 - Adds compatibility repair for v0.6 records that may contain the full option list.
 - Existing photo records and IndexedDB storage are preserved.
+
+## v0.6.2 actual choice-list fix
+
+Root cause fixed: field choices entered one-per-line were being stored as one
+single option containing newline characters. v0.6.2:
+
+- splits real line breaks correctly when saving choice lists;
+- repairs already-saved v0.6/v0.6.1 field configurations automatically;
+- repairs legacy single-choice record values containing the entire list;
+- normalizes legacy values before detail display and edit mode;
+- leaves the photo database and image blobs untouched.

@@ -58,15 +58,24 @@ let mapImageUrls = [];
 
 let pending = [];
 let customFields = loadFields();
+try {
+  localStorage.setItem(FIELD_KEY, JSON.stringify(customFields));
+} catch {}
 
 function normalizeField(field) {
   const allowed = new Set(['text','textarea','number','date','boolean','select','multiselect','rating','url','tel']);
+  const rawOptions = Array.isArray(field.options) ? field.options : [];
+  const options = rawOptions
+    .flatMap(option => String(option).replace(/\\n/g, '\n').split(/\r?\n|,/))
+    .map(option => option.trim())
+    .filter(Boolean);
+
   return {
     id: String(field.id || slugify(field.label || 'field')),
     label: String(field.label || field.id || 'Field'),
     type: allowed.has(field.type) ? field.type : 'text',
     required: Boolean(field.required),
-    options: Array.isArray(field.options) ? field.options.map(String).filter(Boolean) : [],
+    options: [...new Set(options)],
   };
 }
 
@@ -429,25 +438,35 @@ function normalizeSavedValue(field, value) {
   field = normalizeField(field);
 
   if (field.type === 'multiselect') {
-    if (Array.isArray(value)) {
-      return value.filter(v => field.options.includes(String(v)));
-    }
-    const parts = String(value || '').split(',').map(v => v.trim()).filter(Boolean);
-    return parts.filter(v => field.options.includes(v));
+    const raw = Array.isArray(value) ? value : [value];
+    const parts = raw
+      .flatMap(v => String(v || '').replace(/\\n/g, '\n').split(/\r?\n|,/))
+      .map(v => v.trim())
+      .filter(Boolean);
+    return [...new Set(parts.filter(v => field.options.includes(v)))];
   }
 
   if (field.type === 'select') {
     if (Array.isArray(value)) {
-      const match = value.find(v => field.options.includes(String(v)));
-      return match ? String(match) : '';
+      const expanded = value
+        .flatMap(v => String(v).replace(/\\n/g, '\n').split(/\r?\n|,/))
+        .map(v => v.trim())
+        .filter(Boolean);
+      const match = expanded.find(v => field.options.includes(v));
+      return match || '';
     }
-    const str = String(value || '').trim();
 
-    // Repair the v0.6 bug where every option could be persisted/displayed.
+    const str = String(value || '').trim();
     if (field.options.includes(str)) return str;
 
-    const lines = str.split(/\n|,/).map(v => v.trim()).filter(Boolean);
-    const match = lines.find(v => field.options.includes(v));
+    // Repair v0.6/v0.6.1 records where a "single" saved value actually
+    // contains the entire choice list separated by line breaks.
+    const parts = str
+      .replace(/\\n/g, '\n')
+      .split(/\r?\n|,/)
+      .map(v => v.trim())
+      .filter(Boolean);
+    const match = parts.find(v => field.options.includes(v));
     return match || '';
   }
 
@@ -609,8 +628,10 @@ function openDetail(record) {
   detailTitle.textContent = record.fields?.title || record.metadata?.filename || 'Photo details';
 
   detailCustomFields.innerHTML = '';
-  const fieldEntries = Object.entries(record.fields || {});
-  const populated = fieldEntries.filter(([, value]) => (Array.isArray(value) ? value.join(', ') : String(value || '')).trim());
+  const normalizedFields = normalizeRecordFieldValues(record.fields || {});
+  const populated = customFields
+    .map(field => [field.id, normalizedFields[field.id]])
+    .filter(([, value]) => (Array.isArray(value) ? value.join(', ') : String(value || '')).trim());
   if (populated.length) {
     const heading = document.createElement('div');
     heading.className = 'detail-section-title';
@@ -645,7 +666,7 @@ function openEdit(record) {
   activeRecord = record;
   editTitle.textContent = record.fields?.title || record.metadata?.filename || 'Edit photo';
   editFields.innerHTML = '';
-  const recordFields = record.fields || {};
+  const recordFields = normalizeRecordFieldValues(record.fields || {});
   const fieldIds = new Set(customFields.map(field => field.id));
   const fieldsToShow = [...customFields];
   Object.keys(recordFields).forEach(id => {
@@ -695,8 +716,10 @@ editForm.addEventListener('submit', async event => {
     // Keep the existing object URL alive and refresh only the record text.
     detailTitle.textContent = updated.fields?.title || updated.metadata?.filename || 'Photo details';
     detailCustomFields.innerHTML = '';
-    const fieldEntries = Object.entries(updated.fields || {});
-    const populated = fieldEntries.filter(([, value]) => (Array.isArray(value) ? value.join(', ') : String(value || '')).trim());
+    const normalizedUpdatedFields = normalizeRecordFieldValues(updated.fields || {});
+    const populated = customFields
+      .map(field => [field.id, normalizedUpdatedFields[field.id]])
+      .filter(([, value]) => (Array.isArray(value) ? value.join(', ') : String(value || '')).trim());
     if (populated.length) {
       const heading = document.createElement('div');
       heading.className = 'detail-section-title';
@@ -972,7 +995,7 @@ function buildFieldRow(field) {
 
   const options=document.createElement('textarea'); options.dataset.role='options'; options.className='field-options';
   options.placeholder='Choices — one per line';
-  options.value=field.options.join('\\n');
+  options.value=field.options.join('\n');
   settings.append(options);
 
   const syncOptions=()=> {
@@ -1007,7 +1030,7 @@ saveFieldsBtn.addEventListener('click', (event) => {
     return normalizeField({
       id,label,type,
       required:row.querySelector('[data-role="required"]').checked,
-      options:['select','multiselect'].includes(type) ? optionsText.split(/\\n|,/).map(v=>v.trim()).filter(Boolean) : []
+      options:['select','multiselect'].includes(type) ? optionsText.replace(/\\n/g, '\n').split(/\r?\n|,/).map(v=>v.trim()).filter(Boolean) : []
     });
   });
   localStorage.setItem(FIELD_KEY,JSON.stringify(customFields));

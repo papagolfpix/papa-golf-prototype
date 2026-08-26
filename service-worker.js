@@ -1,4 +1,4 @@
-const CACHE = 'papa-golf-v061-shell';
+const CACHE = 'papa-golf-v062-shell';
 const ASSETS = ['./', './index.html', './styles.css', './app.js', './manifest.webmanifest'];
 
 self.addEventListener('install', event => {
