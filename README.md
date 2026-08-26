@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.5.1
+# Papa Golf Photo Prototype — v0.5.2
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
 
@@ -104,3 +104,10 @@ Fixes the iPhone detail-view image placeholder that could appear immediately aft
 - Re-fits a single photo pin after Safari finishes painting the map.
 - Fixes the custom marker positioning.
 - Keeps all existing IndexedDB photo records unchanged.
+
+## v0.5.2 map rendering patch
+
+The previous iPhone failure was caused by Leaflet JavaScript loading without
+the matching external Leaflet CSS being applied. v0.5.2 bundles the required
+Leaflet core CSS inside `styles.css`, so the tile grid, controls, markers,
+panning and popup layout no longer depend on the external stylesheet.
