@@ -391,7 +391,7 @@ function renderEditor(item) {
         savedAt: new Date().toISOString(),
         metadata: item.metadata,
         fields: values,
-        image: item.file,
+        image: new Blob([await item.file.arrayBuffer()], { type: item.file.type || 'image/jpeg' }),
       });
       status.textContent = 'Saved on this iPhone.';
       setTimeout(() => removePending(item.id), 350);
@@ -479,8 +479,14 @@ function closeDetail() {
 function openDetail(record) {
   activeRecord = record;
   if (detailImageUrl) URL.revokeObjectURL(detailImageUrl);
-  detailImageUrl = URL.createObjectURL(record.image);
-  detailImage.src = detailImageUrl;
+  detailImageUrl = null;
+  detailImage.removeAttribute('src');
+  if (record.image instanceof Blob && record.image.size > 0) {
+    detailImageUrl = URL.createObjectURL(record.image);
+    detailImage.src = detailImageUrl;
+  } else {
+    detailImage.alt = 'Photo data needs restore from backup';
+  }
   detailTitle.textContent = record.fields?.title || record.metadata?.filename || 'Photo details';
 
   detailCustomFields.innerHTML = '';
@@ -553,7 +559,15 @@ editForm.addEventListener('submit', async event => {
   });
   editStatus.textContent = 'Saving changes…';
   try {
-    const updated = { ...activeRecord, fields: values, updatedAt: new Date().toISOString() };
+    // Safari/iOS can produce unreliable IndexedDB File objects after a read→write cycle.
+    // Materialize the stored bytes and always write back a plain Blob.
+    let safeImage = activeRecord.image;
+    if (activeRecord.image && typeof activeRecord.image.arrayBuffer === 'function') {
+      const bytes = await activeRecord.image.arrayBuffer();
+      if (!bytes.byteLength) throw new Error('The stored photo has no image bytes. Restore the last backup before editing.');
+      safeImage = new Blob([bytes], { type: activeRecord.image.type || activeRecord.metadata?.type || 'image/jpeg' });
+    }
+    const updated = { ...activeRecord, image: safeImage, fields: values, updatedAt: new Date().toISOString() };
     await putRecord(updated);
     activeRecord = updated;
     editStatus.textContent = 'Changes saved.';
@@ -618,9 +632,21 @@ async function renderGallery() {
     const card = document.createElement('article');
     card.className = 'gallery-card';
     const img = document.createElement('img');
-    const url = URL.createObjectURL(record.image);
-    img.src = url;
-    img.onload = () => URL.revokeObjectURL(url);
+    img.alt = record.fields?.title || record.metadata?.filename || 'Saved photo';
+    if (record.image instanceof Blob && record.image.size > 0) {
+      const url = URL.createObjectURL(record.image);
+      img.src = url;
+      img.onload = () => URL.revokeObjectURL(url);
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        img.removeAttribute('src');
+        img.alt = 'Photo data needs restore from backup';
+        img.classList.add('broken-photo');
+      };
+    } else {
+      img.alt = 'Photo data needs restore from backup';
+      img.classList.add('broken-photo');
+    }
     const info = document.createElement('div'); info.className = 'gallery-info';
     const title = document.createElement('div'); title.className = 'gallery-title';
     title.textContent = record.fields.title || record.metadata.filename || 'Untitled';

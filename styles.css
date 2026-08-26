@@ -140,3 +140,5 @@ menu { padding: 12px 0 0; margin: 10px 0 0; display: flex; gap: 10px; justify-co
 .backup-status { color: var(--gold); min-height: 16px; margin-top: 8px; }
 .clear-all-bottom { display: block; margin: 14px 0 0 auto; font-size: 12px; }
 @media (max-width: 390px) { .backup-actions { grid-template-columns: 1fr; } }
+
+.broken-photo { min-height: 220px; background: #151515; object-fit: contain; }
