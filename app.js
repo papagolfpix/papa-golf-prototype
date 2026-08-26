@@ -88,6 +88,62 @@ async function getRecords() {
   });
 }
 
+
+async function inspectPapaGolfStorage() {
+  const result = { currentDb: DB_NAME, currentCount: null, databases: [], errors: [] };
+  try {
+    const current = await getRecords();
+    result.currentCount = current.length;
+  } catch (error) {
+    result.errors.push(`Current database: ${error?.message || error}`);
+  }
+
+  try {
+    if (typeof indexedDB.databases === 'function') {
+      const dbs = await indexedDB.databases();
+      result.databases = dbs.map(db => ({ name: db.name || '', version: db.version || 0 }));
+    }
+  } catch (error) {
+    result.errors.push(`Database listing: ${error?.message || error}`);
+  }
+  return result;
+}
+
+async function readRecordsFromDatabase(dbName) {
+  if (!dbName) return [];
+  return new Promise((resolve) => {
+    const request = indexedDB.open(dbName);
+    request.onerror = () => resolve([]);
+    request.onsuccess = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) { db.close(); resolve([]); return; }
+      try {
+        const req = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).getAll();
+        req.onsuccess = () => { const rows = req.result || []; db.close(); resolve(rows); };
+        req.onerror = () => { db.close(); resolve([]); };
+      } catch { db.close(); resolve([]); }
+    };
+  });
+}
+
+async function recoverPapaGolfRecords() {
+  const report = await inspectPapaGolfStorage();
+  if ((report.currentCount || 0) > 0) return { recovered: 0, report };
+  const candidates = new Set(['papa-golf-v01', 'papa-golf-v02', 'papa-golf-v03', 'papa-golf', ...(report.databases || []).map(d => d.name).filter(Boolean)]);
+  let recovered = 0;
+  for (const name of candidates) {
+    if (name === DB_NAME) continue;
+    const rows = await readRecordsFromDatabase(name);
+    for (const row of rows) {
+      if (row && row.id && row.image) {
+        try { await putRecord(row); recovered++; } catch {}
+      }
+    }
+    if (recovered) break;
+  }
+  return { recovered, report };
+}
+
 async function deleteRecord(id) {
   const db = await openDb();
   return new Promise((resolve, reject) => {
@@ -545,4 +601,17 @@ clearAllBtn.addEventListener('click', async () => {
 });
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(() => {});
-renderGallery();
+(async () => {
+  try {
+    const recovery = await recoverPapaGolfRecords();
+    await renderGallery();
+    if (recovery.recovered > 0) {
+      alert(`Recovered ${recovery.recovered} saved Papa Golf photo${recovery.recovered === 1 ? '' : 's'} from earlier local storage.`);
+    } else if ((recovery.report.currentCount || 0) === 0) {
+      console.info('Papa Golf storage diagnostic', recovery.report);
+    }
+  } catch (error) {
+    console.error('Papa Golf startup diagnostic failed', error);
+    await renderGallery();
+  }
+})();
