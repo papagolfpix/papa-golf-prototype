@@ -1,4 +1,5 @@
-# Papa Golf Photo Prototype — v0.5.2
+# Papa Golf Photo Prototype — v0.6
+
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
 
@@ -111,3 +112,10 @@ The previous iPhone failure was caused by Leaflet JavaScript loading without
 the matching external Leaflet CSS being applied. v0.5.2 bundles the required
 Leaflet core CSS inside `styles.css`, so the tile grid, controls, markers,
 panning and popup layout no longer depend on the external stylesheet.
+
+## v0.6 configurable fields
+
+Adds field types: short text, long text, number, date, yes/no, single choice,
+multiple choice, 1–5 rating, URL/website and phone number. Fields can be marked
+Required. Choice fields accept user-defined options, one per line. Existing
+field configuration and photo records are retained.

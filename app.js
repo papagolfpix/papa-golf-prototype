@@ -59,12 +59,23 @@ let mapImageUrls = [];
 let pending = [];
 let customFields = loadFields();
 
+function normalizeField(field) {
+  const allowed = new Set(['text','textarea','number','date','boolean','select','multiselect','rating','url','tel']);
+  return {
+    id: String(field.id || slugify(field.label || 'field')),
+    label: String(field.label || field.id || 'Field'),
+    type: allowed.has(field.type) ? field.type : 'text',
+    required: Boolean(field.required),
+    options: Array.isArray(field.options) ? field.options.map(String).filter(Boolean) : [],
+  };
+}
+
 function loadFields() {
   try {
     const raw = localStorage.getItem(FIELD_KEY);
-    return raw ? JSON.parse(raw) : defaultFields;
+    return (raw ? JSON.parse(raw) : defaultFields).map(normalizeField);
   } catch {
-    return defaultFields;
+    return defaultFields.map(normalizeField);
   }
 }
 
@@ -347,23 +358,70 @@ function parseTiff(view, tiffStart) {
 }
 
 function makeField(field, value = '') {
+  field = normalizeField(field);
   const wrap = document.createElement('div');
   wrap.className = 'field';
   const label = document.createElement('label');
-  label.textContent = field.label;
-  label.htmlFor = field.id;
+  label.textContent = field.label + (field.required ? ' *' : '');
+
   let input;
-  if (field.type === 'textarea') input = document.createElement('textarea');
-  else input = document.createElement('input');
+  if (field.type === 'textarea') {
+    input = document.createElement('textarea');
+  } else if (field.type === 'select') {
+    input = document.createElement('select');
+    input.innerHTML = '<option value="">Select…</option>';
+    field.options.forEach(option => {
+      const el = document.createElement('option');
+      el.value = option; el.textContent = option; input.appendChild(el);
+    });
+  } else if (field.type === 'multiselect') {
+    input = document.createElement('select');
+    input.multiple = true;
+    input.size = Math.min(Math.max(field.options.length, 3), 6);
+    field.options.forEach(option => {
+      const el = document.createElement('option');
+      el.value = option; el.textContent = option; input.appendChild(el);
+    });
+  } else if (field.type === 'boolean') {
+    input = document.createElement('select');
+    input.innerHTML = '<option value="">Not set</option><option value="Yes">Yes</option><option value="No">No</option>';
+  } else if (field.type === 'rating') {
+    input = document.createElement('select');
+    input.innerHTML = '<option value="">Not rated</option>' +
+      [1,2,3,4,5].map(n => `<option value="${n}">${n} / 5</option>`).join('');
+  } else {
+    input = document.createElement('input');
+    input.type = ({number:'number', date:'date', url:'url', tel:'tel'})[field.type] || 'text';
+    if (field.type === 'number') input.inputMode = 'decimal';
+  }
+
   input.id = field.id;
   input.name = field.id;
-  input.value = value;
   input.dataset.fieldId = field.id;
+  input.dataset.fieldType = field.type;
+  input.required = field.required;
   input.autocomplete = 'off';
+
+  if (field.type === 'multiselect') {
+    const selected = new Set(Array.isArray(value) ? value : String(value || '').split(',').map(v=>v.trim()).filter(Boolean));
+    [...input.options].forEach(o => o.selected = selected.has(o.value));
+  } else {
+    input.value = value ?? '';
+  }
+
+  label.htmlFor = field.id;
   wrap.append(label, input);
   return wrap;
 }
 
+function readFieldValues(container) {
+  const values = {};
+  container.querySelectorAll('[data-field-id]').forEach(input => {
+    if (input.multiple) values[input.dataset.fieldId] = [...input.selectedOptions].map(o => o.value);
+    else values[input.dataset.fieldId] = String(input.value || '').trim();
+  });
+  return values;
+}
 function metadataItems(meta) {
   return [
     ['Filename', meta.filename],
@@ -394,8 +452,7 @@ function renderEditor(item) {
 
   node.querySelector('.remove-photo').addEventListener('click', () => removePending(item.id));
   node.querySelector('.save-photo').addEventListener('click', async () => {
-    const values = {};
-    node.querySelectorAll('[data-field-id]').forEach(input => values[input.dataset.fieldId] = input.value.trim());
+    const values = readFieldValues(node);
     const status = node.querySelector('.save-status');
     status.textContent = 'Saving…';
     try {
@@ -504,7 +561,7 @@ function openDetail(record) {
 
   detailCustomFields.innerHTML = '';
   const fieldEntries = Object.entries(record.fields || {});
-  const populated = fieldEntries.filter(([, value]) => String(value || '').trim());
+  const populated = fieldEntries.filter(([, value]) => (Array.isArray(value) ? value.join(', ') : String(value || '')).trim());
   if (populated.length) {
     const heading = document.createElement('div');
     heading.className = 'detail-section-title';
@@ -512,7 +569,7 @@ function openDetail(record) {
     detailCustomFields.appendChild(heading);
     const list = document.createElement('div');
     list.className = 'detail-list';
-    populated.forEach(([id, value]) => list.appendChild(detailRow(fieldLabelFor(id), value)));
+    populated.forEach(([id, value]) => list.appendChild(detailRow(fieldLabelFor(id), Array.isArray(value) ? value.join(', ') : value)));
     detailCustomFields.appendChild(list);
   }
 
@@ -567,9 +624,7 @@ editForm.addEventListener('submit', async event => {
   event.preventDefault();
   if (!activeRecord) return;
   const values = { ...(activeRecord.fields || {}) };
-  editFields.querySelectorAll('[data-field-id]').forEach(input => {
-    values[input.dataset.fieldId] = input.value.trim();
-  });
+  Object.assign(values, readFieldValues(editFields));
   editStatus.textContent = 'Saving changes…';
   try {
     // Safari/iOS can produce unreliable IndexedDB File objects after a read→write cycle.
@@ -592,7 +647,7 @@ editForm.addEventListener('submit', async event => {
     detailTitle.textContent = updated.fields?.title || updated.metadata?.filename || 'Photo details';
     detailCustomFields.innerHTML = '';
     const fieldEntries = Object.entries(updated.fields || {});
-    const populated = fieldEntries.filter(([, value]) => String(value || '').trim());
+    const populated = fieldEntries.filter(([, value]) => (Array.isArray(value) ? value.join(', ') : String(value || '')).trim());
     if (populated.length) {
       const heading = document.createElement('div');
       heading.className = 'detail-section-title';
@@ -600,7 +655,7 @@ editForm.addEventListener('submit', async event => {
       detailCustomFields.appendChild(heading);
       const list = document.createElement('div');
       list.className = 'detail-list';
-      populated.forEach(([id, value]) => list.appendChild(detailRow(fieldLabelFor(id), value)));
+      populated.forEach(([id, value]) => list.appendChild(detailRow(fieldLabelFor(id), Array.isArray(value) ? value.join(', ') : value)));
       detailCustomFields.appendChild(list);
     }
 
@@ -830,42 +885,85 @@ fitMapBtn.addEventListener('click', () => {
   else photoMap.fitBounds(mapBounds, { padding: [28, 28], maxZoom: 16 });
 });
 
-function renderFieldManager() {
-  fieldList.innerHTML = '';
-  customFields.forEach((field) => {
-    const row = document.createElement('div'); row.className = 'field-row'; row.dataset.id = field.id;
-    const label = document.createElement('input'); label.value = field.label; label.placeholder = 'Field name'; label.dataset.role = 'label';
-    const type = document.createElement('select'); type.dataset.role = 'type';
-    type.innerHTML = '<option value="text">Short text</option><option value="textarea">Long text</option>';
-    type.value = field.type;
-    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'remove-field'; remove.textContent = '×';
-    remove.addEventListener('click', () => row.remove());
-    row.append(label, type, remove); fieldList.appendChild(row);
+const FIELD_TYPES = [
+  ['text','Short text'], ['textarea','Long text'], ['number','Number'], ['date','Date'],
+  ['boolean','Yes / No'], ['select','Single choice'], ['multiselect','Multiple choice'],
+  ['rating','Rating 1–5'], ['url','URL / Website'], ['tel','Phone number']
+];
+
+function fieldTypeSelect(value='text') {
+  const select = document.createElement('select');
+  select.dataset.role = 'type';
+  FIELD_TYPES.forEach(([id,label]) => {
+    const option = document.createElement('option');
+    option.value=id; option.textContent=label; select.appendChild(option);
   });
+  select.value=value;
+  return select;
+}
+
+function buildFieldRow(field) {
+  field = normalizeField(field);
+  const row = document.createElement('div');
+  row.className='field-row';
+  row.dataset.id=field.id;
+
+  const top=document.createElement('div'); top.className='field-row-main';
+  const label=document.createElement('input'); label.value=field.label; label.placeholder='Field name'; label.dataset.role='label';
+  const type=fieldTypeSelect(field.type);
+  const remove=document.createElement('button'); remove.type='button'; remove.className='remove-field'; remove.textContent='×';
+  remove.addEventListener('click',()=>row.remove());
+  top.append(label,type,remove);
+
+  const settings=document.createElement('div'); settings.className='field-settings';
+  const reqLabel=document.createElement('label'); reqLabel.className='required-toggle';
+  const required=document.createElement('input'); required.type='checkbox'; required.checked=field.required; required.dataset.role='required';
+  reqLabel.append(required,document.createTextNode(' Required'));
+  settings.append(reqLabel);
+
+  const options=document.createElement('textarea'); options.dataset.role='options'; options.className='field-options';
+  options.placeholder='Choices — one per line';
+  options.value=field.options.join('\\n');
+  settings.append(options);
+
+  const syncOptions=()=> {
+    options.classList.toggle('hidden', !['select','multiselect'].includes(type.value));
+  };
+  type.addEventListener('change',syncOptions); syncOptions();
+
+  row.append(top,settings);
+  return row;
+}
+
+function renderFieldManager() {
+  fieldList.innerHTML='';
+  customFields.forEach(field=>fieldList.appendChild(buildFieldRow(field)));
 }
 
 manageFieldsBtn.addEventListener('click', () => { renderFieldManager(); fieldsDialog.showModal(); });
 addFieldBtn.addEventListener('click', () => {
-  const row = document.createElement('div'); row.className = 'field-row'; row.dataset.id = `field_${Date.now()}`;
-  row.innerHTML = '<input data-role="label" placeholder="Field name"><select data-role="type"><option value="text">Short text</option><option value="textarea">Long text</option></select><button type="button" class="remove-field">×</button>';
-  row.querySelector('.remove-field').addEventListener('click', () => row.remove());
-  fieldList.appendChild(row);
+  fieldList.appendChild(buildFieldRow({id:`field_${Date.now()}`,label:'',type:'text'}));
 });
 
 saveFieldsBtn.addEventListener('click', (event) => {
   event.preventDefault();
-  const used = new Set();
-  customFields = [...fieldList.querySelectorAll('.field-row')].map((row, index) => {
-    const label = row.querySelector('[data-role="label"]').value.trim() || `Field ${index + 1}`;
-    let id = row.dataset.id || slugify(label);
-    if (used.has(id)) id = `${id}_${index + 1}`;
+  const used=new Set();
+  customFields=[...fieldList.querySelectorAll('.field-row')].map((row,index)=>{
+    const label=row.querySelector('[data-role="label"]').value.trim() || `Field ${index+1}`;
+    let id=row.dataset.id || slugify(label);
+    if(used.has(id)) id=`${id}_${index+1}`;
     used.add(id);
-    return { id, label, type: row.querySelector('[data-role="type"]').value };
+    const type=row.querySelector('[data-role="type"]').value;
+    const optionsText=row.querySelector('[data-role="options"]').value;
+    return normalizeField({
+      id,label,type,
+      required:row.querySelector('[data-role="required"]').checked,
+      options:['select','multiselect'].includes(type) ? optionsText.split(/\\n|,/).map(v=>v.trim()).filter(Boolean) : []
+    });
   });
-  localStorage.setItem(FIELD_KEY, JSON.stringify(customFields));
+  localStorage.setItem(FIELD_KEY,JSON.stringify(customFields));
   fieldsDialog.close();
 });
-
 exportBackupBtn.addEventListener('click', async () => {
   exportBackupBtn.disabled = true;
   backupStatus.textContent = 'Preparing backup…';

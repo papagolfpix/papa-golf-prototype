@@ -389,3 +389,18 @@ menu { padding: 12px 0 0; margin: 10px 0 0; display: flex; gap: 10px; justify-co
 svg.leaflet-image-layer.leaflet-interactive path {
   pointer-events: auto;
 }
+
+/* v0.6 configurable field manager */
+.field-row { display:block; border:1px solid #303030; border-radius:14px; padding:10px; margin-bottom:10px; }
+.field-row-main { display:grid; grid-template-columns:1fr 125px 44px; gap:8px; align-items:center; }
+.field-row-main input, .field-row-main select, .field-options {
+  min-height:44px; border-radius:11px; border:1px solid #353535; background:#101010; color:#fff; padding:9px 10px; min-width:0;
+}
+.field-settings { display:flex; gap:10px; align-items:flex-start; margin-top:8px; flex-wrap:wrap; }
+.required-toggle { display:flex; align-items:center; gap:6px; min-height:42px; padding:0 6px; }
+.required-toggle input { width:22px; height:22px; }
+.field-options { width:100%; min-height:82px; resize:vertical; }
+.field select[multiple] { min-height:120px; }
+@media (max-width:520px) {
+  .field-row-main { grid-template-columns:1fr 118px 44px; }
+}
