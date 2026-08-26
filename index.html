@@ -8,12 +8,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=0.4" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.3.1</div>
+      <div class="eyebrow">PAPA GOLF · V0.4</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -35,12 +35,25 @@
     <section class="gallery-section">
       <div class="section-heading">
         <div>
-          <div class="eyebrow">SAVED ON THIS DEVICE</div>
+          <div class="eyebrow">SAVED ON THIS DEVICE · <span id="recordCount">0</span></div>
           <h2>Photo library</h2>
         </div>
-        <button id="clearAllBtn" class="danger-link" type="button">Clear all</button>
+      </div>
+      <div class="backup-panel">
+        <div class="backup-copy">
+          <strong>Safety backup</strong>
+          <span>Export a backup file to iPhone Files before major updates.</span>
+        </div>
+        <div class="backup-actions">
+          <button id="exportBackupBtn" class="secondary-button" type="button">Export backup</button>
+          <label class="ghost-button import-button">Restore backup
+            <input id="importBackupInput" type="file" accept="application/json,.json" />
+          </label>
+        </div>
+        <div id="backupStatus" class="small backup-status" aria-live="polite"></div>
       </div>
       <div id="gallery" class="gallery"></div>
+      <button id="clearAllBtn" class="danger-link clear-all-bottom" type="button">Clear all saved photos</button>
       <div id="emptyState" class="empty-state">No photos saved yet.</div>
     </section>
   </main>
@@ -117,6 +130,6 @@
     </article>
   </template>
 
-  <script src="app.js" defer></script>
+  <script src="app.js?v=0.4" defer></script>
 </body>
 </html>

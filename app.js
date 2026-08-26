@@ -16,6 +16,10 @@ const editorSection = document.querySelector('#editorSection');
 const gallery = document.querySelector('#gallery');
 const emptyState = document.querySelector('#emptyState');
 const clearAllBtn = document.querySelector('#clearAllBtn');
+const recordCount = document.querySelector('#recordCount');
+const exportBackupBtn = document.querySelector('#exportBackupBtn');
+const importBackupInput = document.querySelector('#importBackupInput');
+const backupStatus = document.querySelector('#backupStatus');
 const template = document.querySelector('#photoEditorTemplate');
 const fieldsDialog = document.querySelector('#fieldsDialog');
 const manageFieldsBtn = document.querySelector('#manageFieldsBtn');
@@ -89,59 +93,107 @@ async function getRecords() {
 }
 
 
-async function inspectPapaGolfStorage() {
-  const result = { currentDb: DB_NAME, currentCount: null, databases: [], errors: [] };
-  try {
-    const current = await getRecords();
-    result.currentCount = current.length;
-  } catch (error) {
-    result.errors.push(`Current database: ${error?.message || error}`);
-  }
-
-  try {
-    if (typeof indexedDB.databases === 'function') {
-      const dbs = await indexedDB.databases();
-      result.databases = dbs.map(db => ({ name: db.name || '', version: db.version || 0 }));
-    }
-  } catch (error) {
-    result.errors.push(`Database listing: ${error?.message || error}`);
-  }
-  return result;
-}
-
-async function readRecordsFromDatabase(dbName) {
-  if (!dbName) return [];
-  return new Promise((resolve) => {
-    const request = indexedDB.open(dbName);
-    request.onerror = () => resolve([]);
-    request.onsuccess = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) { db.close(); resolve([]); return; }
-      try {
-        const req = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).getAll();
-        req.onsuccess = () => { const rows = req.result || []; db.close(); resolve(rows); };
-        req.onerror = () => { db.close(); resolve([]); };
-      } catch { db.close(); resolve([]); }
-    };
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error || new Error('Could not read image for backup.'));
+    reader.readAsDataURL(blob);
   });
 }
 
-async function recoverPapaGolfRecords() {
-  const report = await inspectPapaGolfStorage();
-  if ((report.currentCount || 0) > 0) return { recovered: 0, report };
-  const candidates = new Set(['papa-golf-v01', 'papa-golf-v02', 'papa-golf-v03', 'papa-golf', ...(report.databases || []).map(d => d.name).filter(Boolean)]);
-  let recovered = 0;
-  for (const name of candidates) {
-    if (name === DB_NAME) continue;
-    const rows = await readRecordsFromDatabase(name);
-    for (const row of rows) {
-      if (row && row.id && row.image) {
-        try { await putRecord(row); recovered++; } catch {}
-      }
-    }
-    if (recovered) break;
+function dataUrlToBlob(dataUrl) {
+  const parts = String(dataUrl || '').split(',');
+  if (parts.length < 2) throw new Error('Invalid image data in backup.');
+  const match = parts[0].match(/data:([^;]+);base64/i);
+  const type = match ? match[1] : 'application/octet-stream';
+  const binary = atob(parts.slice(1).join(','));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type });
+}
+
+function backupFileName() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `papa-golf-backup-${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.json`;
+}
+
+async function exportBackup() {
+  const records = await getRecords();
+  if (!records.length) throw new Error('There are no saved photos to back up yet.');
+  const serialized = [];
+  for (let i = 0; i < records.length; i++) {
+    backupStatus.textContent = `Preparing backup ${i + 1} of ${records.length}…`;
+    const record = records[i];
+    const imageDataUrl = await blobToDataUrl(record.image);
+    serialized.push({
+      ...record,
+      image: {
+        dataUrl: imageDataUrl,
+        name: record.metadata?.filename || 'photo.jpg',
+        type: record.metadata?.type || record.image?.type || 'image/jpeg',
+        lastModified: record.metadata?.lastModified || Date.now(),
+      },
+    });
   }
-  return { recovered, report };
+  const payload = {
+    format: 'papa-golf-backup',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    customFields,
+    records: serialized,
+  };
+  const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = backupFileName();
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+  backupStatus.textContent = `Backup ready: ${records.length} photo${records.length === 1 ? '' : 's'}. Save the downloaded file in iPhone Files.`;
+}
+
+function mergeCustomFields(importedFields) {
+  if (!Array.isArray(importedFields)) return;
+  const existing = new Set(customFields.map(f => f.id));
+  const merged = [...customFields];
+  importedFields.forEach(field => {
+    if (field && field.id && !existing.has(field.id)) {
+      merged.push({ id: String(field.id), label: String(field.label || field.id), type: field.type === 'textarea' ? 'textarea' : 'text' });
+      existing.add(field.id);
+    }
+  });
+  customFields = merged;
+  localStorage.setItem(FIELD_KEY, JSON.stringify(customFields));
+}
+
+async function importBackupFile(file) {
+  const text = await file.text();
+  let payload;
+  try { payload = JSON.parse(text); } catch { throw new Error('That file is not valid JSON.'); }
+  if (payload?.format !== 'papa-golf-backup' || payload?.version !== 1 || !Array.isArray(payload.records)) {
+    throw new Error('That is not a compatible Papa Golf backup file.');
+  }
+  mergeCustomFields(payload.customFields);
+  let restored = 0;
+  for (let i = 0; i < payload.records.length; i++) {
+    backupStatus.textContent = `Restoring ${i + 1} of ${payload.records.length}…`;
+    const saved = payload.records[i];
+    if (!saved?.id || !saved?.image?.dataUrl) continue;
+    const blob = dataUrlToBlob(saved.image.dataUrl);
+    const restoredRecord = {
+      ...saved,
+      image: blob,
+      restoredAt: new Date().toISOString(),
+    };
+    await putRecord(restoredRecord);
+    restored++;
+  }
+  await renderGallery();
+  backupStatus.textContent = `Restore complete: ${restored} photo${restored === 1 ? '' : 's'} added or updated. Existing photos were not deleted.`;
 }
 
 async function deleteRecord(id) {
@@ -476,7 +528,7 @@ function openEdit(record) {
       fieldsToShow.push({ id, label: fieldLabelFor(id), type: id === 'description' ? 'textarea' : 'text' });
     }
   });
-  fieldsToShow.forEach(field => editFields.appendChild(makeField(field, recordFields[field.id] || ''));
+  fieldsToShow.forEach(field => editFields.appendChild(makeField(field, recordFields[field.id] || '')));
   editStatus.textContent = '';
   editDialog.showModal();
 }
@@ -530,6 +582,7 @@ async function renderGallery() {
   gallery.innerHTML = '';
   emptyState.classList.toggle('hidden', records.length > 0);
   clearAllBtn.classList.toggle('hidden', records.length === 0);
+  recordCount.textContent = String(records.length);
   for (const record of records) {
     const card = document.createElement('article');
     card.className = 'gallery-card';
@@ -596,22 +649,30 @@ saveFieldsBtn.addEventListener('click', (event) => {
   fieldsDialog.close();
 });
 
+exportBackupBtn.addEventListener('click', async () => {
+  exportBackupBtn.disabled = true;
+  backupStatus.textContent = 'Preparing backup…';
+  try { await exportBackup(); }
+  catch (error) { backupStatus.textContent = `Backup failed: ${error.message || error}`; }
+  finally { exportBackupBtn.disabled = false; }
+});
+
+importBackupInput.addEventListener('change', async () => {
+  const file = importBackupInput.files?.[0];
+  importBackupInput.value = '';
+  if (!file) return;
+  backupStatus.textContent = 'Checking backup…';
+  try { await importBackupFile(file); }
+  catch (error) { backupStatus.textContent = `Restore failed: ${error.message || error}`; }
+});
+
 clearAllBtn.addEventListener('click', async () => {
-  if (confirm('Delete every saved Papa Golf prototype photo from this device?')) { await clearRecords(); await renderGallery(); }
+  if (!confirm('This will delete every saved Papa Golf photo record from this iPhone. Continue?')) return;
+  if (!confirm('Final confirmation: delete ALL locally saved Papa Golf photos?')) return;
+  await clearRecords();
+  await renderGallery();
+  backupStatus.textContent = 'All local records cleared.';
 });
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(() => {});
-(async () => {
-  try {
-    const recovery = await recoverPapaGolfRecords();
-    await renderGallery();
-    if (recovery.recovered > 0) {
-      alert(`Recovered ${recovery.recovered} saved Papa Golf photo${recovery.recovered === 1 ? '' : 's'} from earlier local storage.`);
-    } else if ((recovery.report.currentCount || 0) === 0) {
-      console.info('Papa Golf storage diagnostic', recovery.report);
-    }
-  } catch (error) {
-    console.error('Papa Golf startup diagnostic failed', error);
-    await renderGallery();
-  }
-})();
+renderGallery().catch(error => { backupStatus.textContent = `Storage error: ${error.message || error}`; });

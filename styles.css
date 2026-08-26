@@ -126,3 +126,17 @@ menu { padding: 12px 0 0; margin: 10px 0 0; display: flex; gap: 10px; justify-co
 .edit-fields { margin-top: 16px; }
 .edit-note { margin: 16px 2px 0; }
 .sticky-edit-actions { position: sticky; bottom: 0; padding: 12px 0 max(6px, env(safe-area-inset-bottom)); background: rgba(13,13,13,.96); backdrop-filter: blur(14px); }
+
+
+/* v0.4 backup + storage safety */
+.backup-panel { background: #121212; border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin: 0 0 14px; }
+.backup-copy { display: grid; gap: 3px; margin-bottom: 10px; }
+.backup-copy strong { font-size: 13px; }
+.backup-copy span { color: var(--muted); font-size: 11px; line-height: 1.35; }
+.backup-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.backup-actions .secondary-button, .backup-actions .ghost-button { min-height: 44px; padding: 0 10px; font-size: 13px; }
+.import-button { position: relative; display: flex; align-items: center; justify-content: center; text-align: center; }
+.import-button input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.backup-status { color: var(--gold); min-height: 16px; margin-top: 8px; }
+.clear-all-bottom { display: block; margin: 14px 0 0 auto; font-size: 12px; }
+@media (max-width: 390px) { .backup-actions { grid-template-columns: 1fr; } }
