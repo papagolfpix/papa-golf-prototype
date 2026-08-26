@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.12.1';
+const RUNTIME_VERSION = '0.12.2';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -669,6 +669,77 @@ function closeDetail() {
     detailImageUrl = null;
   }
   detailImage.removeAttribute('src');
+}
+
+
+function publicationInfo(record) {
+  const pub = record?.publication || {};
+  return {
+    status: pub.status === 'published' ? 'published' : 'draft',
+    slug: String(pub.slug || '').trim(),
+    publicUrl: String(pub.publicUrl || '').trim(),
+    publishedAt: pub.publishedAt || null,
+    snapshot: String(pub.snapshot || '')
+  };
+}
+
+function publicationSnapshot(record) {
+  const text = JSON.stringify({
+    fields: record?.fields || {},
+    lat: record?.metadata?.latitude ?? null,
+    lng: record?.metadata?.longitude ?? null
+  });
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return String(hash >>> 0);
+}
+
+function publicationNeedsUpdate(record) {
+  const pub = publicationInfo(record);
+  return pub.status === 'published' &&
+    Boolean(pub.snapshot) &&
+    pub.snapshot !== publicationSnapshot(record);
+}
+
+function publicationUrlForSlug(slug) {
+  const path = window.location.pathname.endsWith('/')
+    ? window.location.pathname
+    : window.location.pathname.replace(/[^/]*$/, '');
+  return `${window.location.origin}${path}${slug}.html`;
+}
+
+function renderPublicationStatus(record) {
+  if (!publicationStatusBadge || !publicationMarkBtn) return;
+
+  const pub = publicationInfo(record);
+  const stale = publicationNeedsUpdate(record);
+
+  if (pub.status === 'published') {
+    publicationStatusBadge.textContent = stale
+      ? 'Published · update needed'
+      : 'Published';
+    publicationStatusBadge.className =
+      `publication-status-badge ${stale ? 'stale' : 'published'}`;
+
+    if (pub.publicUrl) {
+      publicationPublicLink.href = pub.publicUrl;
+      publicationPublicLink.classList.remove('hidden');
+    } else {
+      publicationPublicLink.classList.add('hidden');
+    }
+
+    publicationMarkBtn.textContent = stale ? 'Mark updated' : 'Published';
+    publicationMarkBtn.disabled = !stale;
+  } else {
+    publicationStatusBadge.textContent = 'Draft';
+    publicationStatusBadge.className = 'publication-status-badge draft';
+    publicationPublicLink.classList.add('hidden');
+    publicationMarkBtn.textContent = 'Mark published';
+    publicationMarkBtn.disabled = false;
+  }
 }
 
 function openDetail(record) {

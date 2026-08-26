@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.12.1
+# Papa Golf Photo Prototype — v0.12.2
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -242,3 +242,12 @@ This patch deliberately does not modify:
 - backup/restore code.
 
 It only adds Draft / Published / Published · update needed metadata and a public-page link inside the detail view.
+
+## v0.12.2 detail-opening fix
+
+v0.12.1 restored the photo library but referenced `renderPublicationStatus()`
+without including its helper functions. Tapping a photo therefore threw a
+JavaScript error before the detail dialog opened.
+
+v0.12.2 restores those display-only helpers. It does not modify IndexedDB,
+photo blobs, gallery loading, maps, filters, backup/restore or QR publishing.
