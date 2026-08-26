@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.11.2
+# Papa Golf Photo Prototype — v0.11.3
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -223,3 +223,9 @@ v0.11.1 changes `Download public page` to `Create public page` and:
 
 ## v0.11.2 iPhone publish feedback/fallback
 The Create public page control now gives immediate visible feedback, changes to Creating… while working, exposes an Open generated page fallback before attempting file sharing, and uses the iPhone Share sheet when available. If file sharing is unavailable, the generated page can be opened and saved through Safari's Share menu instead of failing silently.
+
+## v0.11.3 public-page generator fix
+
+Restores the missing `escapeHtml()` helper used by the standalone public-page
+generator. No changes to IndexedDB, photos, QR URL generation, visitor view,
+map, filters, or export/share logic.

@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.11.2';
+const RUNTIME_VERSION = '0.11.3';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -736,6 +736,16 @@ function closeEdit() {
 }
 
 
+
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 // ---------- Public page + QR publishing ----------
 function slugifyPublic(value) {
