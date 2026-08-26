@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.8.2
+# Papa Golf Photo Prototype — v0.9
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -181,3 +181,14 @@ v0.8.1:
 The Photos and Areas views were using the active filter state, but renderMap()
 was still reading every saved record directly. The Map now applies the same
 `filtered()` record set before placing GPS pins.
+
+## v0.9 Map Experience
+
+- Category-specific map markers.
+- Persistent location-name labels beside pins.
+- Standard / Satellite map switch.
+- Locate me control using browser geolocation.
+- Temporary 'You are here' marker plus GPS accuracy circle.
+- Fit Pins can include both filtered Papa Golf pins and the user's current location.
+- User location is never written to Papa Golf storage.
+- Existing photo records and filters remain unchanged.

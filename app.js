@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.8.2';
+const RUNTIME_VERSION = '0.9';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -61,6 +61,12 @@ let activeRecord = null;
 let photoMap = null;
 let mapLayer = null;
 let mapBounds = null;
+let standardLayer = null;
+let satelliteLayer = null;
+let activeBaseLayer = 'standard';
+let userLocationMarker = null;
+let userAccuracyCircle = null;
+let lastUserLocation = null;
 let mapImageUrls = [];
 
 let pending = [];
@@ -1011,60 +1017,121 @@ function clearMapImageUrls() {
 }
 
 function ensureMap() {
-  if (photoMap || typeof L === 'undefined') return;
-  photoMap = L.map(photoMapEl, { zoomControl: true, attributionControl: true }).setView([9.5, 100.0], 9);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  if (photoMap) return;
+  if (!window.L) return;
+
+  photoMap = L.map('photoMap', {
+    zoomControl: true,
+    attributionControl: true
+  }).setView([9.512, 100.013], 10);
+
+  standardLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(photoMap);
-  mapLayer = L.layerGroup().addTo(photoMap);
-}
-
-function mapMarkerIcon() {
-  return L.divIcon({
-    className: 'pg-marker-wrap',
-    html: '<div class="pg-marker"></div>',
-    iconSize: [30, 30],
-    iconAnchor: [15, 30],
-    popupAnchor: [0, -28],
   });
+
+  // Esri World Imagery provides a satellite-style layer without requiring an API key.
+  satelliteLayer = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {
+      maxZoom: 19,
+      attribution: 'Tiles &copy; Esri'
+    }
+  );
+
+  standardLayer.addTo(photoMap);
+  mapLayer = L.layerGroup().addTo(photoMap);
+
+  const MapTools = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd() {
+      const container = L.DomUtil.create('div', 'leaflet-bar pg-map-tools');
+      container.innerHTML = `
+        <button type="button" class="pg-map-tool" data-action="base" aria-label="Switch map style">Satellite</button>
+        <button type="button" class="pg-map-tool" data-action="locate" aria-label="Show my location">◎ Locate me</button>
+      `;
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.disableScrollPropagation(container);
+
+      container.querySelector('[data-action="base"]').addEventListener('click', event => {
+        const button = event.currentTarget;
+        if (activeBaseLayer === 'standard') {
+          if (standardLayer) photoMap.removeLayer(standardLayer);
+          satelliteLayer.addTo(photoMap);
+          activeBaseLayer = 'satellite';
+          button.textContent = 'Standard';
+        } else {
+          if (satelliteLayer) photoMap.removeLayer(satelliteLayer);
+          standardLayer.addTo(photoMap);
+          activeBaseLayer = 'standard';
+          button.textContent = 'Satellite';
+        }
+      });
+
+      container.querySelector('[data-action="locate"]').addEventListener('click', () => {
+        locateUser();
+      });
+
+      return container;
+    }
+  });
+
+  photoMap.addControl(new MapTools());
 }
 
-function popupNode(record) {
-  const wrap = document.createElement('div');
-  wrap.className = 'map-popup';
-  if (record.image instanceof Blob && record.image.size > 0) {
-    const img = document.createElement('img');
-    const url = URL.createObjectURL(record.image);
-    mapImageUrls.push(url);
-    img.src = url;
-    img.alt = record.fields?.title || record.metadata?.filename || 'Saved photo';
-    wrap.appendChild(img);
+function locateUser() {
+  if (!navigator.geolocation) {
+    mapStatus.textContent = 'Location is not supported by this browser.';
+    return;
   }
-  const body = document.createElement('div');
-  body.className = 'map-popup-body';
-  const title = document.createElement('div');
-  title.className = 'map-popup-title';
-  title.textContent = record.fields?.title || record.metadata?.filename || 'Untitled';
-  const location = document.createElement('div');
-  location.className = 'map-popup-location';
-  const areaText = record.fields?.areaName ? `${record.fields.areaName} · ` : '';
-  location.textContent = areaText + (record.fields?.locationName || gpsDisplay(record.metadata?.latitude, record.metadata?.longitude));
-  const actions = document.createElement('div');
-  actions.className = 'map-popup-actions';
-  const details = document.createElement('button');
-  details.type = 'button';
-  details.textContent = 'Photo details';
-  details.addEventListener('click', () => openDetail(record));
-  const google = document.createElement('a');
-  google.textContent = 'Google Maps';
-  google.href = `https://www.google.com/maps/search/?api=1&query=${record.metadata.latitude},${record.metadata.longitude}`;
-  google.target = '_blank';
-  google.rel = 'noopener';
-  actions.append(details, google);
-  body.append(title, location, actions);
-  wrap.appendChild(body);
-  return wrap;
+
+  mapStatus.textContent = 'Finding your location…';
+
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      const accuracy = Math.max(Number(position.coords.accuracy) || 0, 5);
+      lastUserLocation = [lat, lng];
+
+      if (userLocationMarker) photoMap.removeLayer(userLocationMarker);
+      if (userAccuracyCircle) photoMap.removeLayer(userAccuracyCircle);
+
+      userAccuracyCircle = L.circle([lat, lng], {
+        radius: accuracy,
+        className: 'pg-user-accuracy',
+        interactive: false
+      }).addTo(photoMap);
+
+      const userIcon = L.divIcon({
+        className: 'pg-user-location-icon',
+        html: '<div class="pg-user-dot"><span></span></div><div class="pg-user-label">You are here</div>',
+        iconSize: [120, 44],
+        iconAnchor: [14, 14]
+      });
+
+      userLocationMarker = L.marker([lat, lng], {
+        icon: userIcon,
+        zIndexOffset: 1000
+      }).addTo(photoMap);
+
+      photoMap.setView([lat, lng], Math.max(photoMap.getZoom(), 15), { animate: false });
+      mapStatus.textContent = `Your location shown · accuracy about ${Math.round(accuracy)} m`;
+    },
+    error => {
+      const messages = {
+        1: 'Location permission was denied. Allow location access for this site in Safari settings.',
+        2: 'Your location could not be determined.',
+        3: 'Location request timed out.'
+      };
+      mapStatus.textContent = messages[error.code] || 'Could not get your location.';
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 12000,
+      maximumAge: 15000
+    }
+  );
 }
 
 function waitForMapLayout() {
