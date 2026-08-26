@@ -8,12 +8,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=0.11.1" />
+  <link rel="stylesheet" href="styles.css?v=0.11.2" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.11.1</div>
+      <div class="eyebrow">PAPA GOLF · V0.11.2</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -194,8 +194,9 @@
       </label>
       <div class="publish-url-box"><div class="small muted">Public URL</div><div id="publishUrl" class="publish-url"></div></div>
       <div class="publish-qr-wrap"><img id="publishQrImage" class="publish-qr" alt="QR code for public Papa Golf page"></div>
+      <div id="publishStatus" class="publish-status">Ready to create <strong>pig-beach.html</strong>.</div>
       <div class="publish-actions"><button id="generatePageBtn" class="primary-button" type="button">Create public page</button><a id="openQrBtn" class="ghost-button publish-link" target="_blank" rel="noopener">Open QR image</a></div>
-      <div id="publishStatus" class="small muted"></div>
+      <a id="generatedPageLink" class="ghost-button publish-link generated-page-link hidden" target="_blank" rel="noopener">Open generated page</a>
       <div class="publish-help"><strong>After downloading:</strong><ol><li>Upload the generated <code>.html</code> file to the root of this GitHub repository.</li><li>Commit the change.</li><li>Wait for GitHub Pages to publish it.</li><li>Scan the QR from another phone.</li></ol></div>
     </div>
   </dialog>
@@ -233,6 +234,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.11.1" defer></script>
+  <script src="app.js?v=0.11.2" defer></script>
 </body>
 </html>

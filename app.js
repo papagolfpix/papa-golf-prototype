@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.11.1';
+const RUNTIME_VERSION = '0.11.2';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -45,6 +45,7 @@ const publishQrImage = document.querySelector('#publishQrImage');
 const generatePageBtn = document.querySelector('#generatePageBtn');
 const openQrBtn = document.querySelector('#openQrBtn');
 const publishStatus = document.querySelector('#publishStatus');
+const generatedPageLink = document.querySelector('#generatedPageLink');
 let publishRecord = null;
 
 const visitorDialog = document.querySelector('#visitorDialog');
@@ -784,58 +785,73 @@ async function buildStandalonePublicPage(record) {
 }
 async function downloadPublishedPage(){
   if(!publishRecord)return;
-  publishStatus.textContent='Building public page…';
+
+  const originalLabel=generatePageBtn.textContent;
+  generatedPageLink.classList.add('hidden');
+  generatedPageLink.removeAttribute('href');
+  publishStatus.textContent='Creating public page…';
+  generatePageBtn.textContent='Creating…';
   generatePageBtn.disabled=true;
+
+  let objectUrl=null;
 
   try{
     const {slug}=updatePublishUrl();
     const html=await buildStandalonePublicPage(publishRecord);
-    const file=new File([html],`${slug}.html`,{type:'text/html'});
+    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+    objectUrl=URL.createObjectURL(blob);
 
-    // Best path on iPhone/iOS Safari: use the native Share sheet.
-    // "Save to Files" then produces a real .html file the user can upload to GitHub.
-    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-      publishStatus.textContent='Opening iPhone Share sheet… choose “Save to Files”.';
-      try{
-        await navigator.share({
-          files:[file],
-          title:`Papa Golf — ${slug}`,
-          text:'Papa Golf public visitor page'
-        });
-        publishStatus.textContent=`Created ${slug}.html. If you chose “Save to Files”, upload that file to the GitHub repository root.`;
-        return;
-      }catch(shareError){
-        if(shareError?.name==='AbortError'){
-          publishStatus.textContent='Share sheet closed. Tap the button again when ready.';
+    // Always expose a visible fallback before attempting Share.
+    generatedPageLink.href=objectUrl;
+    generatedPageLink.classList.remove('hidden');
+
+    // iPhone path: native Share sheet with a real file.
+    let file=null;
+    try{
+      file=new File([blob],`${slug}.html`,{type:'text/html'});
+    }catch{
+      file=null;
+    }
+
+    if(file && navigator.share){
+      let canShareFiles=true;
+      if(navigator.canShare){
+        try{canShareFiles=navigator.canShare({files:[file]});}
+        catch{canShareFiles=false;}
+      }
+
+      if(canShareFiles){
+        publishStatus.textContent='Public page created. Opening the iPhone Share sheet — choose “Save to Files”.';
+        try{
+          await navigator.share({
+            files:[file],
+            title:`Papa Golf — ${slug}`
+          });
+          publishStatus.textContent=`${slug}.html created. If you selected “Save to Files”, it is ready to upload to GitHub.`;
           return;
+        }catch(err){
+          if(err?.name==='AbortError'){
+            publishStatus.textContent='Share sheet closed. You can tap “Open generated page” below or tap Create public page again.';
+            return;
+          }
         }
-        // Fall through to browser fallback.
       }
     }
 
-    // Desktop/other-browser fallback: regular Blob download.
-    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-    const u=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=u;
-    a.download=`${slug}.html`;
-    a.style.display='none';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    // On browsers that ignore download=, provide a visible open-file fallback.
-    setTimeout(()=>{
-      publishStatus.innerHTML=`If the file did not download, <a href="${u}" target="_blank" rel="noopener" class="inline-link">open the generated page</a>, then use Share → Save to Files.`;
-      setTimeout(()=>URL.revokeObjectURL(u),60000);
-    },700);
+    // Fallback: keep the generated page link visible.
+    publishStatus.textContent='Public page created. Tap “Open generated page” below, then use Safari Share → Save to Files.';
   }catch(e){
-    publishStatus.textContent=`Could not build public page: ${e?.message||e}`;
+    publishStatus.textContent=`Could not create public page: ${e?.message||e}`;
   }finally{
     generatePageBtn.disabled=false;
+    generatePageBtn.textContent=originalLabel;
+    if(objectUrl){
+      // Keep it alive long enough for the user to open/share.
+      setTimeout(()=>URL.revokeObjectURL(objectUrl),300000);
+    }
   }
 }
-publishQrBtn.addEventListener('click',()=>{if(!activeRecord)return;publishRecord=activeRecord;publishSlug.value=slugifyPublic(activeRecord.fields?.locationName||activeRecord.fields?.title||activeRecord.metadata?.filename);publishStatus.textContent='';updatePublishUrl();publishDialog.showModal();});
+publishQrBtn.addEventListener('click',()=>{if(!activeRecord)return;publishRecord=activeRecord;publishSlug.value=slugifyPublic(activeRecord.fields?.locationName||activeRecord.fields?.title||activeRecord.metadata?.filename);generatedPageLink.classList.add('hidden');generatedPageLink.removeAttribute('href');updatePublishUrl();publishStatus.textContent=`Ready to create ${publishSlug.value}.html.`;publishDialog.showModal();});
 publishSlug.addEventListener('input',updatePublishUrl);
 generatePageBtn.addEventListener('click',downloadPublishedPage);
 closePublishBtn.addEventListener('click',()=>publishDialog.close());

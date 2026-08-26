@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.11.1
+# Papa Golf Photo Prototype — v0.11.2
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -220,3 +220,6 @@ v0.11.1 changes `Download public page` to `Create public page` and:
 - lets the user choose `Save to Files`;
 - keeps a normal download fallback for desktop/other browsers;
 - adds an `open generated page` fallback if the browser still refuses the download.
+
+## v0.11.2 iPhone publish feedback/fallback
+The Create public page control now gives immediate visible feedback, changes to Creating… while working, exposes an Open generated page fallback before attempting file sharing, and uses the iPhone Share sheet when available. If file sharing is unavailable, the generated page can be opened and saved through Safari's Share menu instead of failing silently.
