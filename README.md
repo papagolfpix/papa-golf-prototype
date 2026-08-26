@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.11
+# Papa Golf Photo Prototype — v0.11.1
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -210,3 +210,13 @@ Adds a mobile-first Visitor view for any saved record. It hides all admin/upload
 
 ## v0.11 First public page + QR prototype
 Adds `Publish QR` to saved records. It generates a standalone mobile visitor HTML page containing the selected record's photo and public information, calculates the permanent GitHub Pages URL from the current repository path, displays a QR code for that URL, and downloads the page as `<slug>.html`. Upload that generated HTML file to the repository root and commit it; after GitHub Pages publishes, the QR opens the visitor page from any phone. This is intentionally manual for the first end-to-end test before automating publishing.
+
+## v0.11.1 iPhone public-page export fix
+
+iOS Safari may silently ignore programmatic Blob downloads for generated HTML files.
+
+v0.11.1 changes `Download public page` to `Create public page` and:
+- uses the iPhone native Web Share sheet with a real `.html` file when supported;
+- lets the user choose `Save to Files`;
+- keeps a normal download fallback for desktop/other browsers;
+- adds an `open generated page` fallback if the browser still refuses the download.

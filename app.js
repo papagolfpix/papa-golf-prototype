@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.11';
+const RUNTIME_VERSION = '0.11.1';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -783,8 +783,57 @@ async function buildStandalonePublicPage(record) {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0b0b"><title>${safeTitle} · Papa Golf</title>${hasGps?'<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">':''}<style>*{box-sizing:border-box}html,body{margin:0;background:#0b0b0b;color:#f7f4ec;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.page{width:min(100%,680px);margin:auto}.brand{padding:16px;font-size:13px;font-weight:900;letter-spacing:.18em;color:#e0bc66;border-bottom:1px solid #292929}.hero{display:block;width:100%;max-height:58vh;object-fit:cover;background:#151515}.content{padding:20px 16px 30px}.category{display:inline-block;margin-bottom:9px;padding:5px 9px;border:1px solid rgba(224,188,102,.45);border-radius:999px;color:#e0bc66;font-size:11px;font-weight:800;text-transform:uppercase}h1{margin:0;font-size:clamp(30px,9vw,44px);line-height:1.02}.place{margin-top:9px;color:#c7c1b4;font-size:16px;font-weight:700}.description{margin-top:20px;font-size:17px;line-height:1.58}.fields{margin-top:22px;border-top:1px solid #292929}.info-row{display:grid;grid-template-columns:minmax(112px,.8fr) minmax(0,1.4fr);gap:14px;padding:14px 0;border-bottom:1px solid #292929}.info-label{color:#8e897e;font-size:12px;font-weight:800;text-transform:uppercase}.info-value{font-size:15px;line-height:1.4}.map-section{margin-top:26px}.section-title{margin-bottom:10px;font-size:19px;font-weight:850}.map{height:320px;border:1px solid #292929;border-radius:14px;overflow:hidden}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}.actions a,.actions button{min-height:48px;padding:11px 13px;border-radius:12px;font:700 15px/1.2 inherit;text-align:center;text-decoration:none}.actions .primary{display:grid;place-items:center;background:#e0bc66;color:#121212;border:1px solid #e0bc66}.actions button{background:#151515;color:#f7f4ec;border:1px solid #383838}.status{min-height:20px;margin-top:8px;color:#9a958b;font-size:12px}.footer{margin-top:30px;padding-top:18px;border-top:1px solid #292929;color:#706b62;font-size:11px;text-align:center;text-transform:uppercase;letter-spacing:.08em}@media(max-width:480px){.info-row,.actions{grid-template-columns:1fr}}</style></head><body><main class="page"><div class="brand">PAPA GOLF</div>${imageData?`<img class="hero" src="${safeImage}" alt="${safeTitle}">`:''}<div class="content">${category?`<div class="category">${safeCategory}</div>`:''}<h1>${safeTitle}</h1>${place?`<div class="place">${safePlace}</div>`:''}${description?`<div class="description">${safeDescription}</div>`:''}${rows?`<div class="fields">${rows}</div>`:''}${mapHtml}<div class="footer">Papa Golf · Explore the story behind the place</div></div></main>${mapScripts}</body></html>`;
 }
 async function downloadPublishedPage(){
-  if(!publishRecord)return;publishStatus.textContent='Building public page…';generatePageBtn.disabled=true;
-  try{const {slug}=updatePublishUrl(),html=await buildStandalonePublicPage(publishRecord),blob=new Blob([html],{type:'text/html;charset=utf-8'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=`${slug}.html`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);publishStatus.textContent=`Downloaded ${slug}.html. Upload it to the repository root, commit it, then scan the QR.`;}catch(e){publishStatus.textContent=`Could not build public page: ${e?.message||e}`;}finally{generatePageBtn.disabled=false;}
+  if(!publishRecord)return;
+  publishStatus.textContent='Building public page…';
+  generatePageBtn.disabled=true;
+
+  try{
+    const {slug}=updatePublishUrl();
+    const html=await buildStandalonePublicPage(publishRecord);
+    const file=new File([html],`${slug}.html`,{type:'text/html'});
+
+    // Best path on iPhone/iOS Safari: use the native Share sheet.
+    // "Save to Files" then produces a real .html file the user can upload to GitHub.
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      publishStatus.textContent='Opening iPhone Share sheet… choose “Save to Files”.';
+      try{
+        await navigator.share({
+          files:[file],
+          title:`Papa Golf — ${slug}`,
+          text:'Papa Golf public visitor page'
+        });
+        publishStatus.textContent=`Created ${slug}.html. If you chose “Save to Files”, upload that file to the GitHub repository root.`;
+        return;
+      }catch(shareError){
+        if(shareError?.name==='AbortError'){
+          publishStatus.textContent='Share sheet closed. Tap the button again when ready.';
+          return;
+        }
+        // Fall through to browser fallback.
+      }
+    }
+
+    // Desktop/other-browser fallback: regular Blob download.
+    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+    const u=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=u;
+    a.download=`${slug}.html`;
+    a.style.display='none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    // On browsers that ignore download=, provide a visible open-file fallback.
+    setTimeout(()=>{
+      publishStatus.innerHTML=`If the file did not download, <a href="${u}" target="_blank" rel="noopener" class="inline-link">open the generated page</a>, then use Share → Save to Files.`;
+      setTimeout(()=>URL.revokeObjectURL(u),60000);
+    },700);
+  }catch(e){
+    publishStatus.textContent=`Could not build public page: ${e?.message||e}`;
+  }finally{
+    generatePageBtn.disabled=false;
+  }
 }
 publishQrBtn.addEventListener('click',()=>{if(!activeRecord)return;publishRecord=activeRecord;publishSlug.value=slugifyPublic(activeRecord.fields?.locationName||activeRecord.fields?.title||activeRecord.metadata?.filename);publishStatus.textContent='';updatePublishUrl();publishDialog.showModal();});
 publishSlug.addEventListener('input',updatePublishUrl);
