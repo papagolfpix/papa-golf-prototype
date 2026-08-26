@@ -1,3 +1,4 @@
+const RUNTIME_VERSION = '0.6.3';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -1061,5 +1062,9 @@ clearAllBtn.addEventListener('click', async () => {
   backupStatus.textContent = 'All local records cleared.';
 });
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' })
+    .then(reg => reg.update())
+    .catch(() => {});
+}
 renderGallery().catch(error => { backupStatus.textContent = `Storage error: ${error.message || error}`; });

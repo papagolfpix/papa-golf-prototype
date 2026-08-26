@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.6.2
+# Papa Golf Photo Prototype — v0.6.3
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -139,3 +139,14 @@ single option containing newline characters. v0.6.2:
 - repairs legacy single-choice record values containing the entire list;
 - normalizes legacy values before detail display and edit mode;
 - leaves the photo database and image blobs untouched.
+
+## v0.6.3 iPhone cache fix
+
+The v0.6.1/v0.6.2 JavaScript fixes were not reliably reaching Safari because
+`index.html` continued loading `app.js?v=0.5`. v0.6.3:
+
+- changes the script URL to `app.js?v=0.6.3`;
+- changes the stylesheet URL to `styles.css?v=0.6.3`;
+- disables stale HTTP caching for service-worker fetches;
+- forces the service worker to update with `updateViaCache: 'none'`;
+- keeps the corrected single-choice/multiple-choice normalization from v0.6.2.
