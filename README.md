@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.9
+# Papa Golf Photo Prototype — v0.9.1
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -192,3 +192,15 @@ was still reading every saved record directly. The Map now applies the same
 - Fit Pins can include both filtered Papa Golf pins and the user's current location.
 - User location is never written to Papa Golf storage.
 - Existing photo records and filters remain unchanged.
+
+## v0.9.1 saved-location marker fix
+
+v0.9 accidentally removed the existing `mapMarkerIcon()` and `popupNode()` helper
+functions while replacing the map initialization block. The map base layers and
+Locate Me feature therefore worked, but saved GPS records could not create markers.
+
+v0.9.1 restores the saved-location marker/popup path and adds:
+- category-specific marker symbols;
+- persistent Location name labels beside saved-location pins;
+- existing photo popup, Photo details and Google Maps actions;
+- no changes to IndexedDB, stored photos, filters, Satellite or Locate Me.

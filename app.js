@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.9';
+const RUNTIME_VERSION = '0.9.1';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -1134,6 +1134,99 @@ function locateUser() {
   );
 }
 
+
+function categoryIcon(categoryValue) {
+  const category = String(Array.isArray(categoryValue) ? categoryValue[0] : categoryValue || '').toLocaleLowerCase();
+  if (category.includes('beach')) return '🏖';
+  if (category.includes('viewpoint')) return '◉';
+  if (category.includes('waterfall')) return '💧';
+  if (category.includes('restaurant') || category.includes('food')) return '🍴';
+  if (category.includes('bar') || category.includes('nightlife')) return '🍹';
+  if (category.includes('activity')) return '➤';
+  if (category.includes('attraction')) return '★';
+  if (category.includes('temple') || category.includes('cultural')) return '◆';
+  if (category.includes('accommodation')) return '⌂';
+  if (category.includes('shopping')) return '●';
+  return '•';
+}
+
+function mapMarkerIcon(record) {
+  const label = String(record.fields?.locationName || record.fields?.title || '').trim();
+  const symbol = categoryIcon(record.fields?.category);
+
+  const marker = document.createElement('div');
+  marker.className = 'pg-marker-v09';
+
+  const pin = document.createElement('div');
+  pin.className = 'pg-marker-pin-v09';
+  pin.textContent = symbol;
+  marker.appendChild(pin);
+
+  if (label) {
+    const text = document.createElement('div');
+    text.className = 'pg-marker-label-v09';
+    text.textContent = label;
+    marker.appendChild(text);
+  }
+
+  return L.divIcon({
+    className: 'pg-marker-wrap-v09',
+    html: marker.outerHTML,
+    iconSize: [170, 46],
+    iconAnchor: [16, 36],
+    popupAnchor: [0, -34],
+  });
+}
+
+function popupNode(record) {
+  const wrap = document.createElement('div');
+  wrap.className = 'map-popup';
+
+  if (record.image instanceof Blob && record.image.size > 0) {
+    const img = document.createElement('img');
+    const url = URL.createObjectURL(record.image);
+    mapImageUrls.push(url);
+    img.src = url;
+    img.alt = record.fields?.title || record.metadata?.filename || 'Saved photo';
+    wrap.appendChild(img);
+  }
+
+  const body = document.createElement('div');
+  body.className = 'map-popup-body';
+
+  const title = document.createElement('div');
+  title.className = 'map-popup-title';
+  title.textContent = record.fields?.title || record.metadata?.filename || 'Untitled';
+
+  const location = document.createElement('div');
+  location.className = 'map-popup-location';
+  const areaText = record.fields?.areaName ? `${record.fields.areaName} · ` : '';
+  location.textContent =
+    areaText +
+    (record.fields?.locationName ||
+      gpsDisplay(record.metadata?.latitude, record.metadata?.longitude));
+
+  const actions = document.createElement('div');
+  actions.className = 'map-popup-actions';
+
+  const details = document.createElement('button');
+  details.type = 'button';
+  details.textContent = 'Photo details';
+  details.addEventListener('click', () => openDetail(record));
+
+  const google = document.createElement('a');
+  google.textContent = 'Google Maps';
+  google.href = `https://www.google.com/maps/search/?api=1&query=${record.metadata.latitude},${record.metadata.longitude}`;
+  google.target = '_blank';
+  google.rel = 'noopener';
+
+  actions.append(details, google);
+  body.append(title, location, actions);
+  wrap.appendChild(body);
+
+  return wrap;
+}
+
 function waitForMapLayout() {
   return new Promise(resolve => {
     requestAnimationFrame(() => {
@@ -1174,7 +1267,7 @@ async function renderMap() {
   geotagged.forEach(record => {
     const lat = record.metadata.latitude;
     const lon = record.metadata.longitude;
-    const marker = L.marker([lat, lon], { icon: mapMarkerIcon(), title: record.fields?.title || 'Papa Golf photo' });
+    const marker = L.marker([lat, lon], { icon: mapMarkerIcon(record), title: record.fields?.title || 'Papa Golf photo' });
     marker.bindPopup(() => popupNode(record), { className: 'pg-popup', maxWidth: 240 });
     marker.addTo(mapLayer);
     points.push([lat, lon]);
