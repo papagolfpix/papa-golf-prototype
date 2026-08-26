@@ -559,7 +559,38 @@ editForm.addEventListener('submit', async event => {
     editStatus.textContent = 'Changes saved.';
     await renderGallery();
     closeEdit();
-    openDetail(updated);
+
+    // The photo itself does not change during a metadata/custom-field edit.
+    // Keep the existing object URL alive and refresh only the record text.
+    detailTitle.textContent = updated.fields?.title || updated.metadata?.filename || 'Photo details';
+    detailCustomFields.innerHTML = '';
+    const fieldEntries = Object.entries(updated.fields || {});
+    const populated = fieldEntries.filter(([, value]) => String(value || '').trim());
+    if (populated.length) {
+      const heading = document.createElement('div');
+      heading.className = 'detail-section-title';
+      heading.textContent = 'Your information';
+      detailCustomFields.appendChild(heading);
+      const list = document.createElement('div');
+      list.className = 'detail-list';
+      populated.forEach(([id, value]) => list.appendChild(detailRow(fieldLabelFor(id), value)));
+      detailCustomFields.appendChild(list);
+    }
+
+    const m = updated.metadata || {};
+    detailMetadata.innerHTML = '';
+    const gps = gpsDisplay(m.latitude, m.longitude);
+    const rows = [
+      ['Date/time taken', formatTakenDate(m.dateTime)],
+      ['GPS coordinates', gps, m.latitude != null && m.longitude != null ? `https://www.google.com/maps/search/?api=1&query=${m.latitude},${m.longitude}` : null],
+      ['Device', [m.make, m.model].filter(Boolean).join(' ') || 'Not found'],
+      ['Filename', m.filename || '—'],
+      ['Dimensions', m.width && m.height ? `${m.width} × ${m.height}` : 'Not found'],
+      ['File size', prettyBytes(m.fileSize)],
+      ['File type', m.type || 'Not found'],
+      ['Saved to prototype', updated.savedAt ? new Date(updated.savedAt).toLocaleString() : 'Not found'],
+    ];
+    rows.forEach(([label, value, href]) => detailMetadata.appendChild(detailRow(label, value, { href })));
   } catch (error) {
     editStatus.textContent = `Could not save: ${error.message || error}`;
   }

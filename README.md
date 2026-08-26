@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.4
+# Papa Golf Photo Prototype — v0.4.1
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
 
@@ -80,3 +80,8 @@ Add cloud storage and a shared database so Millie's uploads are visible from ano
 - Photo records remain editable while extracted metadata stays read-only.
 
 For prototype testing, export a backup before replacing application files or making major changes. Browser-managed storage should not be treated as the sole permanent copy.
+
+
+## v0.4.1 fix
+
+Fixes the iPhone detail-view image placeholder that could appear immediately after editing and saving custom fields. Editing no longer recreates/revokes the photo object URL; the image blob remains untouched while the text and metadata view refreshes.
