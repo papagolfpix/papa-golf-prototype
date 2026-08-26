@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.6.3';
+const RUNTIME_VERSION = '0.7';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -7,6 +7,7 @@ const defaultFields = [
   { id: 'title', label: 'Title', type: 'text' },
   { id: 'description', label: 'Description / Notes', type: 'textarea' },
   { id: 'category', label: 'Category', type: 'text' },
+  { id: 'areaName', label: 'Area / Place', type: 'text' },
   { id: 'locationName', label: 'Location name', type: 'text' },
   { id: 'people', label: 'People', type: 'text' },
   { id: 'tags', label: 'Tags', type: 'text' },
@@ -43,8 +44,13 @@ const cancelEditBtn = document.querySelector('#cancelEditBtn');
 const editStatus = document.querySelector('#editStatus');
 const photosTabBtn = document.querySelector('#photosTabBtn');
 const mapTabBtn = document.querySelector('#mapTabBtn');
+const areasTabBtn = document.querySelector('#areasTabBtn');
 const photosView = document.querySelector('#photosView');
 const mapView = document.querySelector('#mapView');
+const areasView = document.querySelector('#areasView');
+const areasList = document.querySelector('#areasList');
+const areaCount = document.querySelector('#areaCount');
+const areasEmptyState = document.querySelector('#areasEmptyState');
 const photoMapEl = document.querySelector('#photoMap');
 const mapPinCount = document.querySelector('#mapPinCount');
 const mapStatus = document.querySelector('#mapStatus');
@@ -59,6 +65,14 @@ let mapImageUrls = [];
 
 let pending = [];
 let customFields = loadFields();
+
+if (!customFields.some(field => field.id === 'areaName')) {
+  const areaField = normalizeField({ id: 'areaName', label: 'Area / Place', type: 'text', required: false });
+  const locationIndex = customFields.findIndex(field => field.id === 'locationName');
+  if (locationIndex >= 0) customFields.splice(locationIndex, 0, areaField);
+  else customFields.push(areaField);
+}
+
 try {
   localStorage.setItem(FIELD_KEY, JSON.stringify(customFields));
 } catch {}
@@ -535,6 +549,7 @@ function renderEditor(item) {
       status.textContent = 'Saved on this iPhone.';
       setTimeout(() => removePending(item.id), 350);
       await renderGallery();
+      if (!areasView.classList.contains('hidden')) await renderAreas();
     } catch (error) {
       status.textContent = `Could not save: ${error.message || error}`;
     }
@@ -711,6 +726,7 @@ editForm.addEventListener('submit', async event => {
     activeRecord = updated;
     editStatus.textContent = 'Changes saved.';
     await renderGallery();
+    if (!areasView.classList.contains('hidden')) await renderAreas();
     closeEdit();
 
     // The photo itself does not change during a metadata/custom-field edit.
@@ -794,7 +810,8 @@ async function renderGallery() {
     const meta = document.createElement('div'); meta.className = 'gallery-meta';
     const gps = record.metadata.latitude != null ? ' · GPS ✓' : '';
     const location = record.fields.locationName ? `${record.fields.locationName} · ` : '';
-    meta.textContent = `${location}${new Date(record.savedAt).toLocaleDateString()}${gps}`;
+    const area = record.fields.areaName ? `${record.fields.areaName} · ` : '';
+    meta.textContent = `${area}${location}${new Date(record.savedAt).toLocaleDateString()}${gps}`;
     const actions = document.createElement('div'); actions.className = 'gallery-actions';
     const del = document.createElement('button'); del.className = 'delete-record'; del.type = 'button'; del.textContent = 'Delete';
     del.addEventListener('click', async (event) => {
@@ -855,7 +872,8 @@ function popupNode(record) {
   title.textContent = record.fields?.title || record.metadata?.filename || 'Untitled';
   const location = document.createElement('div');
   location.className = 'map-popup-location';
-  location.textContent = record.fields?.locationName || gpsDisplay(record.metadata?.latitude, record.metadata?.longitude);
+  const areaText = record.fields?.areaName ? `${record.fields.areaName} · ` : '';
+  location.textContent = areaText + (record.fields?.locationName || gpsDisplay(record.metadata?.latitude, record.metadata?.longitude));
   const actions = document.createElement('div');
   actions.className = 'map-popup-actions';
   const details = document.createElement('button');
@@ -939,19 +957,110 @@ async function renderMap() {
   }, 180);
 }
 
+function areaDisplayName(record) {
+  return String(record.fields?.areaName || '').trim();
+}
+
+async function renderAreas() {
+  const records = await getRecords();
+  const grouped = new Map();
+
+  records.forEach(record => {
+    const area = areaDisplayName(record);
+    if (!area) return;
+    const key = area.toLocaleLowerCase();
+    if (!grouped.has(key)) grouped.set(key, { name: area, records: [] });
+    grouped.get(key).records.push(record);
+  });
+
+  const groups = [...grouped.values()].sort((a, b) => a.name.localeCompare(b.name));
+  areaCount.textContent = String(groups.length);
+  areasList.innerHTML = '';
+  areasEmptyState.classList.toggle('hidden', groups.length > 0);
+
+  groups.forEach(group => {
+    const card = document.createElement('section');
+    card.className = 'area-card';
+
+    const head = document.createElement('div');
+    head.className = 'area-card-head';
+
+    const copy = document.createElement('div');
+    const eyebrow = document.createElement('div');
+    eyebrow.className = 'eyebrow';
+    const uniqueLocations = new Set(
+      group.records.map(record => String(record.fields?.locationName || '').trim()).filter(Boolean)
+    );
+    eyebrow.textContent = `${group.records.length} PHOTO RECORD${group.records.length === 1 ? '' : 'S'} · ${uniqueLocations.size || group.records.length} LOCATION${(uniqueLocations.size || group.records.length) === 1 ? '' : 'S'}`;
+
+    const title = document.createElement('h3');
+    title.textContent = group.name;
+    copy.append(eyebrow, title);
+    head.append(copy);
+    card.append(head);
+
+    const list = document.createElement('div');
+    list.className = 'area-location-list';
+
+    group.records.forEach(record => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'area-location-row';
+
+      if (record.image instanceof Blob && record.image.size > 0) {
+        const img = document.createElement('img');
+        const url = URL.createObjectURL(record.image);
+        img.src = url;
+        img.alt = record.fields?.title || record.metadata?.filename || 'Saved photo';
+        img.onload = () => URL.revokeObjectURL(url);
+        img.onerror = () => URL.revokeObjectURL(url);
+        row.appendChild(img);
+      }
+
+      const text = document.createElement('div');
+      text.className = 'area-location-copy';
+      const location = document.createElement('strong');
+      location.textContent = record.fields?.locationName || record.fields?.title || 'Unnamed location';
+      const subtitle = document.createElement('span');
+      const category = record.fields?.category ? `${record.fields.category} · ` : '';
+      const gps = Number.isFinite(record.metadata?.latitude) ? 'GPS ✓' : 'No GPS';
+      subtitle.textContent = `${category}${gps}`;
+      text.append(location, subtitle);
+      row.append(text);
+
+      row.addEventListener('click', () => openDetail(record));
+      list.appendChild(row);
+    });
+
+    card.append(list);
+    areasList.appendChild(card);
+  });
+}
+
 async function switchView(view) {
+  const showPhotos = view === 'photos';
   const showMap = view === 'map';
-  photosView.classList.toggle('hidden', showMap);
+  const showAreas = view === 'areas';
+
+  photosView.classList.toggle('hidden', !showPhotos);
   mapView.classList.toggle('hidden', !showMap);
-  photosTabBtn.classList.toggle('active', !showMap);
+  areasView.classList.toggle('hidden', !showAreas);
+
+  photosTabBtn.classList.toggle('active', showPhotos);
   mapTabBtn.classList.toggle('active', showMap);
-  photosTabBtn.setAttribute('aria-selected', String(!showMap));
+  areasTabBtn.classList.toggle('active', showAreas);
+
+  photosTabBtn.setAttribute('aria-selected', String(showPhotos));
   mapTabBtn.setAttribute('aria-selected', String(showMap));
+  areasTabBtn.setAttribute('aria-selected', String(showAreas));
+
   if (showMap) await renderMap();
+  if (showAreas) await renderAreas();
 }
 
 photosTabBtn.addEventListener('click', () => switchView('photos'));
 mapTabBtn.addEventListener('click', () => switchView('map'));
+areasTabBtn.addEventListener('click', () => switchView('areas'));
 fitMapBtn.addEventListener('click', () => {
   if (!photoMap || !mapBounds) return;
   if (mapBounds.getNorthEast().equals(mapBounds.getSouthWest())) photoMap.setView(mapBounds.getCenter(), 15);

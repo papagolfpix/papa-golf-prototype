@@ -8,12 +8,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=0.6.3" />
+  <link rel="stylesheet" href="styles.css?v=0.7" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.6.3</div>
+      <div class="eyebrow">PAPA GOLF · V0.7</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -23,6 +23,7 @@
     <nav class="view-tabs" aria-label="Main views">
       <button id="photosTabBtn" class="view-tab active" type="button">Photos</button>
       <button id="mapTabBtn" class="view-tab" type="button">Map</button>
+      <button id="areasTabBtn" class="view-tab" type="button">Areas</button>
     </nav>
 
     <div id="photosView">
@@ -76,6 +77,19 @@
       <div id="photoMap" class="photo-map" role="application" aria-label="Map of saved photo locations"></div>
       <div id="mapEmptyState" class="empty-state hidden">No saved photos with GPS coordinates yet.</div>
     </section>
+
+    <section id="areasView" class="areas-view hidden" aria-label="Areas and places">
+      <div class="section-heading">
+        <div>
+          <div class="eyebrow">BROADER PLACES · <span id="areaCount">0</span></div>
+          <h2>Areas</h2>
+        </div>
+      </div>
+      <p class="small muted">Group individual GPS locations under a broader place such as Koh Madsum, Koh Samui or Ang Thong Marine Park.</p>
+      <div id="areasList" class="areas-list"></div>
+      <div id="areasEmptyState" class="empty-state hidden">No areas assigned yet. Edit a photo record and add an Area / Place.</div>
+    </section>
+
   </main>
 
   <dialog id="fieldsDialog">
@@ -151,6 +165,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.6.3" defer></script>
+  <script src="app.js?v=0.7" defer></script>
 </body>
 </html>

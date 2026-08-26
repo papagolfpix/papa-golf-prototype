@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.6.3
+# Papa Golf Photo Prototype — v0.7
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -150,3 +150,14 @@ The v0.6.1/v0.6.2 JavaScript fixes were not reliably reaching Safari because
 - disables stale HTTP caching for service-worker fetches;
 - forces the service worker to update with `updateViaCache: 'none'`;
 - keeps the corrected single-choice/multiple-choice normalization from v0.6.2.
+
+## v0.7 Areas + GPS-specific locations
+
+Adds a lightweight hierarchy without rewriting the photo database:
+
+- New optional `Area / Place` field.
+- Existing `Location name` remains the specific point/location.
+- New `Areas` tab groups photo/location records by broader area.
+- Existing records remain valid and simply appear ungrouped until an Area / Place is assigned.
+- Map pins remain based on each individual photo's GPS metadata.
+- Tapping a location inside an Area opens the existing full photo record.
