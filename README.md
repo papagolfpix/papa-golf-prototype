@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.12.5
+# Papa Golf Photo Prototype — v0.13
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -278,3 +278,6 @@ v0.12.5:
 - adds FileReader and blob-URL fallbacks if Safari rejects Blob.arrayBuffer();
 - uses the safely persisted record as the active record after publishing;
 - leaves field values, QR/public pages, gallery, map, filters and database schema unchanged.
+
+## v0.13 Update Public Page
+Published records that have changed now show `Update public page`. It reuses the existing published slug and URL, regenerates the same `<slug>.html` filename, and tells the user to replace that file in GitHub. No changes to photo storage, IndexedDB schema, maps, filters, QR URL generation, visitor view, or backup/restore.

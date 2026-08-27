@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.12.5';
+const RUNTIME_VERSION = '0.13';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -34,6 +34,7 @@ const detailTitle = document.querySelector('#detailTitle');
 const publicationStatusBlock = document.querySelector('#publicationStatusBlock');
 const publicationStatusBadge = document.querySelector('#publicationStatusBadge');
 const publicationPublicLink = document.querySelector('#publicationPublicLink');
+const publicationUpdateBtn = document.querySelector('#publicationUpdateBtn');
 const publicationMarkBtn = document.querySelector('#publicationMarkBtn');
 
 const detailImage = document.querySelector('#detailImage');
@@ -825,6 +826,7 @@ function renderPublicationStatus(record) {
     } else {
       publicationPublicLink.classList.add('hidden');
     }
+    if (publicationUpdateBtn) publicationUpdateBtn.classList.toggle('hidden', !stale);
 
     publicationMarkBtn.textContent = stale ? 'Mark updated' : 'Published';
     publicationMarkBtn.disabled = !stale;
@@ -832,6 +834,7 @@ function renderPublicationStatus(record) {
     publicationStatusBadge.textContent = 'Draft';
     publicationStatusBadge.className = 'publication-status-badge draft';
     publicationPublicLink.classList.add('hidden');
+    if (publicationUpdateBtn) publicationUpdateBtn.classList.add('hidden');
     publicationMarkBtn.textContent = 'Mark published';
     publicationMarkBtn.disabled = false;
   }
@@ -1041,6 +1044,34 @@ publicationMarkBtn?.addEventListener('click', async () => {
 });
 
 
+
+async function beginPublicationUpdate(record) {
+  const pub = publicationInfo(record);
+  if (pub.status !== 'published') return;
+
+  publishRecord = record;
+  publishSlug.value = slugifyPublic(
+    pub.slug ||
+    record.fields?.locationName ||
+    record.fields?.title ||
+    record.metadata?.filename
+  );
+
+  generatedPageLink.classList.add('hidden');
+  generatedPageLink.removeAttribute('href');
+  updatePublishUrl();
+  generatePageBtn.textContent = 'Create updated public page';
+  publishStatus.textContent =
+    `This will regenerate ${publishSlug.value}.html for the existing public URL. Save it, then replace the existing file in GitHub.`;
+  publishDialog.showModal();
+}
+
+if (publicationUpdateBtn) {
+  publicationUpdateBtn.addEventListener('click', () => {
+    if (activeRecord) beginPublicationUpdate(activeRecord);
+  });
+}
+
 if (publicationMarkBtn) {
   publicationMarkBtn.addEventListener('click', async () => {
     if (!activeRecord) return;
@@ -1060,7 +1091,7 @@ if (publicationMarkBtn) {
   });
 }
 
-publishQrBtn.addEventListener('click',()=>{if(!activeRecord)return;publishRecord=activeRecord;publishSlug.value=slugifyPublic(activeRecord.fields?.locationName||activeRecord.fields?.title||activeRecord.metadata?.filename);generatedPageLink.classList.add('hidden');generatedPageLink.removeAttribute('href');updatePublishUrl();publishStatus.textContent=`Ready to create ${publishSlug.value}.html.`;publishDialog.showModal();});
+publishQrBtn.addEventListener('click',()=>{if(!activeRecord)return;publishRecord=activeRecord;publishSlug.value=slugifyPublic(activeRecord.publication?.slug||activeRecord.fields?.locationName||activeRecord.fields?.title||activeRecord.metadata?.filename);generatedPageLink.classList.add('hidden');generatedPageLink.removeAttribute('href');generatePageBtn.textContent='Create public page';updatePublishUrl();publishStatus.textContent=`Ready to create ${publishSlug.value}.html.`;publishDialog.showModal();});
 publishSlug.addEventListener('input',updatePublishUrl);
 generatePageBtn.addEventListener('click',downloadPublishedPage);
 closePublishBtn.addEventListener('click',()=>publishDialog.close());
