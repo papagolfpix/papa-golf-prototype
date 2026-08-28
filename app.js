@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.17.1';
+const RUNTIME_VERSION = '0.17.2';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -849,9 +849,7 @@ function openDetail(record) {
   detailImageUrl = null;
   detailImage.removeAttribute('src');
   if (record.image instanceof Blob && record.image.size > 0) {
-    detailImageUrl = URL.createObjectURL(record.image);
-    detailImage.src = detailImageUrl;
-  renderDetailSupportingGallery(record);
+    renderDetailSupportingGallery(record);
   } else {
     detailImage.alt = 'Photo data needs restore from backup';
   }
@@ -986,7 +984,10 @@ function normalizeRelatedPhoto(item, index = 0) {
 }
 
 function relatedBlob(item) {
-  return item instanceof Blob ? item : item?.imageBlob;
+  if (item instanceof Blob) return item;
+  if (item?.imageBlob instanceof Blob) return item.imageBlob;
+  if (item?.image instanceof Blob) return item.image;
+  return null;
 }
 
 function renderSupportingPreview(items = []) {
@@ -1060,18 +1061,21 @@ function renderDetailSupportingGallery(record) {
   if (!detailSupportingGallery || !detailImage) return;
 
   const collection=[];
-  if(record?.imageBlob instanceof Blob){
+  const entryBlob = record?.image instanceof Blob ? record.image :
+                    record?.imageBlob instanceof Blob ? record.imageBlob : null;
+  if(entryBlob){
+    const entryFields = normalizeRecordFieldValues(record.fields || {});
     collection.push({
       id: record.id || 'entry',
-      imageBlob: record.imageBlob,
+      imageBlob: entryBlob,
       entry:true,
       role:'featured',
-      title:record.title || 'Entry photo',
-      description:record.description || '',
-      tags:record.tags || '',
-      captureDate:record.captureDate || record.dateTaken || '',
-      gps:record.gps || null,
-      filename:record.filename || ''
+      title:entryFields.title || record.metadata?.filename || 'Entry photo',
+      description:entryFields.description || entryFields.notes || '',
+      tags:Array.isArray(entryFields.tags) ? entryFields.tags.join(', ') : (entryFields.tags || ''),
+      captureDate:record.metadata?.dateTaken || record.metadata?.captureDate || '',
+      gps:record.metadata?.gps || record.gps || null,
+      filename:record.metadata?.filename || ''
     });
   }
   const extras=Array.isArray(record?.supportingPhotos)?record.supportingPhotos:[];

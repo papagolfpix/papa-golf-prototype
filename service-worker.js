@@ -1,9 +1,9 @@
-const CACHE = 'papa-golf-v0171-shell';
+const CACHE = 'papa-golf-v0172-shell';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=0.17.1',
-  './app.js?v=0.17.1',
+  './styles.css?v=0.17.2',
+  './app.js?v=0.17.2',
   './manifest.webmanifest'
 ];
 

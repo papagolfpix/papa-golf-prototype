@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.17.1
+# Papa Golf Photo Prototype — v0.17.2
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -336,3 +336,9 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Active-photo title, story, tags, role and available metadata change with the selected image.
 - Public visitor pages use the same swap behaviour.
 - The QR/scanned entry image remains the initial active photo.
+
+## v0.17.2
+- Fixes a compatibility bug where the active-photo viewer looked for `record.imageBlob` instead of the existing record's `record.image`.
+- The scanned/original image is again guaranteed to be the initial active image.
+- Existing title, description, tags, capture date, GPS and filename are read from the established record fields/metadata.
+- Keeps backward compatibility with both `image` and `imageBlob` photo objects.
