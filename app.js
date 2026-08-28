@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.17.4';
+const RUNTIME_VERSION = '0.18';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -2270,3 +2270,71 @@ if ('serviceWorker' in navigator) {
     .catch(() => {});
 }
 renderGallery().catch(error => { backupStatus.textContent = `Storage error: ${error.message || error}`; });
+
+
+// ---- Papa Golf Welcome v0.18 ----
+const WELCOME_PROPERTY_KEY = 'papaGolfWelcomeProperty';
+const WELCOME_UNIT_KEY = 'papaGolfWelcomeUnit';
+
+function getWelcomeProperty(){try{return JSON.parse(localStorage.getItem(WELCOME_PROPERTY_KEY)||'{}')}catch{return {}}}
+function getWelcomeUnit(){try{return JSON.parse(localStorage.getItem(WELCOME_UNIT_KEY)||'{}')}catch{return {}}}
+function welcomeVal(id){const e=document.getElementById(id);return e?e.value.trim():''}
+function welcomeSet(id,v){const e=document.getElementById(id);if(e)e.value=v||''}
+function welcomeToggle(cbId,fieldId){const c=document.getElementById(cbId),f=document.getElementById(fieldId);if(c&&f)f.disabled=!c.checked}
+function welcomeShow(target){
+  document.querySelectorAll('.screen').forEach(el=>el.classList.add('hidden'));
+  if(target)target.classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+function loadWelcomeEditor(){
+  const p=getWelcomeProperty(),u=getWelcomeUnit();
+  welcomeSet('welcomePropertyName',p.name); welcomeSet('welcomePropertyHost',p.host);
+  welcomeSet('welcomePropertyAddress',p.address); welcomeSet('welcomePropertyEmergency',p.emergency);
+  welcomeSet('welcomePropertyRecommendations',p.recommendations);
+  welcomeSet('welcomeUnitName',u.name); welcomeSet('welcomeWifiName',u.wifiName);
+  welcomeSet('welcomeWifiPassword',u.wifiPassword); welcomeSet('welcomeBluetooth',u.bluetooth);
+  welcomeSet('welcomeVillaInfo',u.villaInfo); welcomeSet('welcomeUnitHost',u.host);
+  welcomeSet('welcomeUnitEmergency',u.emergency); welcomeSet('welcomeUnitRecommendations',u.recommendations);
+  const oh=document.getElementById('overrideWelcomeHost'), oe=document.getElementById('overrideWelcomeEmergency'), or=document.getElementById('overrideWelcomeRecommendations');
+  if(oh)oh.checked=!!u.overrideHost; if(oe)oe.checked=!!u.overrideEmergency; if(or)or.checked=!!u.overrideRecommendations;
+  welcomeToggle('overrideWelcomeHost','welcomeUnitHost'); welcomeToggle('overrideWelcomeEmergency','welcomeUnitEmergency'); welcomeToggle('overrideWelcomeRecommendations','welcomeUnitRecommendations');
+}
+function effectiveWelcome(){
+  const p=getWelcomeProperty(),u=getWelcomeUnit();
+  return {
+    propertyName:p.name||'Papa Golf Property', unitName:u.name||'Your Villa', address:p.address||'',
+    host:u.overrideHost?(u.host||''):(p.host||''),
+    emergency:u.overrideEmergency?(u.emergency||''):(p.emergency||''),
+    recommendations:u.overrideRecommendations?(u.recommendations||''):(p.recommendations||''),
+    wifiName:u.wifiName||'', wifiPassword:u.wifiPassword||'', bluetooth:u.bluetooth||'', villaInfo:u.villaInfo||''
+  };
+}
+function renderGuestWelcome(){
+  const d=effectiveWelcome();
+  const title=document.getElementById('guestWelcomeTitle'), prop=document.getElementById('guestWelcomeProperty'), head=document.getElementById('guestWelcomeHeading');
+  if(title)title.textContent=d.unitName; if(prop)prop.textContent=d.propertyName+(d.address?' · '+d.address:''); if(head)head.textContent='Welcome to '+d.unitName;
+  const wifi=document.getElementById('guestWifiInfo');
+  if(wifi)wifi.innerHTML=(d.wifiName||d.wifiPassword)?`<p><strong>Wi-Fi:</strong> ${escapeHtml(d.wifiName||'—')}</p><p><strong>Password:</strong> ${escapeHtml(d.wifiPassword||'—')}</p>`:'<p class="muted">No Wi-Fi information added yet.</p>';
+  const bt=document.getElementById('guestBluetoothInfo'); if(bt)bt.innerHTML=d.bluetooth?`<p>${escapeHtml(d.bluetooth)}</p>`:'';
+  const vi=document.getElementById('guestVillaInfo'); if(vi)vi.innerHTML=d.villaInfo?`<p>${escapeHtml(d.villaInfo)}</p>`:'<p class="muted">No villa instructions added yet.</p>';
+  const host=document.getElementById('guestHostInfo'); if(host)host.innerHTML=d.host?`<p><strong>Host / manager:</strong> ${escapeHtml(d.host)}</p>`:'';
+  const rec=document.getElementById('guestRecommendationsInfo'); if(rec)rec.innerHTML=d.recommendations?`<p>${escapeHtml(d.recommendations)}</p>`:'<p class="muted">No recommendations added yet.</p>';
+  const em=document.getElementById('guestEmergencyInfo'); if(em)em.innerHTML=d.emergency?`<p>${escapeHtml(d.emergency)}</p>`:'<p class="muted">No emergency information added yet.</p>';
+}
+function initWelcomeModule(){
+  const open=document.getElementById('openWelcomeModuleBtn'), page=document.getElementById('welcomeModule'), preview=document.getElementById('welcomeGuestPreview');
+  if(open)open.addEventListener('click',()=>{loadWelcomeEditor();welcomeShow(page)});
+  const back=document.getElementById('welcomeBackBtn');
+  if(back)back.addEventListener('click',()=>welcomeShow(document.getElementById('homeScreen')||document.getElementById('libraryScreen')));
+  const pback=document.getElementById('welcomeGuestBackBtn'); if(pback)pback.addEventListener('click',()=>welcomeShow(page));
+  [['overrideWelcomeHost','welcomeUnitHost'],['overrideWelcomeEmergency','welcomeUnitEmergency'],['overrideWelcomeRecommendations','welcomeUnitRecommendations']].forEach(([a,b])=>{
+    const e=document.getElementById(a); if(e)e.addEventListener('change',()=>welcomeToggle(a,b));
+  });
+  const sp=document.getElementById('saveWelcomePropertyBtn');
+  if(sp)sp.addEventListener('click',()=>{localStorage.setItem(WELCOME_PROPERTY_KEY,JSON.stringify({name:welcomeVal('welcomePropertyName'),host:welcomeVal('welcomePropertyHost'),address:welcomeVal('welcomePropertyAddress'),emergency:welcomeVal('welcomePropertyEmergency'),recommendations:welcomeVal('welcomePropertyRecommendations')}));alert('Property information saved.')});
+  const su=document.getElementById('saveWelcomeUnitBtn');
+  if(su)su.addEventListener('click',()=>{localStorage.setItem(WELCOME_UNIT_KEY,JSON.stringify({name:welcomeVal('welcomeUnitName'),wifiName:welcomeVal('welcomeWifiName'),wifiPassword:welcomeVal('welcomeWifiPassword'),bluetooth:welcomeVal('welcomeBluetooth'),villaInfo:welcomeVal('welcomeVillaInfo'),overrideHost:!!document.getElementById('overrideWelcomeHost')?.checked,host:welcomeVal('welcomeUnitHost'),overrideEmergency:!!document.getElementById('overrideWelcomeEmergency')?.checked,emergency:welcomeVal('welcomeUnitEmergency'),overrideRecommendations:!!document.getElementById('overrideWelcomeRecommendations')?.checked,recommendations:welcomeVal('welcomeUnitRecommendations')}));alert('Accommodation unit saved.')});
+  const pv=document.getElementById('previewWelcomeGuestBtn');
+  if(pv)pv.addEventListener('click',()=>{sp?.click();su?.click();renderGuestWelcome();welcomeShow(preview)});
+}
+window.addEventListener('DOMContentLoaded',initWelcomeModule);

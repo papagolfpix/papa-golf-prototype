@@ -659,3 +659,15 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .visitor-thumb{flex:0 0 82px;border:2px solid transparent;border-radius:11px;padding:0;background:transparent;overflow:hidden}
 .visitor-thumb img{display:block;width:78px;height:78px;object-fit:cover}
 .visitor-active-photo-info{font-size:.84rem;opacity:.72;margin:7px 0 12px}
+
+
+/* Papa Golf Welcome v0.18 */
+.welcome-grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.welcome-grid .panel,.guest-card{border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:1rem;background:rgba(255,255,255,.035)}
+.welcome-grid label{display:block;margin:.8rem 0}
+.welcome-grid input[type="text"],.welcome-grid textarea{width:100%;box-sizing:border-box;margin-top:.35rem}
+.inheritance-box{margin:1rem 0;padding:1rem;border-radius:14px;border:1px dashed rgba(255,255,255,.22)}
+.guest-welcome-shell{max-width:760px;margin:0 auto}
+.guest-welcome-hero{text-align:center;padding:2rem 1rem;border-radius:20px;margin-bottom:1rem;background:rgba(255,255,255,.045)}
+.guest-welcome-cards{display:grid;gap:1rem}
+.guest-card h3{margin-top:0}

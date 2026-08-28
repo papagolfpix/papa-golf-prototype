@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.17.4
+# Papa Golf Platform Prototype — v0.18
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -354,3 +354,9 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Declares the detail information section references used by the active-photo viewer.
 - Restores opening a photo from the home-page library.
 - Retains the v0.17.3 visitor filmstrip and active-photo information behavior.
+
+## v0.18 — Papa Golf Welcome foundation
+- Adds Property and Accommodation Unit data.
+- Adds inherited shared fields with unit overrides.
+- Adds a simple mobile Guest Welcome preview.
+- Preserves existing Photo, map, QR and publishing workflows.
