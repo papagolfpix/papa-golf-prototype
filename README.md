@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.17.3
+# Papa Golf Photo Prototype — v0.17.4
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -348,3 +348,9 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Entry photo shows the established record information; related photos show only their own title/story/tags/role/available metadata.
 - Visitor View now supports the same active-photo + filmstrip interaction as the record detail viewer.
 - The active visitor photo is removed from the filmstrip and the previous photo returns to it.
+
+## v0.17.4
+- Fixes the photo-card click regression introduced in v0.17.3.
+- Declares the detail information section references used by the active-photo viewer.
+- Restores opening a photo from the home-page library.
+- Retains the v0.17.3 visitor filmstrip and active-photo information behavior.

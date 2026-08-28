@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.17.3';
+const RUNTIME_VERSION = '0.17.4';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -40,6 +40,8 @@ const publicationMarkBtn = document.querySelector('#publicationMarkBtn');
 const detailImage = document.querySelector('#detailImage');
 const detailCustomFields = document.querySelector('#detailCustomFields');
 const detailMetadata = document.querySelector('#detailMetadata');
+const detailCustomFieldsSection = detailCustomFields;
+const detailMetadataSection = detailMetadata ? detailMetadata.closest('.detail-section') : null;
 const closeDetailBtn = document.querySelector('#closeDetailBtn');
 const editDetailBtn = document.querySelector('#editDetailBtn');
 const visitorPreviewBtn = document.querySelector('#visitorPreviewBtn');
