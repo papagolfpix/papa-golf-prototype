@@ -1,2 +1,0 @@
-Papa Golf GitHub automation test
-If this file appears in the repository automatically, the update workflow is working.
