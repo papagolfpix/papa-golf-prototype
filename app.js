@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.14';
+const RUNTIME_VERSION = '0.14.1';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -1075,6 +1075,13 @@ async function downloadPublishedPage(){
     if(objectUrl)setTimeout(()=>URL.revokeObjectURL(objectUrl),300000);
   }
 }
+// v0.14.1: Update Public Page opens the same publishing workflow.
+if (publicationUpdateBtn) {
+  publicationUpdateBtn.addEventListener('click', () => {
+    publishQrBtn.click();
+  });
+}
+
 publishQrBtn.addEventListener('click',()=>{if(!activeRecord)return;publishRecord=activeRecord;publishSlug.value=slugifyPublic(activeRecord.publication?.slug||activeRecord.fields?.locationName||activeRecord.fields?.title||activeRecord.metadata?.filename);generatedPageLink.classList.add('hidden');generatedPageLink.removeAttribute('href');generatePageBtn.textContent='Create GitHub update';updatePublishUrl();publishStatus.textContent=`Ready to package ${publishSlug.value}.html into papa-golf-update.zip.`;publishDialog.showModal();});
 publishSlug.addEventListener('input',updatePublishUrl);
 generatePageBtn.addEventListener('click',downloadPublishedPage);

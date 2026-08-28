@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.14
+# Papa Golf Photo Prototype — v0.14.1
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -293,3 +293,6 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - The installed GitHub Action extracts the HTML page, removes the ZIP, commits the result and triggers GitHub Pages.
 - Existing QR URLs remain unchanged.
 - No changes to photo storage, IndexedDB schema, maps, filters or backup/restore.
+
+## v0.14.1
+- Restores the missing Update Public Page click handler.
