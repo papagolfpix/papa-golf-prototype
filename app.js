@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.17';
+const RUNTIME_VERSION = '0.17.1';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -1058,39 +1058,80 @@ function renderSupportingPreview(items = []) {
 
 function renderDetailSupportingGallery(record) {
   if (!detailSupportingGallery || !detailImage) return;
-  detailSupportingGallery.innerHTML = '';
 
-  const collection = [];
-  if (record?.imageBlob instanceof Blob) collection.push({imageBlob:record.imageBlob, role:'featured', entry:true, title:record.title || 'Entry photo'});
-  const extras = Array.isArray(record?.supportingPhotos) ? record.supportingPhotos : [];
+  const collection=[];
+  if(record?.imageBlob instanceof Blob){
+    collection.push({
+      id: record.id || 'entry',
+      imageBlob: record.imageBlob,
+      entry:true,
+      role:'featured',
+      title:record.title || 'Entry photo',
+      description:record.description || '',
+      tags:record.tags || '',
+      captureDate:record.captureDate || record.dateTaken || '',
+      gps:record.gps || null,
+      filename:record.filename || ''
+    });
+  }
+  const extras=Array.isArray(record?.supportingPhotos)?record.supportingPhotos:[];
   extras.forEach((raw,index)=>{
     const p=normalizeRelatedPhoto(raw,index);
-    if (relatedBlob(p) instanceof Blob) collection.push({...p, entry:false});
+    if(relatedBlob(p) instanceof Blob) collection.push({...p,entry:false});
   });
 
-  collection.forEach((photo,index)=>{
-    const blob=relatedBlob(photo);
-    const button=document.createElement('button');
-    button.type='button';
-    button.className='filmstrip-thumb'+(index===0?' active':'')+(photo.role==='context'?' context-photo':'');
-    button.title=photo.role==='context'?'Context / filler photo':(photo.title||`Photo ${index+1}`);
-    const img=document.createElement('img');
-    const u=URL.createObjectURL(blob);
-    img.src=u; img.alt=photo.title||`Photo ${index+1}`;
-    img.onload=()=>URL.revokeObjectURL(u);
-    button.appendChild(img);
-    button.addEventListener('click',()=>{
-      const full=URL.createObjectURL(blob);
-      const previous=detailImage.dataset.dynamicObjectUrl;
-      detailImage.src=full; detailImage.dataset.dynamicObjectUrl=full;
-      if(previous) URL.revokeObjectURL(previous);
-      detailSupportingGallery.querySelectorAll('.filmstrip-thumb').forEach(el=>el.classList.remove('active'));
-      button.classList.add('active');
+  let activeIndex=0;
+  let activeObjectUrl='';
+
+  function renderActive(){
+    const active=collection[activeIndex];
+    if(!active)return;
+    const blob=relatedBlob(active);
+    if(activeObjectUrl)URL.revokeObjectURL(activeObjectUrl);
+    activeObjectUrl=URL.createObjectURL(blob);
+    detailImage.src=activeObjectUrl;
+    detailImage.dataset.dynamicObjectUrl=activeObjectUrl;
+
+    if(activePhotoInfo){
+      activePhotoInfo.classList.remove('hidden');
+      const roleLabel=active.entry?'Scanned / Entry photo':
+        active.role==='featured'?'Featured / Sellable':
+        active.role==='context'?'Context / Filler':'Standard';
+      activePhotoRole.textContent=roleLabel;
+      activePhotoTitle.textContent=active.title || (active.entry ? record.title || 'Entry photo' : 'Untitled photo');
+      activePhotoDescription.textContent=active.description || (active.entry ? record.description || '' : '');
+      const meta=[];
+      if(active.captureDate)meta.push(`Date: ${active.captureDate}`);
+      if(active.filename)meta.push(`File: ${active.filename}`);
+      if(active.gps?.lat!=null && active.gps?.lng!=null)meta.push(`GPS: ${active.gps.lat}, ${active.gps.lng}`);
+      activePhotoMeta.textContent=meta.join(' · ');
+      activePhotoTags.textContent=active.tags ? `Tags: ${active.tags}` : '';
+    }
+
+    detailSupportingGallery.innerHTML='';
+    collection.forEach((photo,index)=>{
+      if(index===activeIndex)return; // active photo lives only in large viewer
+      const blob=relatedBlob(photo);
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='filmstrip-thumb'+(photo.role==='context'?' context-photo':'');
+      button.title=photo.entry?'Scanned / entry photo':(photo.title||`Photo ${index+1}`);
+      const img=document.createElement('img');
+      const thumbUrl=URL.createObjectURL(blob);
+      img.src=thumbUrl;
+      img.alt=photo.title||`Photo ${index+1}`;
+      img.onload=()=>URL.revokeObjectURL(thumbUrl);
+      button.appendChild(img);
+      button.addEventListener('click',()=>{
+        activeIndex=index;
+        renderActive();
+      });
+      detailSupportingGallery.appendChild(button);
     });
-    detailSupportingGallery.appendChild(button);
-  });
-}
+  }
 
+  renderActive();
+}
 async function blobsToDataUrls(items = []) {
   const result=[];
   for(const raw of items){

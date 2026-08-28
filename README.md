@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.17
+# Papa Golf Photo Prototype — v0.17.1
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -329,3 +329,10 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Existing v0.15/v0.16 blob-only related photos are normalized for backward compatibility.
 - Adds smart-inheritance guidance for shared place/experience fields.
 - Establishes the data foundation for later EXIF-per-photo extraction, votes, engagement and dynamic ranking.
+
+## v0.17.1 — Active-photo viewer
+- Selecting a filmstrip image now makes that photo the active large image.
+- The active image is removed from the filmstrip; the previous active image returns to the strip.
+- Active-photo title, story, tags, role and available metadata change with the selected image.
+- Public visitor pages use the same swap behaviour.
+- The QR/scanned entry image remains the initial active photo.

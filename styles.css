@@ -646,3 +646,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .related-photo-fields{display:grid;gap:8px;margin:10px 0}
 .related-photo-fields label{display:grid;gap:4px}
 .context-photo{opacity:.72}
+
+/* v0.17.1 active-photo viewer */
+.active-photo-info{margin:12px 0 18px;padding:12px;border:1px solid rgba(127,127,127,.25);border-radius:12px}
+.active-photo-info h3{margin:5px 0 7px}
+.active-photo-info p{margin:0 0 7px}
+.photo-role-badge{font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.75}
+.photo-tags{font-size:.85rem;margin-top:6px}
