@@ -8,12 +8,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=0.17.2" />
+  <link rel="stylesheet" href="styles.css?v=0.17.3" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.17.2</div>
+      <div class="eyebrow">PAPA GOLF · V0.17.3</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -176,6 +176,8 @@
     <article class="visitor-card">
       <div class="visitor-topbar"><div class="visitor-brand">PAPA GOLF</div><button id="closeVisitorBtn" class="icon-button" type="button">×</button></div>
       <div id="visitorHeroWrap"><img id="visitorHero" class="visitor-hero" alt=""></div>
+      <div id="visitorFilmstrip" class="visitor-filmstrip"></div>
+      <div id="visitorActivePhotoInfo" class="visitor-active-photo-info hidden"></div>
       <div class="visitor-content">
         <div id="visitorCategory" class="visitor-category"></div>
         <h1 id="visitorTitle"></h1>
@@ -261,6 +263,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.17.2" defer></script>
+  <script src="app.js?v=0.17.3" defer></script>
 </body>
 </html>

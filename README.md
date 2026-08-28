@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.17.2
+# Papa Golf Photo Prototype — v0.17.3
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -342,3 +342,9 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - The scanned/original image is again guaranteed to be the initial active image.
 - Existing title, description, tags, capture date, GPS and filename are read from the established record fields/metadata.
 - Keeps backward compatibility with both `image` and `imageBlob` photo objects.
+
+## v0.17.3
+- Prevents the entry photo's description/metadata from being shown simultaneously with a selected related photo's information.
+- Entry photo shows the established record information; related photos show only their own title/story/tags/role/available metadata.
+- Visitor View now supports the same active-photo + filmstrip interaction as the record detail viewer.
+- The active visitor photo is removed from the filmstrip and the previous photo returns to it.

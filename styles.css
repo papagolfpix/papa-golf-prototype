@@ -653,3 +653,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .active-photo-info p{margin:0 0 7px}
 .photo-role-badge{font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.75}
 .photo-tags{font-size:.85rem;margin-top:6px}
+
+/* v0.17.3 visitor collection viewer */
+.visitor-filmstrip{display:flex;gap:9px;overflow-x:auto;padding:10px 0 4px}
+.visitor-thumb{flex:0 0 82px;border:2px solid transparent;border-radius:11px;padding:0;background:transparent;overflow:hidden}
+.visitor-thumb img{display:block;width:78px;height:78px;object-fit:cover}
+.visitor-active-photo-info{font-size:.84rem;opacity:.72;margin:7px 0 12px}

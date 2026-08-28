@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.17.2';
+const RUNTIME_VERSION = '0.17.3';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -59,6 +59,8 @@ const visitorDialog = document.querySelector('#visitorDialog');
 const closeVisitorBtn = document.querySelector('#closeVisitorBtn');
 const visitorHeroWrap = document.querySelector('#visitorHeroWrap');
 const visitorHero = document.querySelector('#visitorHero');
+const visitorFilmstrip = document.querySelector('#visitorFilmstrip');
+const visitorActivePhotoInfo = document.querySelector('#visitorActivePhotoInfo');
 const visitorCategory = document.querySelector('#visitorCategory');
 const visitorTitle = document.querySelector('#visitorTitle');
 const visitorPlace = document.querySelector('#visitorPlace');
@@ -841,6 +843,9 @@ function renderPublicationStatus(record) {
 }
 
 function openDetail(record) {
+  if(detailCustomFieldsSection) detailCustomFieldsSection.classList.remove('hidden');
+  if(detailMetadataSection) detailMetadataSection.classList.remove('hidden');
+  if(activePhotoInfo) activePhotoInfo.classList.add('hidden');
   activeRecord = record;
   pendingSupportingPhotos = Array.isArray(record.supportingPhotos) ? [...record.supportingPhotos] : [];
   renderSupportingPreview(pendingSupportingPhotos);
@@ -1097,19 +1102,30 @@ function renderDetailSupportingGallery(record) {
     detailImage.dataset.dynamicObjectUrl=activeObjectUrl;
 
     if(activePhotoInfo){
-      activePhotoInfo.classList.remove('hidden');
-      const roleLabel=active.entry?'Scanned / Entry photo':
-        active.role==='featured'?'Featured / Sellable':
-        active.role==='context'?'Context / Filler':'Standard';
-      activePhotoRole.textContent=roleLabel;
-      activePhotoTitle.textContent=active.title || (active.entry ? record.title || 'Entry photo' : 'Untitled photo');
-      activePhotoDescription.textContent=active.description || (active.entry ? record.description || '' : '');
-      const meta=[];
-      if(active.captureDate)meta.push(`Date: ${active.captureDate}`);
-      if(active.filename)meta.push(`File: ${active.filename}`);
-      if(active.gps?.lat!=null && active.gps?.lng!=null)meta.push(`GPS: ${active.gps.lat}, ${active.gps.lng}`);
-      activePhotoMeta.textContent=meta.join(' · ');
-      activePhotoTags.textContent=active.tags ? `Tags: ${active.tags}` : '';
+      if(active.entry){
+        // The established record information below is the entry photo's information.
+        activePhotoInfo.classList.add('hidden');
+        if(detailCustomFieldsSection) detailCustomFieldsSection.classList.remove('hidden');
+        if(detailMetadataSection) detailMetadataSection.classList.remove('hidden');
+      }else{
+        // Related photo: show only this photo's own information, not the entry photo's data.
+        activePhotoInfo.classList.remove('hidden');
+        if(detailCustomFieldsSection) detailCustomFieldsSection.classList.add('hidden');
+        if(detailMetadataSection) detailMetadataSection.classList.add('hidden');
+
+        const roleLabel=
+          active.role==='featured'?'Featured / Sellable':
+          active.role==='context'?'Context / Filler':'Standard';
+        activePhotoRole.textContent=roleLabel;
+        activePhotoTitle.textContent=active.title || 'Untitled photo';
+        activePhotoDescription.textContent=active.description || '';
+        const meta=[];
+        if(active.captureDate)meta.push(`Date: ${active.captureDate}`);
+        if(active.filename)meta.push(`File: ${active.filename}`);
+        if(active.gps?.lat!=null && active.gps?.lng!=null)meta.push(`GPS: ${active.gps.lat}, ${active.gps.lng}`);
+        activePhotoMeta.textContent=meta.join(' · ');
+        activePhotoTags.textContent=active.tags ? `Tags: ${active.tags}` : '';
+      }
     }
 
     detailSupportingGallery.innerHTML='';
@@ -1304,25 +1320,125 @@ function visitorText(v){return Array.isArray(v)?v.join(', '):String(v??'').trim(
 function openVisitorPreview(record){
   if(visitorImageUrl)URL.revokeObjectURL(visitorImageUrl);
   visitorImageUrl=null;
-  if(record.image instanceof Blob&&record.image.size){
-    visitorImageUrl=URL.createObjectURL(record.image);visitorHero.src=visitorImageUrl;visitorHeroWrap.classList.remove('hidden');
-  }else visitorHeroWrap.classList.add('hidden');
-  visitorCategory.textContent=visitorText(record.fields?.category);visitorCategory.classList.toggle('hidden',!visitorCategory.textContent);
-  visitorTitle.textContent=visitorText(record.fields?.title)||visitorText(record.fields?.locationName)||'Papa Golf location';
-  visitorPlace.textContent=[visitorText(record.fields?.locationName),visitorText(record.fields?.areaName)].filter(Boolean).join(' · ');
-  visitorDescription.textContent=visitorText(record.fields?.description);visitorDescription.classList.toggle('hidden',!visitorDescription.textContent);
+
+  const fields=normalizeRecordFieldValues(record.fields||{});
+  const collection=[];
+  const entryBlob=record?.image instanceof Blob ? record.image :
+                  record?.imageBlob instanceof Blob ? record.imageBlob : null;
+
+  if(entryBlob){
+    collection.push({
+      imageBlob:entryBlob,
+      entry:true,
+      role:'featured',
+      title:fields.title || record.metadata?.filename || 'Papa Golf photo',
+      description:fields.description || fields.notes || '',
+      tags:Array.isArray(fields.tags)?fields.tags.join(', '):(fields.tags||''),
+      captureDate:record.metadata?.dateTime || record.metadata?.dateTaken || '',
+      filename:record.metadata?.filename || ''
+    });
+  }
+
+  const extras=Array.isArray(record?.supportingPhotos)?record.supportingPhotos:[];
+  extras.forEach((raw,index)=>{
+    const p=normalizeRelatedPhoto(raw,index);
+    if(relatedBlob(p) instanceof Blob)collection.push({...p,entry:false});
+  });
+
+  let activeIndex=0;
+  let activeVisitorUrl='';
+
+  function renderVisitorActive(){
+    const active=collection[activeIndex];
+    if(!active)return;
+    const blob=relatedBlob(active);
+
+    if(activeVisitorUrl)URL.revokeObjectURL(activeVisitorUrl);
+    activeVisitorUrl=URL.createObjectURL(blob);
+    visitorImageUrl=activeVisitorUrl;
+    visitorHero.src=activeVisitorUrl;
+    visitorHeroWrap.classList.remove('hidden');
+
+    // Entry photo uses the established visitor information.
+    if(active.entry){
+      visitorCategory.textContent=visitorText(fields.category);
+      visitorCategory.classList.toggle('hidden',!visitorCategory.textContent);
+      visitorTitle.textContent=visitorText(fields.title)||visitorText(fields.locationName)||'Papa Golf location';
+      visitorPlace.textContent=[visitorText(fields.locationName),visitorText(fields.areaName)].filter(Boolean).join(' · ');
+      visitorDescription.textContent=visitorText(fields.description);
+      visitorDescription.classList.toggle('hidden',!visitorDescription.textContent);
+      visitorActivePhotoInfo.classList.add('hidden');
+      visitorFields.classList.remove('hidden');
+    }else{
+      visitorCategory.textContent=
+        active.role==='featured'?'Featured / Sellable':
+        active.role==='context'?'Context / Filler':'Standard';
+      visitorCategory.classList.remove('hidden');
+      visitorTitle.textContent=active.title || 'Untitled photo';
+      visitorPlace.textContent=[visitorText(fields.locationName),visitorText(fields.areaName)].filter(Boolean).join(' · ');
+      visitorDescription.textContent=active.description || '';
+      visitorDescription.classList.toggle('hidden',!visitorDescription.textContent);
+      visitorFields.classList.add('hidden');
+
+      const bits=[];
+      if(active.captureDate)bits.push(`Date: ${active.captureDate}`);
+      if(active.filename)bits.push(`File: ${active.filename}`);
+      if(active.tags)bits.push(`Tags: ${active.tags}`);
+      visitorActivePhotoInfo.textContent=bits.join(' · ');
+      visitorActivePhotoInfo.classList.toggle('hidden',!bits.length);
+    }
+
+    visitorFilmstrip.innerHTML='';
+    collection.forEach((photo,index)=>{
+      if(index===activeIndex)return;
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='visitor-thumb'+(photo.role==='context'?' context-photo':'');
+      const img=document.createElement('img');
+      const u=URL.createObjectURL(relatedBlob(photo));
+      img.src=u;
+      img.alt=photo.title||`Photo ${index+1}`;
+      img.onload=()=>URL.revokeObjectURL(u);
+      b.appendChild(img);
+      b.addEventListener('click',()=>{
+        activeIndex=index;
+        renderVisitorActive();
+      });
+      visitorFilmstrip.appendChild(b);
+    });
+  }
+
+  if(!collection.length){
+    visitorHeroWrap.classList.add('hidden');
+    visitorFilmstrip.innerHTML='';
+  }else{
+    renderVisitorActive();
+  }
+
+  // Shared place/experience fields stay available for the entry photo.
   visitorFields.innerHTML='';
   customFields.forEach(field=>{
     if(['title','description','category','areaName','locationName'].includes(field.id))return;
-    const value=visitorText(normalizeSavedValue(field,record.fields?.[field.id]));if(!value)return;
-    const row=document.createElement('div');row.className='visitor-info-row';
-    const label=document.createElement('div');label.className='visitor-info-label';label.textContent=field.label;
-    const text=document.createElement('div');text.className='visitor-info-value';text.textContent=value;
-    row.append(label,text);visitorFields.append(row);
+    const value=visitorText(normalizeSavedValue(field,record.fields?.[field.id]));
+    if(!value)return;
+    const row=document.createElement('div');
+    row.className='visitor-info-row';
+    const label=document.createElement('div');
+    label.className='visitor-info-label';
+    label.textContent=field.label;
+    const text=document.createElement('div');
+    text.className='visitor-info-value';
+    text.textContent=value;
+    row.append(label,text);
+    visitorFields.append(row);
   });
-  const lat=Number(record.metadata?.latitude),lng=Number(record.metadata?.longitude),hasGps=Number.isFinite(lat)&&Number.isFinite(lng);
-  visitorMapSection.classList.toggle('hidden',!hasGps);visitorLocationStatus.textContent='';
+
+  const lat=Number(record.metadata?.latitude),lng=Number(record.metadata?.longitude);
+  const hasGps=Number.isFinite(lat)&&Number.isFinite(lng);
+  visitorMapSection.classList.toggle('hidden',!hasGps);
+  visitorLocationStatus.textContent='';
   visitorDialog.showModal();
+
   if(visitorMap){visitorMap.remove();visitorMap=null;}
   if(hasGps&&window.L){
     visitorGoogleMaps.href=`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
@@ -1332,7 +1448,8 @@ function openVisitorPreview(record){
     setTimeout(()=>visitorMap?.invalidateSize(false),80);
     visitorLocateBtn.onclick=()=>navigator.geolocation.getCurrentPosition(pos=>{
       const ulat=pos.coords.latitude,ulng=pos.coords.longitude,acc=Math.max(Number(pos.coords.accuracy)||0,5);
-      if(visitorUserMarker)visitorMap.removeLayer(visitorUserMarker);if(visitorAccuracyCircle)visitorMap.removeLayer(visitorAccuracyCircle);
+      if(visitorUserMarker)visitorMap.removeLayer(visitorUserMarker);
+      if(visitorAccuracyCircle)visitorMap.removeLayer(visitorAccuracyCircle);
       visitorAccuracyCircle=L.circle([ulat,ulng],{radius:acc,className:'pg-user-accuracy',interactive:false}).addTo(visitorMap);
       const icon=L.divIcon({className:'pg-user-location-icon',html:'<div class="pg-user-dot"><span></span></div><div class="pg-user-label">You are here</div>',iconSize:[120,44],iconAnchor:[14,14]});
       visitorUserMarker=L.marker([ulat,ulng],{icon,zIndexOffset:1000}).addTo(visitorMap);
