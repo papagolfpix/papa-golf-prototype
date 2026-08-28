@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.16.1';
+const RUNTIME_VERSION = '0.17';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -966,26 +966,93 @@ async function makePapaGolfUpdateZip(filename, html) {
 // ---------- Supporting photo gallery ----------
 let pendingSupportingPhotos = [];
 
-function renderSupportingPreview(blobs = []) {
+function normalizeRelatedPhoto(item, index = 0) {
+  if (item instanceof Blob) {
+    return {
+      id: `photo-${Date.now()}-${index}-${Math.random().toString(36).slice(2,8)}`,
+      imageBlob: item,
+      filename: item.name || `related-photo-${index+1}`,
+      mimeType: item.type || 'image/jpeg',
+      captureDate: '',
+      gps: null,
+      title: '',
+      description: '',
+      tags: '',
+      role: 'standard',
+      inherited: true
+    };
+  }
+  return item;
+}
+
+function relatedBlob(item) {
+  return item instanceof Blob ? item : item?.imageBlob;
+}
+
+function renderSupportingPreview(items = []) {
   if (!supportingPhotosPreview) return;
   supportingPhotosPreview.innerHTML = '';
-  blobs.forEach((blob, index) => {
-    const wrap = document.createElement('div');
-    wrap.className = 'supporting-photo-item';
+  items.forEach((raw, index) => {
+    const photo = normalizeRelatedPhoto(raw, index);
+    if (raw instanceof Blob) items[index] = photo;
+    const blob = relatedBlob(photo);
+    if (!(blob instanceof Blob)) return;
+
+    const card = document.createElement('div');
+    card.className = 'related-photo-card';
+
     const img = document.createElement('img');
-    img.alt = `Supporting photo ${index + 1}`;
-    img.src = URL.createObjectURL(blob);
-    img.onload = () => URL.revokeObjectURL(img.src);
+    const url = URL.createObjectURL(blob);
+    img.src = url;
+    img.alt = photo.filename || `Related photo ${index+1}`;
+    img.onload = () => URL.revokeObjectURL(url);
+
+    const fields = document.createElement('div');
+    fields.className = 'related-photo-fields';
+    fields.innerHTML = `
+      <label>Photo role
+        <select data-related-field="role">
+          <option value="featured">Featured / Sellable</option>
+          <option value="standard">Standard</option>
+          <option value="context">Context / Filler</option>
+        </select>
+      </label>
+      <label>Title / caption
+        <input data-related-field="title" type="text" placeholder="Optional photo-specific title">
+      </label>
+      <label>Photo story / notes
+        <textarea data-related-field="description" rows="2" placeholder="Optional story specific to this photo"></textarea>
+      </label>
+      <label>Photo tags
+        <input data-related-field="tags" type="text" placeholder="e.g. pigs, beach, jetski">
+      </label>
+      <div class="small muted">Original file: ${escapeHtml(photo.filename || 'photo')} · This photo remains independently editable.</div>
+    `;
+
+    const role = fields.querySelector('[data-related-field="role"]');
+    const title = fields.querySelector('[data-related-field="title"]');
+    const desc = fields.querySelector('[data-related-field="description"]');
+    const tags = fields.querySelector('[data-related-field="tags"]');
+    role.value = photo.role || 'standard';
+    title.value = photo.title || '';
+    desc.value = photo.description || '';
+    tags.value = photo.tags || '';
+
+    [role,title,desc,tags].forEach(el => el.addEventListener('input', () => {
+      photo[el.dataset.relatedField] = el.value;
+    }));
+
     const remove = document.createElement('button');
-    remove.type = 'button';
-    remove.className = 'supporting-photo-remove';
-    remove.textContent = 'Remove';
-    remove.addEventListener('click', () => {
-      pendingSupportingPhotos.splice(index, 1);
+    remove.type='button';
+    remove.className='secondary';
+    remove.textContent='Remove from collection';
+    remove.addEventListener('click',()=>{
+      pendingSupportingPhotos.splice(index,1);
       renderSupportingPreview(pendingSupportingPhotos);
     });
-    wrap.append(img, remove);
-    supportingPhotosPreview.appendChild(wrap);
+
+    card.append(img,fields,remove);
+    supportingPhotosPreview.appendChild(card);
   });
 }
 
@@ -994,65 +1061,55 @@ function renderDetailSupportingGallery(record) {
   detailSupportingGallery.innerHTML = '';
 
   const collection = [];
-  if (record?.imageBlob instanceof Blob) {
-    collection.push({ blob: record.imageBlob, entry: true, label: 'Entry photo' });
-  }
-
+  if (record?.imageBlob instanceof Blob) collection.push({imageBlob:record.imageBlob, role:'featured', entry:true, title:record.title || 'Entry photo'});
   const extras = Array.isArray(record?.supportingPhotos) ? record.supportingPhotos : [];
-  extras.forEach((blob, index) => {
-    if (blob instanceof Blob) collection.push({ blob, entry: false, label: `Photo ${index + 2}` });
+  extras.forEach((raw,index)=>{
+    const p=normalizeRelatedPhoto(raw,index);
+    if (relatedBlob(p) instanceof Blob) collection.push({...p, entry:false});
   });
 
-  collection.forEach((photo, index) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'filmstrip-thumb' + (index === 0 ? ' active' : '');
-    button.dataset.index = String(index);
-    button.title = photo.entry ? 'Scanned / entry photo' : photo.label;
-
-    const img = document.createElement('img');
-    img.alt = photo.label;
-    const thumbUrl = URL.createObjectURL(photo.blob);
-    img.src = thumbUrl;
-    img.onload = () => URL.revokeObjectURL(thumbUrl);
-
+  collection.forEach((photo,index)=>{
+    const blob=relatedBlob(photo);
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='filmstrip-thumb'+(index===0?' active':'')+(photo.role==='context'?' context-photo':'');
+    button.title=photo.role==='context'?'Context / filler photo':(photo.title||`Photo ${index+1}`);
+    const img=document.createElement('img');
+    const u=URL.createObjectURL(blob);
+    img.src=u; img.alt=photo.title||`Photo ${index+1}`;
+    img.onload=()=>URL.revokeObjectURL(u);
     button.appendChild(img);
-    button.addEventListener('click', () => {
-      const fullUrl = URL.createObjectURL(photo.blob);
-      const previous = detailImage.dataset.dynamicObjectUrl;
-      detailImage.src = fullUrl;
-      detailImage.dataset.dynamicObjectUrl = fullUrl;
-      if (previous) URL.revokeObjectURL(previous);
-
-      detailSupportingGallery.querySelectorAll('.filmstrip-thumb').forEach(el => el.classList.remove('active'));
+    button.addEventListener('click',()=>{
+      const full=URL.createObjectURL(blob);
+      const previous=detailImage.dataset.dynamicObjectUrl;
+      detailImage.src=full; detailImage.dataset.dynamicObjectUrl=full;
+      if(previous) URL.revokeObjectURL(previous);
+      detailSupportingGallery.querySelectorAll('.filmstrip-thumb').forEach(el=>el.classList.remove('active'));
       button.classList.add('active');
     });
-
     detailSupportingGallery.appendChild(button);
   });
 }
-async function blobsToDataUrls(blobs = []) {
-  const result = [];
-  for (const blob of blobs) {
-    if (!(blob instanceof Blob)) continue;
-    result.push(await blobToDataUrl(blob));
+
+async function blobsToDataUrls(items = []) {
+  const result=[];
+  for(const raw of items){
+    const blob=relatedBlob(raw);
+    if(blob instanceof Blob) result.push(await blobToDataUrl(blob));
   }
   return result;
 }
 
 if (supportingPhotosInput) {
   supportingPhotosInput.addEventListener('change', async () => {
-    const files = Array.from(supportingPhotosInput.files || []);
-    for (const file of files) {
-      if (file.type.startsWith('image/')) {
-        pendingSupportingPhotos.push(file);
-      }
-    }
+    const files=Array.from(supportingPhotosInput.files||[]);
+    files.forEach((file,index)=>{
+      if(file.type.startsWith('image/')) pendingSupportingPhotos.push(normalizeRelatedPhoto(file,pendingSupportingPhotos.length+index));
+    });
     renderSupportingPreview(pendingSupportingPhotos);
-    supportingPhotosInput.value = '';
+    supportingPhotosInput.value='';
   });
 }
-
 
 // ---------- Public page + QR publishing ----------
 function slugifyPublic(value) {

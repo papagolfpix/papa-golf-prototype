@@ -637,3 +637,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .filmstrip-thumb{flex:0 0 82px;border:2px solid transparent;border-radius:11px;padding:0;background:transparent;overflow:hidden;scroll-snap-align:start}
 .filmstrip-thumb.active{border-color:currentColor}
 .filmstrip-thumb img{display:block;width:78px;height:78px;object-fit:cover}
+
+/* v0.17 first-class related photo staging */
+.inheritance-note{padding:12px;border:1px solid rgba(127,127,127,.28);border-radius:12px;margin:12px 0}
+.related-photo-editor{display:grid;gap:14px;margin-top:10px}
+.related-photo-card{border:1px solid rgba(127,127,127,.28);border-radius:14px;padding:10px}
+.related-photo-card>img{width:100%;max-height:260px;object-fit:cover;border-radius:10px}
+.related-photo-fields{display:grid;gap:8px;margin:10px 0}
+.related-photo-fields label{display:grid;gap:4px}
+.context-photo{opacity:.72}

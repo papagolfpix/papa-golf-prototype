@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.16.1
+# Papa Golf Photo Prototype — v0.17
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -320,3 +320,12 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 
 ## v0.16.1
 - Restores the complete application stylesheet while retaining the v0.16 filmstrip feature.
+
+## v0.17 — First-class related photos
+- Related photos are stored as structured photo objects rather than bare gallery blobs.
+- Each related photo has its own ID, original filename/blob, title/caption, story/notes, tags and role.
+- Photo roles: Featured / Sellable, Standard, Context / Filler.
+- Context / Filler images remain available for storytelling but are marked for suppression from future lead/print ranking.
+- Existing v0.15/v0.16 blob-only related photos are normalized for backward compatibility.
+- Adds smart-inheritance guidance for shared place/experience fields.
+- Establishes the data foundation for later EXIF-per-photo extraction, votes, engagement and dynamic ranking.

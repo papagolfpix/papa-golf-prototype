@@ -8,12 +8,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=0.16.1" />
+  <link rel="stylesheet" href="styles.css?v=0.17" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.16.1</div>
+      <div class="eyebrow">PAPA GOLF · V0.17</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -220,11 +220,15 @@
       </div>
       <div id="editFields" class="fields edit-fields"></div>
       
+      <div class="inheritance-note">
+        <strong>Smart inheritance</strong>
+        <div class="small muted">New related photos inherit shared place/experience fields from this record (such as Category, Area / Place, Best Time to Visit, Transport / Access, Cost and general warnings). You can edit inherited values later. Photo-specific title, story and tags remain independent.</div>
+      </div>
       <div class="field">
-        <label>Photo collection</label>
-        <p class="small muted">Add photos to this story/location. Every image is part of the collection; the scanned/entry photo opens first.</p>
+        <label>Related photos</label>
+        <p class="small muted">Add related images. Each keeps its own original file metadata and can have its own story, tags and role.</p>
         <input id="supportingPhotosInput" type="file" accept="image/*" multiple />
-        <div id="supportingPhotosPreview" class="supporting-photo-grid"></div>
+        <div id="supportingPhotosPreview" class="related-photo-editor"></div>
       </div>
 
       <p class="small muted edit-note">Original photo metadata such as GPS, capture time, filename and device is kept read-only.</p>
@@ -250,6 +254,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.16.1" defer></script>
+  <script src="app.js?v=0.17" defer></script>
 </body>
 </html>
