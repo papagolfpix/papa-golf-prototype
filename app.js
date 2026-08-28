@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.14.2';
+const RUNTIME_VERSION = '0.15';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -842,6 +842,8 @@ function renderPublicationStatus(record) {
 
 function openDetail(record) {
   activeRecord = record;
+  pendingSupportingPhotos = Array.isArray(record.supportingPhotos) ? [...record.supportingPhotos] : [];
+  renderSupportingPreview(pendingSupportingPhotos);
   renderPublicationStatus(record);
   if (detailImageUrl) URL.revokeObjectURL(detailImageUrl);
   detailImageUrl = null;
@@ -849,6 +851,7 @@ function openDetail(record) {
   if (record.image instanceof Blob && record.image.size > 0) {
     detailImageUrl = URL.createObjectURL(record.image);
     detailImage.src = detailImageUrl;
+  renderDetailSupportingGallery(record);
   } else {
     detailImage.alt = 'Photo data needs restore from backup';
   }
@@ -958,6 +961,70 @@ async function makePapaGolfUpdateZip(filename, html) {
     compressionOptions: { level: 6 }
   });
 }
+
+
+// ---------- Supporting photo gallery ----------
+let pendingSupportingPhotos = [];
+
+function renderSupportingPreview(blobs = []) {
+  if (!supportingPhotosPreview) return;
+  supportingPhotosPreview.innerHTML = '';
+  blobs.forEach((blob, index) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'supporting-photo-item';
+    const img = document.createElement('img');
+    img.alt = `Supporting photo ${index + 1}`;
+    img.src = URL.createObjectURL(blob);
+    img.onload = () => URL.revokeObjectURL(img.src);
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'supporting-photo-remove';
+    remove.textContent = 'Remove';
+    remove.addEventListener('click', () => {
+      pendingSupportingPhotos.splice(index, 1);
+      renderSupportingPreview(pendingSupportingPhotos);
+    });
+    wrap.append(img, remove);
+    supportingPhotosPreview.appendChild(wrap);
+  });
+}
+
+function renderDetailSupportingGallery(record) {
+  if (!detailSupportingGallery) return;
+  detailSupportingGallery.innerHTML = '';
+  const photos = Array.isArray(record?.supportingPhotos) ? record.supportingPhotos : [];
+  photos.forEach((blob, index) => {
+    if (!(blob instanceof Blob)) return;
+    const img = document.createElement('img');
+    img.alt = `Supporting photo ${index + 1}`;
+    img.src = URL.createObjectURL(blob);
+    img.onload = () => URL.revokeObjectURL(img.src);
+    detailSupportingGallery.appendChild(img);
+  });
+}
+
+async function blobsToDataUrls(blobs = []) {
+  const result = [];
+  for (const blob of blobs) {
+    if (!(blob instanceof Blob)) continue;
+    result.push(await blobToDataUrl(blob));
+  }
+  return result;
+}
+
+if (supportingPhotosInput) {
+  supportingPhotosInput.addEventListener('change', async () => {
+    const files = Array.from(supportingPhotosInput.files || []);
+    for (const file of files) {
+      if (file.type.startsWith('image/')) {
+        pendingSupportingPhotos.push(file);
+      }
+    }
+    renderSupportingPreview(pendingSupportingPhotos);
+    supportingPhotosInput.value = '';
+  });
+}
+
 
 // ---------- Public page + QR publishing ----------
 function slugifyPublic(value) {
@@ -1158,7 +1225,8 @@ editForm.addEventListener('submit', async event => {
       activeRecord.image,
       activeRecord.metadata?.type || 'image/jpeg'
     );
-    const updated = { ...activeRecord, image: safeImage, fields: values, updatedAt: new Date().toISOString() };
+    const updated = { ...activeRecord, image: safeImage, fields: values, supportingPhotos: pendingSupportingPhotos,
+      updatedAt: new Date().toISOString() };
     await putRecord(updated);
     activeRecord = updated;
     renderPublicationStatus(updated);
