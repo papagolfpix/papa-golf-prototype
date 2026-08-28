@@ -363,3 +363,9 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 
 ## v0.18.1
 - Places the Welcome control in the visible main Photos / Map / Areas navigation row.
+
+## v0.18.2
+- Fixes Welcome navigation on the existing Photos/Map/Areas page structure.
+- Opening Welcome now hides the photo interface and shows the Welcome editor at the top.
+- Back restores Photos and the search tools.
+- Welcome now uses the same visible tab styling as Photos, Map and Areas.
