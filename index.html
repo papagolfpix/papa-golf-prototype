@@ -8,12 +8,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=0.15" />
+  <link rel="stylesheet" href="styles.css?v=0.16" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.15</div>
+      <div class="eyebrow">PAPA GOLF · V0.16</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -155,7 +155,7 @@
         </div>
       </div>
       <img id="detailImage" class="detail-image" alt="Saved photo" />
-      <div id="detailSupportingGallery" class="supporting-photo-grid"></div>
+      <div id="detailSupportingGallery" class="photo-filmstrip"></div>
       <div id="detailCustomFields" class="detail-section"></div>
       <div class="detail-section">
         <div class="detail-section-title">Photo metadata</div>
@@ -221,8 +221,8 @@
       <div id="editFields" class="fields edit-fields"></div>
       
       <div class="field">
-        <label>Supporting photos</label>
-        <p class="small muted">Add extra photos for this story/location. The original photo remains the main hero image.</p>
+        <label>Photo collection</label>
+        <p class="small muted">Add photos to this story/location. Every image is part of the collection; the scanned/entry photo opens first.</p>
         <input id="supportingPhotosInput" type="file" accept="image/*" multiple />
         <div id="supportingPhotosPreview" class="supporting-photo-grid"></div>
       </div>
@@ -250,6 +250,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.15" defer></script>
+  <script src="app.js?v=0.16" defer></script>
 </body>
 </html>

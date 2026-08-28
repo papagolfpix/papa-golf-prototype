@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.15
+# Papa Golf Photo Prototype — v0.16
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -308,3 +308,12 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Supporting photos are embedded into the standalone public visitor page.
 - Existing public slug, URL and QR remain unchanged when the page is updated.
 - Tags continue to be plain comma-separated searchable labels; hashtags are not required.
+
+## v0.16 — Equal-photo collection + filmstrip
+- Reframes hero/supporting photos as a photo collection.
+- The scanned/original image is the entry photo and opens first.
+- A horizontal filmstrip appears beneath the large image.
+- Tapping a thumbnail promotes that image into the large viewer without leaving the record.
+- Standalone public pages use the same entry-photo + filmstrip interaction.
+- Existing records, URLs, QR codes and stored supporting photos remain compatible.
+- This establishes the UI foundation for future dynamic ranking by tags, filters, votes and engagement.

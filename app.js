@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.15';
+const RUNTIME_VERSION = '0.16';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -990,19 +990,47 @@ function renderSupportingPreview(blobs = []) {
 }
 
 function renderDetailSupportingGallery(record) {
-  if (!detailSupportingGallery) return;
+  if (!detailSupportingGallery || !detailImage) return;
   detailSupportingGallery.innerHTML = '';
-  const photos = Array.isArray(record?.supportingPhotos) ? record.supportingPhotos : [];
-  photos.forEach((blob, index) => {
-    if (!(blob instanceof Blob)) return;
+
+  const collection = [];
+  if (record?.imageBlob instanceof Blob) {
+    collection.push({ blob: record.imageBlob, entry: true, label: 'Entry photo' });
+  }
+
+  const extras = Array.isArray(record?.supportingPhotos) ? record.supportingPhotos : [];
+  extras.forEach((blob, index) => {
+    if (blob instanceof Blob) collection.push({ blob, entry: false, label: `Photo ${index + 2}` });
+  });
+
+  collection.forEach((photo, index) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'filmstrip-thumb' + (index === 0 ? ' active' : '');
+    button.dataset.index = String(index);
+    button.title = photo.entry ? 'Scanned / entry photo' : photo.label;
+
     const img = document.createElement('img');
-    img.alt = `Supporting photo ${index + 1}`;
-    img.src = URL.createObjectURL(blob);
-    img.onload = () => URL.revokeObjectURL(img.src);
-    detailSupportingGallery.appendChild(img);
+    img.alt = photo.label;
+    const thumbUrl = URL.createObjectURL(photo.blob);
+    img.src = thumbUrl;
+    img.onload = () => URL.revokeObjectURL(thumbUrl);
+
+    button.appendChild(img);
+    button.addEventListener('click', () => {
+      const fullUrl = URL.createObjectURL(photo.blob);
+      const previous = detailImage.dataset.dynamicObjectUrl;
+      detailImage.src = fullUrl;
+      detailImage.dataset.dynamicObjectUrl = fullUrl;
+      if (previous) URL.revokeObjectURL(previous);
+
+      detailSupportingGallery.querySelectorAll('.filmstrip-thumb').forEach(el => el.classList.remove('active'));
+      button.classList.add('active');
+    });
+
+    detailSupportingGallery.appendChild(button);
   });
 }
-
 async function blobsToDataUrls(blobs = []) {
   const result = [];
   for (const blob of blobs) {
@@ -1070,7 +1098,15 @@ async function buildStandalonePublicPage(record) {
   const safeImage=imageData.replace(/"/g,'&quot;');
   const mapHtml=hasGps?`<section class="map-section"><div class="section-title">Location</div><div id="map" class="map"></div><div class="actions"><a class="primary" href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" rel="noopener">Open in Google Maps</a><button id="locateBtn" type="button">Show where I am</button></div><div id="locationStatus" class="status"></div></section>`:'';
   const mapScripts=hasGps?`<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script><script>(function(){const target=[${lat},${lng}],map=L.map('map',{scrollWheelZoom:false}).setView(target,15);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);L.marker(target).addTo(map).bindPopup(${JSON.stringify(title)});const b=document.getElementById('locateBtn'),st=document.getElementById('locationStatus');if(b)b.addEventListener('click',()=>{if(!navigator.geolocation){st.textContent='Location is not supported.';return;}st.textContent='Finding your location…';navigator.geolocation.getCurrentPosition(p=>{const here=[p.coords.latitude,p.coords.longitude],acc=Math.max(Number(p.coords.accuracy)||0,5);L.circle(here,{radius:acc}).addTo(map);L.marker(here).addTo(map).bindPopup('You are here').openPopup();map.fitBounds([target,here],{padding:[34,34],maxZoom:16});st.textContent='Your location shown · accuracy about '+Math.round(acc)+' m';},()=>st.textContent='Could not get your location.',{enableHighAccuracy:true,timeout:12000,maximumAge:15000});});})();<\/script>`:'';
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0b0b"><title>${safeTitle} · Papa Golf</title>${hasGps?'<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">':''}<style>*{box-sizing:border-box}html,body{margin:0;background:#0b0b0b;color:#f7f4ec;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.page{width:min(100%,680px);margin:auto}.brand{padding:16px;font-size:13px;font-weight:900;letter-spacing:.18em;color:#e0bc66;border-bottom:1px solid #292929}.hero{display:block;width:100%;max-height:58vh;object-fit:cover;background:#151515}.content{padding:20px 16px 30px}.category{display:inline-block;margin-bottom:9px;padding:5px 9px;border:1px solid rgba(224,188,102,.45);border-radius:999px;color:#e0bc66;font-size:11px;font-weight:800;text-transform:uppercase}h1{margin:0;font-size:clamp(30px,9vw,44px);line-height:1.02}.place{margin-top:9px;color:#c7c1b4;font-size:16px;font-weight:700}.description{margin-top:20px;font-size:17px;line-height:1.58}.fields{margin-top:22px;border-top:1px solid #292929}.info-row{display:grid;grid-template-columns:minmax(112px,.8fr) minmax(0,1.4fr);gap:14px;padding:14px 0;border-bottom:1px solid #292929}.info-label{color:#8e897e;font-size:12px;font-weight:800;text-transform:uppercase}.info-value{font-size:15px;line-height:1.4}.map-section{margin-top:26px}.section-title{margin-bottom:10px;font-size:19px;font-weight:850}.map{height:320px;border:1px solid #292929;border-radius:14px;overflow:hidden}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}.actions a,.actions button{min-height:48px;padding:11px 13px;border-radius:12px;font:700 15px/1.2 inherit;text-align:center;text-decoration:none}.actions .primary{display:grid;place-items:center;background:#e0bc66;color:#121212;border:1px solid #e0bc66}.actions button{background:#151515;color:#f7f4ec;border:1px solid #383838}.status{min-height:20px;margin-top:8px;color:#9a958b;font-size:12px}.footer{margin-top:30px;padding-top:18px;border-top:1px solid #292929;color:#706b62;font-size:11px;text-align:center;text-transform:uppercase;letter-spacing:.08em}@media(max-width:480px){.info-row,.actions{grid-template-columns:1fr}}</style></head><body><main class="page"><div class="brand">PAPA GOLF</div>${imageData?`<img class="hero" src="${safeImage}" alt="${safeTitle}">`:''}<div class="content">${category?`<div class="category">${safeCategory}</div>`:''}<h1>${safeTitle}</h1>${place?`<div class="place">${safePlace}</div>`:''}${description?`<div class="description">${safeDescription}</div>`:''}${rows?`<div class="fields">${rows}</div>`:''}${mapHtml}<div class="footer">Papa Golf · Explore the story behind the place</div></div></main>${mapScripts}</body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0b0b"><title>${safeTitle} · Papa Golf</title>${hasGps?'<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">':''}<style>*{box-sizing:border-box}html,body{margin:0;background:#0b0b0b;color:#f7f4ec;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.page{width:min(100%,680px);margin:auto}.brand{padding:16px;font-size:13px;font-weight:900;letter-spacing:.18em;color:#e0bc66;border-bottom:1px solid #292929}.hero{display:block;width:100%;max-height:58vh;object-fit:cover;background:#151515}.content{padding:20px 16px 30px}.category{display:inline-block;margin-bottom:9px;padding:5px 9px;border:1px solid rgba(224,188,102,.45);border-radius:999px;color:#e0bc66;font-size:11px;font-weight:800;text-transform:uppercase}h1{margin:0;font-size:clamp(30px,9vw,44px);line-height:1.02}.place{margin-top:9px;color:#c7c1b4;font-size:16px;font-weight:700}.description{margin-top:20px;font-size:17px;line-height:1.58}.fields{margin-top:22px;border-top:1px solid #292929}.info-row{display:grid;grid-template-columns:minmax(112px,.8fr) minmax(0,1.4fr);gap:14px;padding:14px 0;border-bottom:1px solid #292929}.info-label{color:#8e897e;font-size:12px;font-weight:800;text-transform:uppercase}.info-value{font-size:15px;line-height:1.4}.map-section{margin-top:26px}.section-title{margin-bottom:10px;font-size:19px;font-weight:850}.map{height:320px;border:1px solid #292929;border-radius:14px;overflow:hidden}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}.actions a,.actions button{min-height:48px;padding:11px 13px;border-radius:12px;font:700 15px/1.2 inherit;text-align:center;text-decoration:none}.actions .primary{display:grid;place-items:center;background:#e0bc66;color:#121212;border:1px solid #e0bc66}.actions button{background:#151515;color:#f7f4ec;border:1px solid #383838}.status{min-height:20px;margin-top:8px;color:#9a958b;font-size:12px}.footer{margin-top:30px;padding-top:18px;border-top:1px solid #292929;color:#706b62;font-size:11px;text-align:center;text-transform:uppercase;letter-spacing:.08em}@media(max-width:480px){.info-row,.actions{grid-template-columns:1fr}}
+      .photo-collection{margin-top:22px}
+      .photo-collection h2{font-size:1.1rem;margin:0 0 10px}
+      .public-filmstrip{display:flex;gap:9px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity}
+      .public-thumb{flex:0 0 82px;border:2px solid transparent;border-radius:11px;padding:0;background:transparent;overflow:hidden;scroll-snap-align:start}
+      .public-thumb.active{border-color:currentColor}
+      .public-thumb img{display:block;width:78px;height:78px;object-fit:cover}
+      .filmstrip-hint{font-size:.82rem;opacity:.7;margin-top:5px}
+</style></head><body><main class="page"><div class="brand">PAPA GOLF</div>${imageData?`<img class="hero" src="${safeImage}" alt="${safeTitle}">`:''}<div class="content">${category?`<div class="category">${safeCategory}</div>`:''}<h1>${safeTitle}</h1>${place?`<div class="place">${safePlace}</div>`:''}${description?`<div class="description">${safeDescription}</div>`:''}${rows?`<div class="fields">${rows}</div>`:''}${mapHtml}<div class="footer">Papa Golf · Explore the story behind the place</div></div></main>${mapScripts}</body></html>`;
 }
 async function downloadPublishedPage(){
   if(!publishRecord)return;

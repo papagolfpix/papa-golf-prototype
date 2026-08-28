@@ -4,3 +4,9 @@
 .supporting-photo-item{position:relative}
 .supporting-photo-grid img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px;display:block}
 .supporting-photo-remove{margin-top:6px;width:100%}
+
+/* v0.16 equal-photo collection + filmstrip */
+.photo-filmstrip{display:flex;gap:9px;overflow-x:auto;padding:10px 2px 4px;scroll-snap-type:x proximity}
+.filmstrip-thumb{flex:0 0 82px;border:2px solid transparent;border-radius:11px;padding:0;background:transparent;overflow:hidden;scroll-snap-align:start}
+.filmstrip-thumb.active{border-color:currentColor}
+.filmstrip-thumb img{display:block;width:78px;height:78px;object-fit:cover}
