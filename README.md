@@ -360,3 +360,6 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Adds inherited shared fields with unit overrides.
 - Adds a simple mobile Guest Welcome preview.
 - Preserves existing Photo, map, QR and publishing workflows.
+
+## v0.18.1
+- Places the Welcome control in the visible main Photos / Map / Areas navigation row.

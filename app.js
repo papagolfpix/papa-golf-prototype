@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.18';
+const RUNTIME_VERSION = '0.18.1';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
