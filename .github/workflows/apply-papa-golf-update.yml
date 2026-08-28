@@ -1,1 +1,64 @@
+name: Apply Papa Golf Update
 
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - papa-golf-update.zip
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check for update package
+        id: package
+        run: |
+          if [ -f "papa-golf-update.zip" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract Papa Golf update
+        if: steps.package.outputs.found == 'true'
+        run: |
+          rm -rf /tmp/papa-golf-update
+          mkdir -p /tmp/papa-golf-update
+          unzip -q -o papa-golf-update.zip -d /tmp/papa-golf-update
+
+      - name: Apply update files
+        if: steps.package.outputs.found == 'true'
+        run: |
+          rsync -av \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='papa-golf-update.zip' \
+            /tmp/papa-golf-update/ ./
+
+      - name: Remove temporary update package
+        if: steps.package.outputs.found == 'true'
+        run: |
+          rm -f papa-golf-update.zip
+
+      - name: Commit updated Papa Golf files
+        if: steps.package.outputs.found == 'true'
+        run: |
+          git config user.name "Papa Golf Update Bot"
+          git config user.email "actions@github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Apply Papa Golf update"
+            git push
+          fi
