@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.13
+# Papa Golf Photo Prototype — v0.14
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -281,3 +281,15 @@ v0.12.5:
 
 ## v0.13 Update Public Page
 Published records that have changed now show `Update public page`. It reuses the existing published slug and URL, regenerates the same `<slug>.html` filename, and tells the user to replace that file in GitHub. No changes to photo storage, IndexedDB schema, maps, filters, QR URL generation, visitor view, or backup/restore.
+
+## v0.14 One-Tap Publish Package
+
+Public publishing now uses the same automated GitHub update pipeline as application updates.
+
+- Publish / Update Public Page generates `papa-golf-update.zip`.
+- The ZIP contains the correct existing public page filename, e.g. `pig-beach.html`.
+- On iPhone, the Share sheet offers `Save to Files`.
+- Upload only `papa-golf-update.zip` to the repository root.
+- The installed GitHub Action extracts the HTML page, removes the ZIP, commits the result and triggers GitHub Pages.
+- Existing QR URLs remain unchanged.
+- No changes to photo storage, IndexedDB schema, maps, filters or backup/restore.

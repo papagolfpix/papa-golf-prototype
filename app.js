@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.13';
+const RUNTIME_VERSION = '0.14';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -923,6 +923,42 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
+
+async function ensureJsZip() {
+  if (window.JSZip) return window.JSZip;
+
+  await new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[data-papa-golf-jszip]');
+    if (existing) {
+      existing.addEventListener('load', resolve, { once: true });
+      existing.addEventListener('error', reject, { once: true });
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+    script.async = true;
+    script.dataset.papaGolfJszip = '1';
+    script.onload = resolve;
+    script.onerror = () => reject(new Error('Could not load ZIP library. Check your internet connection.'));
+    document.head.appendChild(script);
+  });
+
+  if (!window.JSZip) throw new Error('ZIP library failed to load.');
+  return window.JSZip;
+}
+
+async function makePapaGolfUpdateZip(filename, html) {
+  const JSZip = await ensureJsZip();
+  const zip = new JSZip();
+  zip.file(filename, html);
+  return await zip.generateAsync({
+    type: 'blob',
+    compression: 'DEFLATE',
+    compressionOptions: { level: 6 }
+  });
+}
+
 // ---------- Public page + QR publishing ----------
 function slugifyPublic(value) {
   return String(value || 'papa-golf-location')
@@ -975,7 +1011,7 @@ async function downloadPublishedPage(){
   const originalLabel=generatePageBtn.textContent;
   generatedPageLink.classList.add('hidden');
   generatedPageLink.removeAttribute('href');
-  publishStatus.textContent='Creating public page…';
+  publishStatus.textContent='Creating GitHub update package…';
   generatePageBtn.textContent='Creating…';
   generatePageBtn.disabled=true;
 
@@ -984,114 +1020,62 @@ async function downloadPublishedPage(){
   try{
     const {slug}=updatePublishUrl();
     const html=await buildStandalonePublicPage(publishRecord);
-    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-    objectUrl=URL.createObjectURL(blob);
+    const pageFilename=`${slug}.html`;
+    const zipBlob=await makePapaGolfUpdateZip(pageFilename, html);
+    const file=new File([zipBlob],'papa-golf-update.zip',{type:'application/zip'});
 
-    // Always expose a visible fallback before attempting Share.
+    objectUrl=URL.createObjectURL(zipBlob);
     generatedPageLink.href=objectUrl;
+    generatedPageLink.download='papa-golf-update.zip';
+    generatedPageLink.textContent='Open update ZIP';
     generatedPageLink.classList.remove('hidden');
 
-    // iPhone path: native Share sheet with a real file.
-    let file=null;
-    try{
-      file=new File([blob],`${slug}.html`,{type:'text/html'});
-    }catch{
-      file=null;
-    }
-
-    if(file && navigator.share){
-      let canShareFiles=true;
+    if(navigator.share){
+      let canShare=true;
       if(navigator.canShare){
-        try{canShareFiles=navigator.canShare({files:[file]});}
-        catch{canShareFiles=false;}
+        try{canShare=navigator.canShare({files:[file]});}
+        catch{canShare=false;}
       }
 
-      if(canShareFiles){
-        publishStatus.textContent='Public page created. Opening the iPhone Share sheet — choose “Save to Files”.';
+      if(canShare){
+        publishStatus.textContent=`Update package ready. In the Share sheet choose “Save to Files”. Then upload papa-golf-update.zip to GitHub.`;
         try{
           await navigator.share({
             files:[file],
-            title:`Papa Golf — ${slug}`
+            title:`Papa Golf update — ${slug}`
           });
-          publishStatus.textContent=`${slug}.html created. If you selected “Save to Files”, it is ready to upload to GitHub.`; publishRecord = await savePublicationStatus({...publishRecord, publication:{...(publishRecord.publication||{}), slug}});
+
+          if(publishRecord){
+            const marked=await markPublicationState({
+              ...publishRecord,
+              publication:{...(publishRecord.publication||{}),slug}
+            });
+            publishRecord=marked;
+            activeRecord=marked;
+            renderPublicationStatus(marked);
+          }
+
+          publishStatus.textContent=`papa-golf-update.zip created. Upload that single ZIP to the repository root; GitHub will apply ${pageFilename} automatically.`;
           return;
         }catch(err){
           if(err?.name==='AbortError'){
-            publishStatus.textContent='Share sheet closed. You can tap “Open generated page” below or tap Create public page again.';
+            publishStatus.textContent='Share sheet closed. Tap Create GitHub update again when ready.';
             return;
           }
         }
       }
     }
 
-    // Fallback: keep the generated page link visible.
-    publishStatus.textContent='Public page created. Tap “Open generated page” below, then use Safari Share → Save to Files.';
+    publishStatus.textContent='Update package created. Tap “Open update ZIP” below, then use Safari Share → Save to Files.';
   }catch(e){
-    publishStatus.textContent=`Could not create public page: ${e?.message||e}`;
+    publishStatus.textContent=`Could not create GitHub update: ${e?.message||e}`;
   }finally{
     generatePageBtn.disabled=false;
     generatePageBtn.textContent=originalLabel;
-    if(objectUrl){
-      // Keep it alive long enough for the user to open/share.
-      setTimeout(()=>URL.revokeObjectURL(objectUrl),300000);
-    }
+    if(objectUrl)setTimeout(()=>URL.revokeObjectURL(objectUrl),300000);
   }
 }
-
-publicationMarkBtn?.addEventListener('click', async () => {
-  if (!activeRecord) return;
-  await savePublicationStatus(activeRecord);
-});
-
-
-
-async function beginPublicationUpdate(record) {
-  const pub = publicationInfo(record);
-  if (pub.status !== 'published') return;
-
-  publishRecord = record;
-  publishSlug.value = slugifyPublic(
-    pub.slug ||
-    record.fields?.locationName ||
-    record.fields?.title ||
-    record.metadata?.filename
-  );
-
-  generatedPageLink.classList.add('hidden');
-  generatedPageLink.removeAttribute('href');
-  updatePublishUrl();
-  generatePageBtn.textContent = 'Create updated public page';
-  publishStatus.textContent =
-    `This will regenerate ${publishSlug.value}.html for the existing public URL. Save it, then replace the existing file in GitHub.`;
-  publishDialog.showModal();
-}
-
-if (publicationUpdateBtn) {
-  publicationUpdateBtn.addEventListener('click', () => {
-    if (activeRecord) beginPublicationUpdate(activeRecord);
-  });
-}
-
-if (publicationMarkBtn) {
-  publicationMarkBtn.addEventListener('click', async () => {
-    if (!activeRecord) return;
-
-    const original = publicationMarkBtn.textContent;
-    publicationMarkBtn.disabled = true;
-    publicationMarkBtn.textContent = 'Saving…';
-
-    try {
-      await markPublicationState(activeRecord);
-    } catch (error) {
-      console.error('Could not mark published:', error);
-      publicationMarkBtn.disabled = false;
-      publicationMarkBtn.textContent = original;
-      alert(`Could not mark published: ${error?.message || error}`);
-    }
-  });
-}
-
-publishQrBtn.addEventListener('click',()=>{if(!activeRecord)return;publishRecord=activeRecord;publishSlug.value=slugifyPublic(activeRecord.publication?.slug||activeRecord.fields?.locationName||activeRecord.fields?.title||activeRecord.metadata?.filename);generatedPageLink.classList.add('hidden');generatedPageLink.removeAttribute('href');generatePageBtn.textContent='Create public page';updatePublishUrl();publishStatus.textContent=`Ready to create ${publishSlug.value}.html.`;publishDialog.showModal();});
+publishQrBtn.addEventListener('click',()=>{if(!activeRecord)return;publishRecord=activeRecord;publishSlug.value=slugifyPublic(activeRecord.publication?.slug||activeRecord.fields?.locationName||activeRecord.fields?.title||activeRecord.metadata?.filename);generatedPageLink.classList.add('hidden');generatedPageLink.removeAttribute('href');generatePageBtn.textContent='Create GitHub update';updatePublishUrl();publishStatus.textContent=`Ready to package ${publishSlug.value}.html into papa-golf-update.zip.`;publishDialog.showModal();});
 publishSlug.addEventListener('input',updatePublishUrl);
 generatePageBtn.addEventListener('click',downloadPublishedPage);
 closePublishBtn.addEventListener('click',()=>publishDialog.close());
