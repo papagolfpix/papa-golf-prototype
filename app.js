@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.14.1';
+const RUNTIME_VERSION = '0.14.2';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -1022,11 +1022,13 @@ async function downloadPublishedPage(){
     const html=await buildStandalonePublicPage(publishRecord);
     const pageFilename=`${slug}.html`;
     const zipBlob=await makePapaGolfUpdateZip(pageFilename, html);
-    const file=new File([zipBlob],'papa-golf-update.zip',{type:'application/zip'});
+    const publishDate=new Date().toISOString().slice(0,10).replaceAll('-','');
+    const updateZipName=`papa-golf-publish-${slug}-${publishDate}.zip`;
+    const file=new File([zipBlob],updateZipName,{type:'application/zip'});
 
     objectUrl=URL.createObjectURL(zipBlob);
     generatedPageLink.href=objectUrl;
-    generatedPageLink.download='papa-golf-update.zip';
+    generatedPageLink.download=updateZipName;
     generatedPageLink.textContent='Open update ZIP';
     generatedPageLink.classList.remove('hidden');
 
@@ -1038,7 +1040,7 @@ async function downloadPublishedPage(){
       }
 
       if(canShare){
-        publishStatus.textContent=`Update package ready. In the Share sheet choose “Save to Files”. Then upload papa-golf-update.zip to GitHub.`;
+        publishStatus.textContent=`Update package ready as ${updateZipName}. In the Share sheet choose “Save to Files”, then upload it to GitHub.`;
         try{
           await navigator.share({
             files:[file],
@@ -1055,7 +1057,7 @@ async function downloadPublishedPage(){
             renderPublicationStatus(marked);
           }
 
-          publishStatus.textContent=`papa-golf-update.zip created. Upload that single ZIP to the repository root; GitHub will apply ${pageFilename} automatically.`;
+          publishStatus.textContent=`${updateZipName} created. Upload that single ZIP to the repository root; GitHub will apply ${pageFilename} automatically.`;
           return;
         }catch(err){
           if(err?.name==='AbortError'){

@@ -1,4 +1,4 @@
-# Papa Golf Photo Prototype — v0.14.1
+# Papa Golf Photo Prototype — v0.14.2
 
 
 A deliberately small, iPhone-first prototype for the Papa Golf Platform.
@@ -296,3 +296,7 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 
 ## v0.14.1
 - Restores the missing Update Public Page click handler.
+
+## v0.14.2
+- Public-page ZIPs now use descriptive dated names such as `papa-golf-publish-pig-beach-20260828.zip`.
+- Deployment workflow accepts Papa Golf publish ZIPs and iPhone duplicate-number filenames.
