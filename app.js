@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.19.2';
+const RUNTIME_VERSION = '0.19.3';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -1010,6 +1010,32 @@ async function makePapaGolfUpdateZip(filename, html) {
 // ---------- Supporting photo gallery ----------
 let pendingSupportingPhotos = [];
 
+
+function displayInheritedValue(value){
+  if(value === undefined || value === null) return '';
+  if(Array.isArray(value)) return value.filter(Boolean).join(', ');
+  if(typeof value === 'boolean') return value ? 'Yes' : 'No';
+  return String(value).trim();
+}
+
+function getInheritedValue(record, key){
+  if(!record) return '';
+  if(key === 'description') return record?.fields?.description ?? record?.description ?? '';
+  if(key === 'category') return record?.fields?.category ?? record?.category ?? '';
+  if(key === 'locationName') return record?.fields?.locationName ?? record?.locationName ?? '';
+  if(key === 'areaName') return record?.fields?.areaName ?? record?.areaName ?? '';
+  if(key === 'people') return record?.fields?.people ?? record?.people ?? '';
+  if(key === 'tags') return record?.fields?.tags ?? record?.tags ?? '';
+  if(record?.fields && record.fields[key] !== undefined) return record.fields[key];
+  if(record?.visitorFields && record.visitorFields[key] !== undefined) return record.visitorFields[key];
+  return record?.[key] ?? '';
+}
+
+function relatedInheritedPlaceholder(record, key, label='Inherited'){
+  const shown = displayInheritedValue(getInheritedValue(record, key));
+  return shown ? `Inherited: ${shown}` : `${label}: no value set`;
+}
+
 function normalizeRelatedPhoto(item, index = 0) {
   if (item instanceof Blob) {
     return {
@@ -1087,18 +1113,18 @@ function renderSupportingPreview(items = []) {
       </label>
       <details class="related-inherited-editor">
         <summary>Inherited place information · edit for this photo</summary>
-        <p class="small muted">Leave an override blank to keep inheriting the main place information.</p>
+        <p class="small muted">The current inherited value is shown in each field. Leave it unchanged to keep inheriting, or type a different value for this photo.</p>
         <label>Photo-specific place description override
-          <textarea data-place-override="description" rows="3" placeholder="Inherited unless you type a different description here"></textarea>
+          <textarea data-place-override="description" rows="3" placeholder="${escapeHtml(relatedInheritedPlaceholder(record, 'description', 'Inherited description'))}"></textarea>
         </label>
         <label>Category override
-          <input data-place-override="category" type="text" placeholder="Inherited category">
+          <input data-place-override="category" type="text" placeholder="${escapeHtml(relatedInheritedPlaceholder(record, 'category', 'Inherited category'))}">
         </label>
         <label>Location name override
-          <input data-place-override="locationName" type="text" placeholder="Inherited location name">
+          <input data-place-override="locationName" type="text" placeholder="${escapeHtml(relatedInheritedPlaceholder(record, 'locationName', 'Inherited location'))}">
         </label>
         <label>Area / Place override
-          <input data-place-override="areaName" type="text" placeholder="Inherited area / place">
+          <input data-place-override="areaName" type="text" placeholder="${escapeHtml(relatedInheritedPlaceholder(record, 'areaName', 'Inherited area / place'))}">
         </label>
         <div class="related-custom-overrides"></div>
       </details>

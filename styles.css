@@ -838,3 +838,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .related-inherited-editor:not([open]) > *:not(summary){
   display:none;
 }
+
+/* v0.19.3 — visible inherited values */
+.related-inherited-editor input::placeholder,
+.related-inherited-editor textarea::placeholder{
+  opacity:.86;
+  font-style:italic;
+}
+.related-inherited-editor input:focus::placeholder,
+.related-inherited-editor textarea:focus::placeholder{
+  opacity:.52;
+}

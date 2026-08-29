@@ -414,3 +414,9 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Main-photo edit visibility now changes only when Edit is opened or the toggle is tapped.
 - Prevents repeated whole-page mutation handling and object-URL recreation during normal UI updates.
 - Keeps the compact main-photo editor and collapsed inherited overrides.
+
+## v0.19.3 — visible inherited values
+- Related-photo override fields now show the actual inherited value.
+- Leaving an override untouched keeps live inheritance from the main photo/place.
+- Typing a different value creates a photo-specific override.
+- No record schema changes.
