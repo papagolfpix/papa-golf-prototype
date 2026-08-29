@@ -546,3 +546,23 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Big C Mini, Lotus's Go Fresh and Tops Daily are recognized as convenience-style stores when OSM tagging varies.
 - Added shop=general to the live candidate query to catch inconsistently tagged mini-markets.
 - Tapping anywhere on a result card except the Google Maps link now centres that location on the in-app map, zooms in and opens its marker popup.
+
+
+## v0.20.6 — Show all Nearby results
+- Removed maximum-result filtering from automatic Nearby categories.
+- Removed directional-spread filtering from what guests actually see.
+- Every live place returned within the configured category radius is now displayed.
+- Results below the map are sorted strictly nearest-first.
+- When All is selected, automatic and approved places share one nearest-first list.
+- Per-category radius control remains.
+- Initial map remains centred on the villa at the same ~750 m half-span used in v0.20.5.
+- Tappable result-card map centring/popup behaviour remains unchanged.
+
+
+## v0.20.7 — Fit villa + selected place together
+- Tapping a Nearby result no longer centres only on the destination.
+- Papa Golf now fits the selected place and the villa's YOU ARE HERE marker into the same map view.
+- The map automatically zooms to the tightest practical level while keeping both pins visible.
+- Selected-place popup still opens automatically.
+- Existing 750 m default villa-centred map view remains unchanged until a result is selected.
+- Nearest-first unfiltered result list from v0.20.6 remains unchanged.

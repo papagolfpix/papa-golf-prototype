@@ -1083,3 +1083,24 @@ svg.leaflet-image-layer.leaflet-interactive path {
   outline:2px solid rgba(224,188,102,.65);
   outline-offset:2px;
 }
+
+
+/* ---- Nearby list simplification v0.20.6 ---- */
+.welcome-auto-rules{
+  grid-template-columns:minmax(150px,.7fr) minmax(220px,1.3fr);
+}
+.welcome-auto-rule-note{
+  align-self:end;
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  padding:.45rem .6rem;
+  border-radius:9px;
+  background:rgba(224,188,102,.06);
+  color:#aaa;
+  font-size:11px;
+  line-height:1.35;
+}
+@media(max-width:650px){
+  .welcome-auto-rules{grid-template-columns:1fr}
+}

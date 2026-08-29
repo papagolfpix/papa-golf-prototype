@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.20.5';
+const RUNTIME_VERSION = '0.20.7';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2540,14 +2540,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0205';
+    const key = 'papaGolfSwReloaded0207';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.20.5', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.20.7', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2759,17 +2759,9 @@ function renderWelcomeCategoryEditor(){
               ${[0.5,1,1.5,2,2.5,3,4,5,6,8,10].map(n=>`<option value="${n}" ${Number(cat.radiusKm)===n?'selected':''}>${n} km</option>`).join('')}
             </select>
           </label>
-          <label>Maximum results
-            <select data-role="max-results">
-              ${[1,2,3,4,5,6,8,10].map(n=>`<option value="${n}" ${Number(cat.maxResults)===n?'selected':''}>${n}</option>`).join('')}
-            </select>
-          </label>
-          <label>Selection
-            <select data-role="selection">
-              <option value="nearest" ${cat.selection==='nearest'?'selected':''}>Nearest</option>
-              <option value="spread" ${cat.selection==='spread'?'selected':''}>Nearest + directional spread</option>
-            </select>
-          </label>
+          <div class="welcome-auto-rule-note">
+            All matching places within this radius are shown nearest first.
+          </div>
         </div>`:''}
     </div>
   `).join('');
@@ -3050,23 +3042,26 @@ function welcomeFilteredAutomaticPlaces(){
   const output=[];
   wanted.forEach(cat=>{
     const radiusKm=Math.max(.5,Math.min(10,Number(cat.radiusKm)||3));
-    const maxResults=Math.max(1,Math.min(10,Math.round(Number(cat.maxResults)||4)));
-    let items=welcomeAutomaticPlaces
+    const items=welcomeAutomaticPlaces
       .filter(p=>p.category===cat.id)
       .map(p=>({...p,distanceKm:welcomeDistanceKm(d.lat,d.lng,p.lat,p.lng)}))
       .filter(p=>Number.isFinite(p.distanceKm)&&p.distanceKm<=radiusKm)
       .sort((a,b)=>a.distanceKm-b.distanceKm);
-    items=cat.selection==='spread'
-      ? welcomeSelectDirectionalSpread(items,maxResults,d.lat,d.lng)
-      : items.slice(0,maxResults);
     output.push(...items);
   });
-  return output;
+  // One simple nearest-first list across the active automatic categories.
+  return output.sort((a,b)=>a.distanceKm-b.distanceKm);
 }
 function welcomeAllVisiblePlaces(){
-  const curated=welcomeFilteredPartners().map(x=>({...x,automatic:false,source:x.source||'curated'}));
+  const d=effectiveWelcome();
+  const curated=welcomeFilteredPartners().map(x=>({
+    ...x,
+    automatic:false,
+    source:x.source||'curated',
+    distanceKm:welcomeDistanceKm(d.lat,d.lng,Number(x.lat),Number(x.lng))
+  }));
   const automatic=welcomeFilteredAutomaticPlaces();
-  return [...curated,...automatic];
+  return [...curated,...automatic].sort((a,b)=>(a.distanceKm??Infinity)-(b.distanceKm??Infinity));
 }
 
 function renderWelcomeGuestFilters(){
@@ -3223,10 +3218,31 @@ function renderGuestFoodList(){
 
 function focusWelcomeNearbyPlace(placeId){
   const marker=welcomeNearbyMarkers.get(String(placeId));
-  if(!marker||!welcomeNearbyMap)return;
-  const latlng=marker.getLatLng();
-  welcomeNearbyMap.setView(latlng,Math.max(welcomeNearbyMap.getZoom(),17),{animate:true});
-  marker.openPopup();
+  const villaMarker=welcomeNearbyMarkers.get('villa');
+  if(!marker||!villaMarker||!welcomeNearbyMap)return;
+
+  const destination=marker.getLatLng();
+  const villa=villaMarker.getLatLng();
+
+  // Zoom as tightly as possible while keeping both the villa's YOU ARE HERE
+  // pin and the selected place visible at the same time.
+  const bounds=L.latLngBounds([villa,destination]);
+  welcomeNearbyMap.fitBounds(bounds,{
+    paddingTopLeft:[54,72],
+    paddingBottomRight:[54,72],
+    maxZoom:19,
+    animate:true
+  });
+
+  // If the two points are extremely close together, Leaflet can still leave
+  // excessive whitespace. Use a high zoom while retaining both markers.
+  setTimeout(()=>{
+    if(!welcomeNearbyMap||!welcomeNearbyMap.getBounds().contains(villa)||!welcomeNearbyMap.getBounds().contains(destination)){
+      welcomeNearbyMap.fitBounds(bounds,{padding:[60,74],maxZoom:19,animate:false});
+    }
+    marker.openPopup();
+  },280);
+
   const mapEl=document.getElementById('welcomeNearbyMap');
   if(mapEl){
     const top=mapEl.getBoundingClientRect().top+window.scrollY-90;
