@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.20.4';
+const RUNTIME_VERSION = '0.20.5';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2540,14 +2540,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0204';
+    const key = 'papaGolfSwReloaded0205';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.20.4', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.20.5', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2602,6 +2602,7 @@ const WELCOME_CATEGORY_DEFS = [
 
 let welcomeNearbyMap = null;
 let welcomeNearbyLayer = null;
+let welcomeNearbyMarkers = new Map();
 let welcomeActiveFilter = 'all';
 let welcomeAutomaticPlaces = [];
 let welcomeAutomaticLoading = false;
@@ -2609,7 +2610,7 @@ let welcomeAutomaticError = '';
 const WELCOME_AUTO_CACHE_KEY = 'papaGolfWelcomeAutomaticPlacesV1';
 const WELCOME_AUTO_CACHE_MS = 6 * 60 * 60 * 1000;
 const WELCOME_AUTO_MAX_QUERY_RADIUS_METERS = 10000;
-const WELCOME_MAP_HALF_SPAN_METERS = 500;
+const WELCOME_MAP_HALF_SPAN_METERS = 750;
 const WELCOME_MAP_INITIAL_ZOOM = 16;
 
 
@@ -2894,6 +2895,7 @@ function welcomeAutomaticQuery(lat,lng){
 (
   nwr["shop"="convenience"](around:${r},${lat},${lng});
   nwr["shop"="supermarket"](around:${r},${lat},${lng});
+  nwr["shop"="general"](around:${r},${lat},${lng});
   nwr["amenity"="fuel"](around:${r},${lat},${lng});
   nwr["amenity"="atm"](around:${r},${lat},${lng});
   nwr["amenity"="bank"](around:${r},${lat},${lng});
@@ -2906,8 +2908,13 @@ function welcomeAutomaticQuery(lat,lng){
 out center tags;`;
 }
 function welcomeAutoCategory(tags={}){
+  const text=`${tags.name||''} ${tags['name:en']||''} ${tags.brand||''} ${tags.operator||''}`.toLowerCase();
   if(tags.shop==='convenience')return 'convenience';
-  if(tags.shop==='supermarket')return 'supermarket';
+  if(tags.shop==='supermarket'){
+    if(/big\s*c\s*mini|mini\s*big\s*c|lotus'?s?\s*go\s*fresh|tops\s*daily/.test(text))return 'convenience';
+    return 'supermarket';
+  }
+  if(tags.shop==='general' && /7[- ]?eleven|big\s*c\s*mini|mini\s*big\s*c|familymart|lotus'?s?\s*go\s*fresh|tops\s*daily/.test(text))return 'convenience';
   if(tags.amenity==='fuel')return 'petrol';
   if(tags.amenity==='atm'||tags.amenity==='bank')return 'atm';
   if(tags.amenity==='pharmacy')return 'pharmacy';
@@ -3017,7 +3024,8 @@ function welcomeBearingDeg(lat1,lng1,lat2,lng2){
 function welcomeSelectDirectionalSpread(items,maxResults,originLat,originLng){
   if(items.length<=maxResults)return items;
   const candidates=[...items].sort((a,b)=>a.distanceKm-b.distanceKm);
-  const selected=[candidates.shift()];
+  const guaranteedNearest=Math.min(2,maxResults,candidates.length);
+  const selected=candidates.splice(0,guaranteedNearest);
   while(candidates.length&&selected.length<maxResults){
     let bestIndex=0,bestScore=-Infinity;
     candidates.forEach((candidate,index)=>{
@@ -3028,7 +3036,7 @@ function welcomeSelectDirectionalSpread(items,maxResults,originLat,originLng){
         const raw=Math.abs(bearing-b);
         minAngular=Math.min(minAngular,Math.min(raw,360-raw));
       });
-      const score=minAngular*10-candidate.distanceKm*8;
+      const score=minAngular*7-candidate.distanceKm*18;
       if(score>bestScore){bestScore=score;bestIndex=index}
     });
     selected.push(candidates.splice(bestIndex,1)[0]);
@@ -3115,18 +3123,20 @@ function renderWelcomeNearbyMap(){
 
   if(!welcomeNearbyMap){
     welcomeNearbyMap=L.map(mapEl,{scrollWheelZoom:false}).setView([d.lat,d.lng],15);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
       maxZoom:19,
-      attribution:'Tiles &copy; Esri'
+      attribution:'&copy; OpenStreetMap contributors'
     }).addTo(welcomeNearbyMap);
     welcomeNearbyLayer=L.layerGroup().addTo(welcomeNearbyMap);
   }
   welcomeNearbyMap.invalidateSize();
   welcomeNearbyLayer.clearLayers();
+  welcomeNearbyMarkers.clear();
 
   const villa=L.marker([d.lat,d.lng],{icon:welcomeLeafletIcon('',true),zIndexOffset:1000})
     .addTo(welcomeNearbyLayer)
     .bindPopup(`<strong>${escapeHtml(d.unitName)}</strong><br>You are here`);
+  welcomeNearbyMarkers.set('villa',villa);
   const items=welcomeAllVisiblePlaces();
   const bounds=[[d.lat,d.lng]];
 
@@ -3136,9 +3146,11 @@ function renderWelcomeNearbyMap(){
     const cat=welcomeCategoryDef(item.category)||{};
     const dist=Number.isFinite(item.distanceKm)?item.distanceKm:welcomeDistanceKm(d.lat,d.lng,lat,lng);
     const sourceLabel=item.automatic?'Nearby utility':'Papa Golf approved';
-    L.marker([lat,lng],{icon:welcomeLeafletIcon(item.category,false)})
+    const placeId=String(item.id||`${item.category}-${lat}-${lng}`);
+    const placeMarker=L.marker([lat,lng],{icon:welcomeLeafletIcon(item.category,false)})
       .addTo(welcomeNearbyLayer)
       .bindPopup(`<strong>${escapeHtml(item.name)}</strong><br>${escapeHtml(cat.label||'Place')} · ${dist.toFixed(dist<1?2:1)} km<br><small>${escapeHtml(sourceLabel)}</small>${item.note?'<br>'+escapeHtml(item.note):''}`);
+    welcomeNearbyMarkers.set(placeId,placeMarker);
     bounds.push([lat,lng]);
   });
 
@@ -3175,7 +3187,8 @@ function renderWelcomeNearbyMap(){
       const cat=welcomeCategoryDef(item.category)||{};
       const dist=welcomeDistanceKm(d.lat,d.lng,Number(item.lat),Number(item.lng));
       const sourceLabel=item.automatic?'Nearby utility':'Papa Golf approved';
-      return `<article class="welcome-place-card">
+      const placeId=String(item.id||`${item.category}-${item.lat}-${item.lng}`);
+      return `<article class="welcome-place-card welcome-place-card-interactive" data-welcome-place-id="${escapeHtml(placeId)}" tabindex="0" role="button" aria-label="Show ${escapeHtml(item.name)} on map">
         <div class="welcome-place-icon">${cat.icon||'📍'}</div>
         <div class="welcome-place-copy">
           <strong>${escapeHtml(item.name)}</strong>
@@ -3205,6 +3218,20 @@ function renderGuestFoodList(){
       <a class="welcome-map-link" href="${welcomeGoogleMapsUrl(item.lat,item.lng)}" target="_blank" rel="noopener">Navigate with Google Maps</a></div>
     </article>`;
   }).join(''):'<div class="guest-info-card"><p class="muted">No approved restaurants or bars have been added yet.</p></div>';
+}
+
+
+function focusWelcomeNearbyPlace(placeId){
+  const marker=welcomeNearbyMarkers.get(String(placeId));
+  if(!marker||!welcomeNearbyMap)return;
+  const latlng=marker.getLatLng();
+  welcomeNearbyMap.setView(latlng,Math.max(welcomeNearbyMap.getZoom(),17),{animate:true});
+  marker.openPopup();
+  const mapEl=document.getElementById('welcomeNearbyMap');
+  if(mapEl){
+    const top=mapEl.getBoundingClientRect().top+window.scrollY-90;
+    window.scrollTo({top,behavior:'smooth'});
+  }
 }
 
 function welcomePublicUrl(){
@@ -3316,6 +3343,19 @@ function initWelcomeModule(){
   });
   document.getElementById('welcomeA5BackBtn')?.addEventListener('click',()=>welcomeShow(page));
   document.getElementById('welcomeA5PrintBtn')?.addEventListener('click',printWelcomeA5);
+
+  document.getElementById('welcomeNearbyList')?.addEventListener('click',event=>{
+    if(event.target.closest('a'))return;
+    const card=event.target.closest('[data-welcome-place-id]');
+    if(card)focusWelcomeNearbyPlace(card.dataset.welcomePlaceId);
+  });
+  document.getElementById('welcomeNearbyList')?.addEventListener('keydown',event=>{
+    if(!['Enter',' '].includes(event.key))return;
+    const card=event.target.closest('[data-welcome-place-id]');
+    if(!card)return;
+    event.preventDefault();
+    focusWelcomeNearbyPlace(card.dataset.welcomePlaceId);
+  });
 
   document.getElementById('refreshWelcomeNearbyBtn')?.addEventListener('click',()=>{
     try{localStorage.removeItem(WELCOME_AUTO_CACHE_KEY)}catch{}

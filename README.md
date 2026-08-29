@@ -536,3 +536,13 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Utility and approved-place pins use category icons rather than Leaflet default/broken blue marker graphics.
 - Guests can still pan and zoom outward to places beyond the initial frame.
 - Live search radii, maximum-result rules and directional-spread selection remain unchanged.
+
+
+## v0.20.5 — Street map, proximity fix and tappable results
+- Explore Nearby now uses a standard OpenStreetMap street map instead of satellite imagery.
+- Initial villa-centred map view widened to approximately 750 m from the villa to each edge.
+- Directional spread now always preserves the two nearest candidates first.
+- Remaining result slots still favor useful directional spread.
+- Big C Mini, Lotus's Go Fresh and Tops Daily are recognized as convenience-style stores when OSM tagging varies.
+- Added shop=general to the live candidate query to catch inconsistently tagged mini-markets.
+- Tapping anywhere on a result card except the Google Maps link now centres that location on the in-app map, zooms in and opens its marker popup.

@@ -1071,3 +1071,15 @@ svg.leaflet-image-layer.leaflet-interactive path {
   margin-top:.25rem;
   font-size:11px;
 }
+
+
+/* ---- Explore Nearby interaction v0.20.5 ---- */
+.welcome-place-card-interactive{
+  cursor:pointer;
+  transition:transform .12s ease,border-color .12s ease,background .12s ease;
+}
+.welcome-place-card-interactive:active{transform:scale(.992)}
+.welcome-place-card-interactive:focus{
+  outline:2px solid rgba(224,188,102,.65);
+  outline-offset:2px;
+}
