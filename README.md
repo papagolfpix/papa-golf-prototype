@@ -584,3 +584,9 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Test uses Places API (New) Nearby Search around the property's coordinates and ranks results nearest-first.
 - Test result cards show name, type, distance, address and Google Maps link.
 - Existing OpenStreetMap/Overpass guest Nearby system remains unchanged while we compare coverage.
+
+
+## v0.20.10 — Google Places test bug fix
+- Fixed `Can't find variable: escapeAttr` in the Google Places test results renderer.
+- Existing saved Google Places API key remains untouched in localStorage.
+- Google Places test now proceeds to the real API response instead of failing during result rendering.

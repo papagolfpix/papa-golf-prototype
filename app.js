@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.20.9';
+const RUNTIME_VERSION = '0.20.10';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2540,14 +2540,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0209';
+    const key = 'papaGolfSwReloaded0210';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.20.9', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.20.10', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3082,7 +3082,7 @@ async function testPapaGolfGooglePlaces(){
       return {id:p?.id||'',name:p?.displayName?.text||'Unnamed place',type:p?.primaryType||'',address:p?.formattedAddress||'',lat,lng,googleMapsUri:p?.googleMapsUri||'',distanceKm:welcomeDistanceKm(Number(d.lat),Number(d.lng),lat,lng)};
     }).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng)).sort((a,b)=>a.distanceKm-b.distanceKm);
     if(status)status.textContent=places.length?`Google Places found ${places.length} nearby places, nearest first.`:'Google Places returned no matching places in this test radius.';
-    if(list)list.innerHTML=places.map((p,i)=>`<div class="welcome-google-test-card"><div class="welcome-google-test-rank">${i+1}</div><div class="welcome-google-test-main"><strong>${escapeHtml(p.name)}</strong><div class="small muted">${escapeHtml(p.type||'place')} · ${p.distanceKm.toFixed(2)} km</div>${p.address?`<div class="small muted">${escapeHtml(p.address)}</div>`:''}</div>${p.googleMapsUri?`<a href="${escapeAttr(p.googleMapsUri)}" target="_blank" rel="noopener">Google Maps</a>`:''}</div>`).join('');
+    if(list)list.innerHTML=places.map((p,i)=>`<div class="welcome-google-test-card"><div class="welcome-google-test-rank">${i+1}</div><div class="welcome-google-test-main"><strong>${escapeHtml(p.name)}</strong><div class="small muted">${escapeHtml(p.type||'place')} · ${p.distanceKm.toFixed(2)} km</div>${p.address?`<div class="small muted">${escapeHtml(p.address)}</div>`:''}</div>${p.googleMapsUri?`<a href="${String(p.googleMapsUri).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}" target="_blank" rel="noopener">Google Maps</a>`:''}</div>`).join('');
   }catch(err){if(status)status.textContent=`Google Places test failed: ${err?.message||err}`;}
 }
 
