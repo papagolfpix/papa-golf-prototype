@@ -375,3 +375,7 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 
 ## v0.18.4
 - Forces the active image pixels to clip to the same 18px radius on all four corners in iOS Safari.
+
+## v0.18.5
+- Uses one identical active-photo rendering rule for original and related images.
+- Removes the image border that was visually masking portrait-image corner rounding on iPhone Safari.

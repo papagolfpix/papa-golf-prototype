@@ -688,3 +688,19 @@ svg.leaflet-image-layer.leaflet-interactive path {
   -webkit-clip-path: inset(0 round 18px);
   overflow: hidden !important;
 }
+
+/* v0.18.5 — identical original/related active-photo shape */
+#detailImage.detail-image {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  border: 0 !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
+  -webkit-mask-clip: border-box !important;
+  clip-path: inset(0 round 18px) !important;
+  box-shadow: 0 0 0 1px var(--line) !important;
+}
