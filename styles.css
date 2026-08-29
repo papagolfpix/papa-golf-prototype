@@ -680,3 +680,11 @@ svg.leaflet-image-layer.leaflet-interactive path {
   border-radius: 18px !important;
   overflow: hidden;
 }
+
+/* v0.18.4 — force identical clipping on every active-photo corner in iOS Safari */
+#detailImage.detail-image {
+  border-radius: 18px !important;
+  clip-path: inset(0 round 18px);
+  -webkit-clip-path: inset(0 round 18px);
+  overflow: hidden !important;
+}

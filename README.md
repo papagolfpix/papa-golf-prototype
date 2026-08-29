@@ -372,3 +372,6 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 
 ## v0.18.3
 - Original and related active photos now use the same rounded corner radius.
+
+## v0.18.4
+- Forces the active image pixels to clip to the same 18px radius on all four corners in iOS Safari.
