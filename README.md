@@ -389,3 +389,7 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Visitor View hero photos now preserve their original aspect ratio; portrait photos are no longer square-cropped.
 - Visitor hero photos receive a 16px page inset so the 18px rounded corners are actually visible.
 - Applies the same full-aspect-ratio rounded treatment to newly generated public pages.
+
+## v0.18.8
+- Related photos in Visitor View now retain the shared place/experience information.
+- Switching photos changes photo-specific title, story, role, filename/tags while Features, Access Difficulty, Cost, Rating, Best Time, Visit Time, Transport, Warnings and Location remain visible.

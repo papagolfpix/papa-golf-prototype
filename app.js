@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.18.7';
+const RUNTIME_VERSION = '0.18.8';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -1404,7 +1404,7 @@ function openVisitorPreview(record){
       visitorPlace.textContent=[visitorText(fields.locationName),visitorText(fields.areaName)].filter(Boolean).join(' · ');
       visitorDescription.textContent=active.description || '';
       visitorDescription.classList.toggle('hidden',!visitorDescription.textContent);
-      visitorFields.classList.add('hidden');
+      visitorFields.classList.remove('hidden'); // related photo still belongs to this place/experience
 
       const bits=[];
       if(active.captureDate)bits.push(`Date: ${active.captureDate}`);
@@ -1441,7 +1441,7 @@ function openVisitorPreview(record){
     renderVisitorActive();
   }
 
-  // Shared place/experience fields stay available for the entry photo.
+  // Shared place/experience fields stay available for every photo in this collection.
   visitorFields.innerHTML='';
   customFields.forEach(field=>{
     if(['title','description','category','areaName','locationName'].includes(field.id))return;
