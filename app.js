@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.20.7';
+const RUNTIME_VERSION = '0.20.8';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2540,14 +2540,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0207';
+    const key = 'papaGolfSwReloaded0208';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.20.7', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.20.8', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3245,8 +3245,12 @@ function focusWelcomeNearbyPlace(placeId){
 
   const mapEl=document.getElementById('welcomeNearbyMap');
   if(mapEl){
-    const top=mapEl.getBoundingClientRect().top+window.scrollY-90;
-    window.scrollTo({top,behavior:'smooth'});
+    const rect=mapEl.getBoundingClientRect();
+    const visible=rect.top>=0 && rect.bottom<=window.innerHeight;
+    if(!visible){
+      const top=rect.top+window.scrollY-16;
+      window.scrollTo({top,behavior:'smooth'});
+    }
   }
 }
 

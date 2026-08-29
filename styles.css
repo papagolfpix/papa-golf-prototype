@@ -1104,3 +1104,28 @@ svg.leaflet-image-layer.leaflet-interactive path {
 @media(max-width:650px){
   .welcome-auto-rules{grid-template-columns:1fr}
 }
+
+
+/* ---- Sticky Explore Nearby map v0.20.8 ---- */
+.welcome-nearby-sticky-shell{
+  position:sticky;
+  top:6px;
+  z-index:30;
+  padding-bottom:.45rem;
+  background:#0b0b0b;
+}
+.welcome-nearby-sticky-shell .welcome-nearby-map{
+  box-shadow:0 10px 22px rgba(0,0,0,.28);
+}
+.welcome-nearby-sticky-shell #welcomeNearbyStatus{
+  padding-top:.48rem;
+}
+.welcome-nearby-list{
+  position:relative;
+  z-index:1;
+}
+@media(max-width:650px){
+  .welcome-nearby-sticky-shell{
+    top:4px;
+  }
+}

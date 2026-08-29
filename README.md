@@ -566,3 +566,12 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Selected-place popup still opens automatically.
 - Existing 750 m default villa-centred map view remains unchanged until a result is selected.
 - Nearest-first unfiltered result list from v0.20.6 remains unchanged.
+
+
+## v0.20.8 — Sticky Explore Nearby map
+- The Explore Nearby map now stays pinned on screen while the guest scrolls through results below it.
+- Map status/hint remains attached to the sticky map area.
+- Tapping a result still best-fits the villa YOU ARE HERE marker and selected place together.
+- If the map is already visible, tapping a result no longer jumps the page back to the map.
+- Existing 750 m initial map extent and nearest-first result behaviour remain unchanged.
+- Google Places is not yet enabled; current live place source remains OpenStreetMap/Overpass.
