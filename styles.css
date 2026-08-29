@@ -1002,3 +1002,72 @@ svg.leaflet-image-layer.leaflet-interactive path {
 @media(max-width:650px){
   .welcome-auto-rules{grid-template-columns:1fr}
 }
+
+
+/* ---- Guest map presentation v0.20.4 ---- */
+.welcome-leaflet-div-icon{
+  background:transparent!important;
+  border:0!important;
+}
+.welcome-category-marker{
+  width:34px;
+  height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  background:#111;
+  border:2px solid #e0bc66;
+  box-shadow:0 2px 8px rgba(0,0,0,.42);
+  font-size:18px;
+  line-height:1;
+}
+.welcome-villa-marker{
+  position:relative;
+  width:110px;
+  height:54px;
+  text-align:center;
+}
+.welcome-villa-pin{
+  width:32px;
+  height:32px;
+  margin:0 auto;
+  position:relative;
+  border-radius:50% 50% 50% 0;
+  transform:rotate(-45deg);
+  background:#e0bc66;
+  border:2px solid #111;
+  box-shadow:0 2px 8px rgba(0,0,0,.45);
+}
+.welcome-villa-pin::after{
+  content:'★';
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transform:rotate(45deg);
+  color:#111;
+  font-size:15px;
+  font-weight:900;
+}
+.welcome-villa-label{
+  position:absolute;
+  left:50%;
+  top:35px;
+  transform:translateX(-50%);
+  white-space:nowrap;
+  padding:3px 7px;
+  border-radius:999px;
+  background:#111;
+  border:1px solid #e0bc66;
+  color:#f4d675;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+  box-shadow:0 1px 5px rgba(0,0,0,.35);
+}
+.welcome-map-hint{
+  margin-top:.25rem;
+  font-size:11px;
+}

@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.20.3';
+const RUNTIME_VERSION = '0.20.4';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2540,14 +2540,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0203';
+    const key = 'papaGolfSwReloaded0204';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.20.3', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.20.4', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2609,6 +2609,9 @@ let welcomeAutomaticError = '';
 const WELCOME_AUTO_CACHE_KEY = 'papaGolfWelcomeAutomaticPlacesV1';
 const WELCOME_AUTO_CACHE_MS = 6 * 60 * 60 * 1000;
 const WELCOME_AUTO_MAX_QUERY_RADIUS_METERS = 10000;
+const WELCOME_MAP_HALF_SPAN_METERS = 500;
+const WELCOME_MAP_INITIAL_ZOOM = 16;
+
 
 function readWelcomeJson(key,fallback){
   try{
@@ -3070,6 +3073,39 @@ function welcomeFilteredPartners(){
   const allowed=new Set(cats.map(c=>c.id));
   return getWelcomePartners().filter(p=>allowed.has(p.category)&&(welcomeActiveFilter==='all'||p.category===welcomeActiveFilter));
 }
+
+function welcomeLeafletIcon(categoryId,isVilla=false){
+  if(isVilla){
+    return L.divIcon({
+      className:'welcome-leaflet-div-icon',
+      html:`<div class="welcome-villa-marker">
+        <div class="welcome-villa-pin"></div>
+        <div class="welcome-villa-label">YOU ARE HERE</div>
+      </div>`,
+      iconSize:[110,54],
+      iconAnchor:[55,50],
+      popupAnchor:[0,-48]
+    });
+  }
+  const cat=welcomeCategoryDef(categoryId)||{};
+  return L.divIcon({
+    className:'welcome-leaflet-div-icon',
+    html:`<div class="welcome-category-marker" title="${escapeHtml(cat.label||'Place')}">${cat.icon||'📍'}</div>`,
+    iconSize:[38,38],
+    iconAnchor:[19,19],
+    popupAnchor:[0,-20]
+  });
+}
+function welcomeMapBoundsAround(lat,lng,halfSpanMeters=WELCOME_MAP_HALF_SPAN_METERS){
+  const latDelta=halfSpanMeters/111320;
+  const cosLat=Math.max(.2,Math.cos(lat*Math.PI/180));
+  const lngDelta=halfSpanMeters/(111320*cosLat);
+  return [
+    [lat-latDelta,lng-lngDelta],
+    [lat+latDelta,lng+lngDelta]
+  ];
+}
+
 function renderWelcomeNearbyMap(){
   const d=effectiveWelcome();
   const mapEl=document.getElementById('welcomeNearbyMap');
@@ -3088,7 +3124,9 @@ function renderWelcomeNearbyMap(){
   welcomeNearbyMap.invalidateSize();
   welcomeNearbyLayer.clearLayers();
 
-  const villa=L.marker([d.lat,d.lng]).addTo(welcomeNearbyLayer).bindPopup(`<strong>${escapeHtml(d.unitName)}</strong><br>You are here`);
+  const villa=L.marker([d.lat,d.lng],{icon:welcomeLeafletIcon('',true),zIndexOffset:1000})
+    .addTo(welcomeNearbyLayer)
+    .bindPopup(`<strong>${escapeHtml(d.unitName)}</strong><br>You are here`);
   const items=welcomeAllVisiblePlaces();
   const bounds=[[d.lat,d.lng]];
 
@@ -3098,12 +3136,19 @@ function renderWelcomeNearbyMap(){
     const cat=welcomeCategoryDef(item.category)||{};
     const dist=Number.isFinite(item.distanceKm)?item.distanceKm:welcomeDistanceKm(d.lat,d.lng,lat,lng);
     const sourceLabel=item.automatic?'Nearby utility':'Papa Golf approved';
-    L.marker([lat,lng]).addTo(welcomeNearbyLayer).bindPopup(`<strong>${escapeHtml(item.name)}</strong><br>${escapeHtml(cat.label||'Place')} · ${dist.toFixed(dist<1?2:1)} km<br><small>${escapeHtml(sourceLabel)}</small>${item.note?'<br>'+escapeHtml(item.note):''}`);
+    L.marker([lat,lng],{icon:welcomeLeafletIcon(item.category,false)})
+      .addTo(welcomeNearbyLayer)
+      .bindPopup(`<strong>${escapeHtml(item.name)}</strong><br>${escapeHtml(cat.label||'Place')} · ${dist.toFixed(dist<1?2:1)} km<br><small>${escapeHtml(sourceLabel)}</small>${item.note?'<br>'+escapeHtml(item.note):''}`);
     bounds.push([lat,lng]);
   });
 
-  if(bounds.length>1)welcomeNearbyMap.fitBounds(bounds,{padding:[35,35],maxZoom:16});
-  else welcomeNearbyMap.setView([d.lat,d.lng],15);
+  // Always start tightly centred on the villa. Results beyond this initial frame
+  // remain available by panning/zooming or via the result cards below.
+  const villaBounds=welcomeMapBoundsAround(d.lat,d.lng,WELCOME_MAP_HALF_SPAN_METERS);
+  welcomeNearbyMap.fitBounds(villaBounds,{padding:[8,8],animate:false});
+  if(welcomeNearbyMap.getZoom()<WELCOME_MAP_INITIAL_ZOOM){
+    welcomeNearbyMap.setZoom(WELCOME_MAP_INITIAL_ZOOM);
+  }
 
   const activeCat=welcomeActiveFilter==='all'?null:welcomeCategoryDef(welcomeActiveFilter);
   const automaticActive=(welcomeActiveFilter==='all'

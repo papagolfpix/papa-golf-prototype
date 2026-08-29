@@ -527,3 +527,12 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
   - Medical: 8 km / max 4 / nearest
 - Candidate fetching automatically expands only as far as the largest enabled automatic-category radius, capped at 10 km.
 - Approved/affiliate commercial categories remain manually controlled.
+
+
+## v0.20.4 — Guest map presentation
+- Explore Nearby now opens tightly centred on the villa rather than zooming out to fit every result.
+- Initial map frame is approximately 500 m from the villa to each edge.
+- Villa receives a prominent gold YOU ARE HERE marker.
+- Utility and approved-place pins use category icons rather than Leaflet default/broken blue marker graphics.
+- Guests can still pan and zoom outward to places beyond the initial frame.
+- Live search radii, maximum-result rules and directional-spread selection remain unchanged.
