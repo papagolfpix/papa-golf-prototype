@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.18.8';
+const RUNTIME_VERSION = '0.19';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -980,14 +980,26 @@ function normalizeRelatedPhoto(item, index = 0) {
       mimeType: item.type || 'image/jpeg',
       captureDate: '',
       gps: null,
+      metadata: {},
       title: '',
       description: '',
       tags: '',
       role: 'standard',
-      inherited: true
+      inherited: true,
+      placeOverrides: {}
     };
   }
+  if(item && typeof item==='object'){
+    if(!item.metadata)item.metadata={};
+    if(!item.placeOverrides)item.placeOverrides={};
+  }
   return item;
+}
+
+function effectiveRelatedField(photo, record, fieldId){
+  const overrides=photo?.placeOverrides||{};
+  if(Object.prototype.hasOwnProperty.call(overrides,fieldId) && String(overrides[fieldId]??'').trim()!=='') return overrides[fieldId];
+  return record?.fields?.[fieldId] ?? '';
 }
 
 function relatedBlob(item) {
@@ -1034,6 +1046,24 @@ function renderSupportingPreview(items = []) {
       <label>Photo tags
         <input data-related-field="tags" type="text" placeholder="e.g. pigs, beach, jetski">
       </label>
+      <details class="related-inherited-editor">
+        <summary>Inherited place information · edit for this photo</summary>
+        <p class="small muted">Leave an override blank to keep inheriting the main place information.</p>
+        <label>Photo-specific place description override
+          <textarea data-place-override="description" rows="3" placeholder="Inherited unless you type a different description here"></textarea>
+        </label>
+        <label>Category override
+          <input data-place-override="category" type="text" placeholder="Inherited category">
+        </label>
+        <label>Location name override
+          <input data-place-override="locationName" type="text" placeholder="Inherited location name">
+        </label>
+        <label>Area / Place override
+          <input data-place-override="areaName" type="text" placeholder="Inherited area / place">
+        </label>
+        <div class="related-custom-overrides"></div>
+      </details>
+      <div class="small muted related-photo-metadata"></div>
       <div class="small muted">Original file: ${escapeHtml(photo.filename || 'photo')} · This photo remains independently editable.</div>
     `;
 
@@ -1045,6 +1075,36 @@ function renderSupportingPreview(items = []) {
     title.value = photo.title || '';
     desc.value = photo.description || '';
     tags.value = photo.tags || '';
+
+    const overrideBox=fields.querySelector('.related-custom-overrides');
+    customFields.filter(f=>!['title','description','category','areaName','locationName'].includes(f.id)).forEach(field=>{
+      const lab=document.createElement('label');
+      lab.textContent=`${field.label} override`;
+      const input=document.createElement('input');
+      input.type='text';
+      input.dataset.placeOverride=field.id;
+      input.placeholder='Inherited unless overridden';
+      input.value=visitorText(photo.placeOverrides?.[field.id]||'');
+      lab.appendChild(input); overrideBox.appendChild(lab);
+    });
+    fields.querySelectorAll('[data-place-override]').forEach(el=>{
+      el.value=visitorText(photo.placeOverrides?.[el.dataset.placeOverride]||'');
+      el.addEventListener('input',()=>{
+        photo.placeOverrides=photo.placeOverrides||{};
+        const v=el.value.trim();
+        if(v)photo.placeOverrides[el.dataset.placeOverride]=v;
+        else delete photo.placeOverrides[el.dataset.placeOverride];
+      });
+    });
+    const md=fields.querySelector('.related-photo-metadata');
+    const mm=photo.metadata||{};
+    const bits=[];
+    if(mm.dateTime||photo.captureDate)bits.push(`Date: ${mm.dateTime||photo.captureDate}`);
+    if(Number.isFinite(mm.latitude)&&Number.isFinite(mm.longitude))bits.push(`GPS: ${mm.latitude.toFixed(5)}, ${mm.longitude.toFixed(5)}`);
+    if(mm.width&&mm.height)bits.push(`${mm.width}×${mm.height}`);
+    if(mm.make||mm.model)bits.push([mm.make,mm.model].filter(Boolean).join(' '));
+    if(mm.size)bits.push(`${Math.round(mm.size/1024)} KB`);
+    md.textContent=bits.length?`Photo metadata: ${bits.join(' · ')}`:'Photo metadata: no embedded EXIF found.';
 
     [role,title,desc,tags].forEach(el => el.addEventListener('input', () => {
       photo[el.dataset.relatedField] = el.value;
@@ -1166,9 +1226,23 @@ async function blobsToDataUrls(items = []) {
 if (supportingPhotosInput) {
   supportingPhotosInput.addEventListener('change', async () => {
     const files=Array.from(supportingPhotosInput.files||[]);
-    files.forEach((file,index)=>{
-      if(file.type.startsWith('image/')) pendingSupportingPhotos.push(normalizeRelatedPhoto(file,pendingSupportingPhotos.length+index));
-    });
+    for(const file of files){
+      if(!file.type.startsWith('image/'))continue;
+      const photo=normalizeRelatedPhoto(file,pendingSupportingPhotos.length);
+      const [dims,exif]=await Promise.all([getImageDimensions(file),readExif(file)]);
+      photo.metadata={
+        filename:file.name||photo.filename,
+        type:file.type||photo.mimeType,
+        size:file.size||0,
+        lastModified:file.lastModified||0,
+        width:dims?.width||null,
+        height:dims?.height||null,
+        ...exif
+      };
+      photo.captureDate=exif?.dateTime||'';
+      photo.gps=(Number.isFinite(exif?.latitude)&&Number.isFinite(exif?.longitude))?{lat:exif.latitude,lng:exif.longitude}:null;
+      pendingSupportingPhotos.push(photo);
+    }
     renderSupportingPreview(pendingSupportingPhotos);
     supportingPhotosInput.value='';
   });
@@ -1374,6 +1448,20 @@ function openVisitorPreview(record){
   let activeIndex=0;
   let activeVisitorUrl='';
 
+  function renderVisitorSharedFields(active){
+    visitorFields.innerHTML='';
+    customFields.forEach(field=>{
+      if(['title','description','category','areaName','locationName'].includes(field.id))return;
+      const rawValue=active && !active.entry ? effectiveRelatedField(active,record,field.id) : record.fields?.[field.id];
+      const value=visitorText(normalizeSavedValue(field,rawValue));
+      if(!value)return;
+      const row=document.createElement('div'); row.className='visitor-info-row';
+      const label=document.createElement('div'); label.className='visitor-info-label'; label.textContent=field.label;
+      const text=document.createElement('div'); text.className='visitor-info-value'; text.textContent=value;
+      row.append(label,text); visitorFields.append(row);
+    });
+  }
+
   function renderVisitorActive(){
     const active=collection[activeIndex];
     if(!active)return;
@@ -1396,13 +1484,14 @@ function openVisitorPreview(record){
       visitorActivePhotoInfo.classList.add('hidden');
       visitorFields.classList.remove('hidden');
     }else{
-      visitorCategory.textContent=
+      const effectiveCategory=visitorText(effectiveRelatedField(active,record,'category'));
+      visitorCategory.textContent=effectiveCategory || (
         active.role==='featured'?'Featured / Sellable':
-        active.role==='context'?'Context / Filler':'Standard';
+        active.role==='context'?'Context / Filler':'Standard');
       visitorCategory.classList.remove('hidden');
       visitorTitle.textContent=active.title || 'Untitled photo';
-      visitorPlace.textContent=[visitorText(fields.locationName),visitorText(fields.areaName)].filter(Boolean).join(' · ');
-      visitorDescription.textContent=active.description || '';
+      visitorPlace.textContent=[visitorText(effectiveRelatedField(active,record,'locationName')),visitorText(effectiveRelatedField(active,record,'areaName'))].filter(Boolean).join(' · ');
+      visitorDescription.textContent=active.description || visitorText(effectiveRelatedField(active,record,'description')) || '';
       visitorDescription.classList.toggle('hidden',!visitorDescription.textContent);
       visitorFields.classList.remove('hidden'); // related photo still belongs to this place/experience
 
@@ -1413,6 +1502,8 @@ function openVisitorPreview(record){
       visitorActivePhotoInfo.textContent=bits.join(' · ');
       visitorActivePhotoInfo.classList.toggle('hidden',!bits.length);
     }
+
+    renderVisitorSharedFields(active);
 
     visitorFilmstrip.innerHTML='';
     collection.forEach((photo,index)=>{
@@ -1441,23 +1532,6 @@ function openVisitorPreview(record){
     renderVisitorActive();
   }
 
-  // Shared place/experience fields stay available for every photo in this collection.
-  visitorFields.innerHTML='';
-  customFields.forEach(field=>{
-    if(['title','description','category','areaName','locationName'].includes(field.id))return;
-    const value=visitorText(normalizeSavedValue(field,record.fields?.[field.id]));
-    if(!value)return;
-    const row=document.createElement('div');
-    row.className='visitor-info-row';
-    const label=document.createElement('div');
-    label.className='visitor-info-label';
-    label.textContent=field.label;
-    const text=document.createElement('div');
-    text.className='visitor-info-value';
-    text.textContent=value;
-    row.append(label,text);
-    visitorFields.append(row);
-  });
 
   const lat=Number(record.metadata?.latitude),lng=Number(record.metadata?.longitude);
   const hasGps=Number.isFinite(lat)&&Number.isFinite(lng);

@@ -393,3 +393,10 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 ## v0.18.8
 - Related photos in Visitor View now retain the shared place/experience information.
 - Switching photos changes photo-specific title, story, role, filename/tags while Features, Access Difficulty, Cost, Rating, Best Time, Visit Time, Transport, Warnings and Location remain visible.
+
+## v0.19 — first-class related photo metadata + editable inheritance
+- New related photos extract their own EXIF date/time, GPS, camera make/model, dimensions, file size/type and filename where available.
+- Related photos inherit place/experience fields from the parent record.
+- Every inherited field can be overridden for an individual related photo; blank override means continue inheriting.
+- Photo-specific title, story, tags and role remain independent.
+- Visitor View uses the active photo's overrides while retaining inherited values for everything not overridden.

@@ -792,3 +792,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
   -webkit-clip-path: inset(0 round 18px) !important;
   overflow: hidden !important;
 }
+
+/* v0.19 — related-photo inheritance editor */
+.related-inherited-editor{margin-top:12px;padding:10px 12px;border:1px dashed var(--line);border-radius:14px}
+.related-inherited-editor summary{cursor:pointer;font-weight:750}
+.related-inherited-editor label{display:block;margin-top:10px}
+.related-inherited-editor input,.related-inherited-editor textarea{width:100%;box-sizing:border-box;margin-top:5px}
+.related-photo-metadata{margin-top:10px;line-height:1.45}
