@@ -908,3 +908,65 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .guest-menu-grid{grid-template-columns:1fr}
   .guest-menu-tile{min-height:105px}
 }
+
+
+/* ---- Papa Golf A5 Welcome Card v0.20.1 ---- */
+.welcome-a5-panel{margin-top:1rem}
+.welcome-a5-actions{display:flex;gap:.65rem;flex-wrap:wrap}
+.welcome-a5-toolbar{max-width:760px;margin:0 auto 12px;display:flex;justify-content:space-between;gap:.75rem}
+.welcome-a5-stage{display:flex;justify-content:center;padding:8px 0 28px;overflow:auto}
+.welcome-a5-card{
+  box-sizing:border-box;
+  width:min(148mm,100%);
+  min-height:210mm;
+  padding:8mm 9mm 7mm;
+  background:#fff;
+  color:#111;
+  border-radius:4mm;
+  box-shadow:0 10px 34px rgba(0,0,0,.35);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+}
+.a5-brand{width:100%;background:#050505;border-radius:3mm;padding:3mm 5mm;margin-bottom:4mm}
+.a5-brand img{display:block;width:100%;height:39mm;object-fit:contain;margin:0 auto}
+.a5-welcome{font-size:8mm;line-height:1;font-weight:900;letter-spacing:.08em;margin-top:1mm}
+.a5-scan-title{font-size:5.2mm;line-height:1.18;font-weight:900;margin-top:3mm}
+.a5-scan-sub{font-size:2.9mm;line-height:1.45;margin-top:2mm;color:#4b4b4b}
+.a5-qr-wrap{margin:3.5mm 0 3mm;padding:3mm;border:1.2mm solid #111;border-radius:4mm;background:#fff}
+.a5-qr{width:55mm;height:55mm;display:grid;place-items:center}
+.a5-qr img,.a5-qr canvas{display:block!important;width:55mm!important;height:55mm!important}
+.a5-qr-fallback{width:55mm;height:55mm;display:grid;place-items:center;border:2mm solid #111;font-size:7mm;font-weight:900}
+.a5-wifi{width:100%;border-top:1px solid #bbb;border-bottom:1px solid #bbb;padding:2.5mm 0 2mm;margin-top:auto}
+.a5-wifi-title{font-size:5mm;font-weight:900;letter-spacing:.1em;margin-bottom:1.5mm}
+.a5-wifi>div:not(.a5-wifi-title){display:grid;grid-template-columns:30mm 1fr;align-items:baseline;text-align:left;padding:.6mm 8mm}
+.a5-wifi span{font-size:3.5mm;color:#555}
+.a5-wifi strong{font-size:4.3mm;overflow-wrap:anywhere}
+.a5-powered{display:flex;flex-direction:column;gap:.7mm;margin-top:3mm}
+.a5-powered strong{font-size:2.9mm;letter-spacing:.08em}
+.a5-powered span{font-size:2.5mm;color:#777}
+@media(max-width:600px){
+  .welcome-a5-card{width:100%;min-height:auto;aspect-ratio:148/210;padding:5.5vw 6vw}
+  .a5-brand img{height:25vw;max-height:39mm}
+  .a5-welcome{font-size:6.8vw}
+  .a5-scan-title{font-size:4.4vw}
+  .a5-scan-sub{font-size:2.55vw}
+  .a5-qr,.a5-qr img,.a5-qr canvas,.a5-qr-fallback{width:43vw!important;height:43vw!important;max-width:55mm;max-height:55mm}
+  .a5-wifi-title{font-size:4vw}
+  .a5-wifi>div:not(.a5-wifi-title){grid-template-columns:25vw 1fr;padding:.5vw 4vw}
+  .a5-wifi span{font-size:2.8vw}.a5-wifi strong{font-size:3.4vw}
+  .a5-powered strong{font-size:2.25vw}.a5-powered span{font-size:2vw}
+}
+@media print{
+  @page{size:A5 portrait;margin:0}
+  body{margin:0!important;background:#fff!important}
+  body>*{display:none!important}
+  main,.app-shell,#welcomeA5Preview,.welcome-a5-stage,#welcomeA5Card{display:flex!important}
+  main,.app-shell,#welcomeA5Preview,.welcome-a5-stage{margin:0!important;padding:0!important;width:148mm!important;height:210mm!important;max-width:none!important;background:#fff!important}
+  .welcome-a5-toolbar,.app-header,.tabs,.library-tools{display:none!important}
+  #welcomeA5Preview{position:fixed!important;inset:0!important}
+  .welcome-a5-stage{align-items:flex-start;justify-content:flex-start}
+  .welcome-a5-card{width:148mm!important;height:210mm!important;min-height:210mm!important;border-radius:0!important;box-shadow:none!important}
+}

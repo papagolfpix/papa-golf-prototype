@@ -476,3 +476,15 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Google Maps navigation handoff is available for curated pins.
 - Live utility-place discovery and route-time calculations remain deliberately provider-independent for the next integration layer.
 - Removed stale manifest link from app shell.
+
+
+## v0.20.1 — A5 Welcome Card
+- Added standard portrait A5 Welcome Card preview for the clear plastic villa stand.
+- Uses the current property's logo automatically.
+- Large "SCAN HERE FOR EVERYTHING YOU NEED DURING YOUR STAY" message.
+- Large QR area for the Welcome page.
+- Prints Wi-Fi network and password clearly for manual entry.
+- Magic Dragon Villa prototype Wi-Fi seeded as PaulHup_2.4GHz / FrameBalls555 only when existing saved Wi-Fi is blank; user-entered values are preserved.
+- Added Powered by PAPA GOLF PLATFORM branding and "Local knowledge. Better stays."
+- Added Print / Save as PDF action using A5 portrait print CSS.
+- A5 data is sourced from the same Welcome property/unit fields; no duplicate Wi-Fi entry.

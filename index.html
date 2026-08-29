@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.20.0" />
+<link rel="stylesheet" href="styles.css?v=0.20.1" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.20.0</div>
+      <div class="eyebrow">PAPA GOLF · V0.20.1</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -179,8 +179,47 @@
     </article>
   </div>
 
+  <article class="panel welcome-a5-panel">
+    <h3>A5 Welcome Card</h3>
+    <p class="muted">A standard upright A5 sheet for the clear plastic stand. It uses this villa's branding and Wi-Fi details automatically.</p>
+    <div class="welcome-a5-actions">
+      <button id="previewWelcomeA5Btn" class="primary-btn" type="button">Preview A5 Welcome Card</button>
+      <button id="printWelcomeA5Btn" class="secondary-btn" type="button">Print / Save as PDF</button>
+    </div>
+  </article>
+
   <div class="welcome-preview-action">
     <button id="previewWelcomeGuestBtn" class="primary-btn">Open Guest Welcome Preview</button>
+  </div>
+</section>
+
+<section id="welcomeA5Preview" class="screen hidden">
+  <div class="welcome-a5-toolbar">
+    <button id="welcomeA5BackBtn" class="secondary-btn">← Edit Welcome</button>
+    <button id="welcomeA5PrintBtn" class="primary-btn">Print / Save PDF</button>
+  </div>
+
+  <div class="welcome-a5-stage">
+    <article id="welcomeA5Card" class="welcome-a5-card">
+      <div class="a5-brand">
+        <img id="welcomeA5Logo" src="magic-dragon-villa-logo.png" alt="Villa logo">
+      </div>
+      <div class="a5-welcome">WELCOME</div>
+      <div class="a5-scan-title">SCAN HERE FOR EVERYTHING<br>YOU NEED DURING YOUR STAY</div>
+      <div class="a5-scan-sub">Villa guide · Local recommendations · Maps & directions<br>Food & drink · Things to do · Transport · Help</div>
+      <div class="a5-qr-wrap">
+        <div id="welcomeA5Qr" class="a5-qr"></div>
+      </div>
+      <div class="a5-wifi">
+        <div class="a5-wifi-title">WI-FI</div>
+        <div><span>Network</span><strong id="welcomeA5WifiName">—</strong></div>
+        <div><span>Password</span><strong id="welcomeA5WifiPassword">—</strong></div>
+      </div>
+      <div class="a5-powered">
+        <strong>Powered by PAPA GOLF PLATFORM</strong>
+        <span>Local knowledge. Better stays.</span>
+      </div>
+    </article>
   </div>
 </section>
 
@@ -438,6 +477,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.20.0" defer></script>
+  <script src="app.js?v=0.20.1" defer></script>
 </body>
 </html>

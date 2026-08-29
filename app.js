@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.20.0';
+const RUNTIME_VERSION = '0.20.1';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2540,14 +2540,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0200';
+    const key = 'papaGolfSwReloaded0201';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.20.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.20.1', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2575,8 +2575,8 @@ const WELCOME_DEFAULT_PROPERTY = {
 
 const WELCOME_DEFAULT_UNIT = {
   name:'Magic Dragon Villa',
-  wifiName:'',
-  wifiPassword:'',
+  wifiName:'PaulHup_2.4GHz',
+  wifiPassword:'FrameBalls555',
   bluetooth:'',
   villaInfo:'',
   overrideHost:false,
@@ -2650,7 +2650,8 @@ function welcomeShow(target){
   const tools=document.querySelector('.library-tools');
   const welcome=document.getElementById('welcomeModule');
   const preview=document.getElementById('welcomeGuestPreview');
-  [photos,map,areas,welcome,preview].forEach(el=>{if(el)el.classList.add('hidden')});
+  const a5=document.getElementById('welcomeA5Preview');
+  [photos,map,areas,welcome,preview,a5].forEach(el=>{if(el)el.classList.add('hidden')});
   if(tools)tools.classList.add('hidden');
   if(target)target.classList.remove('hidden');
   document.querySelectorAll('.view-tab').forEach(el=>el.classList.remove('active'));
@@ -2922,16 +2923,54 @@ function renderGuestFoodList(){
     </article>`;
   }).join(''):'<div class="guest-info-card"><p class="muted">No approved restaurants or bars have been added yet.</p></div>';
 }
+
+function welcomePublicUrl(){
+  // The first real property currently uses the prototype page. This remains
+  // centralized so a dedicated villa slug can replace it without changing the A5 renderer.
+  return `${location.origin}${location.pathname}`;
+}
+function renderWelcomeA5(){
+  const d=effectiveWelcome();
+  const logo=document.getElementById('welcomeA5Logo');
+  if(logo)logo.src=d.logo||'magic-dragon-villa-logo.png';
+  const wn=document.getElementById('welcomeA5WifiName');
+  const wp=document.getElementById('welcomeA5WifiPassword');
+  if(wn)wn.textContent=d.wifiName||'—';
+  if(wp)wp.textContent=d.wifiPassword||'—';
+
+  const qr=document.getElementById('welcomeA5Qr');
+  if(qr){
+    qr.innerHTML='';
+    const url=welcomePublicUrl();
+    if(typeof QRCode!=='undefined'){
+      new QRCode(qr,{text:url,width:210,height:210,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+    }else{
+      qr.innerHTML='<div class="a5-qr-fallback">WELCOME<br>QR</div>';
+    }
+  }
+}
+function printWelcomeA5(){
+  renderWelcomeA5();
+  setTimeout(()=>window.print(),80);
+}
+
 function initWelcomeModule(){
   // Seed the first real-world property only when Welcome has never been configured.
   if(!localStorage.getItem(WELCOME_PROPERTY_KEY))localStorage.setItem(WELCOME_PROPERTY_KEY,JSON.stringify(WELCOME_DEFAULT_PROPERTY));
-  if(!localStorage.getItem(WELCOME_UNIT_KEY))localStorage.setItem(WELCOME_UNIT_KEY,JSON.stringify(WELCOME_DEFAULT_UNIT));
+  if(!localStorage.getItem(WELCOME_UNIT_KEY)){
+    localStorage.setItem(WELCOME_UNIT_KEY,JSON.stringify(WELCOME_DEFAULT_UNIT));
+  }else{
+    const existingUnit=readWelcomeJson(WELCOME_UNIT_KEY,{});
+    if(!String(existingUnit.wifiName||'').trim() && !String(existingUnit.wifiPassword||'').trim()){
+      localStorage.setItem(WELCOME_UNIT_KEY,JSON.stringify({...WELCOME_DEFAULT_UNIT,...existingUnit,wifiName:WELCOME_DEFAULT_UNIT.wifiName,wifiPassword:WELCOME_DEFAULT_UNIT.wifiPassword}));
+    }
+  }
 
-  const open=document.getElementById('openWelcomeModuleBtn'),page=document.getElementById('welcomeModule'),preview=document.getElementById('welcomeGuestPreview');
+  const open=document.getElementById('openWelcomeModuleBtn'),page=document.getElementById('welcomeModule'),preview=document.getElementById('welcomeGuestPreview'),a5=document.getElementById('welcomeA5Preview');
   open?.addEventListener('click',()=>{loadWelcomeEditor();welcomeShow(page)});
 
   document.getElementById('welcomeBackBtn')?.addEventListener('click',()=>{
-    page?.classList.add('hidden');preview?.classList.add('hidden');
+    page?.classList.add('hidden');preview?.classList.add('hidden');a5?.classList.add('hidden');
     document.getElementById('photosView')?.classList.remove('hidden');
     document.querySelector('.library-tools')?.classList.remove('hidden');
     document.querySelectorAll('.view-tab').forEach(el=>el.classList.remove('active'));
@@ -2966,6 +3005,22 @@ function initWelcomeModule(){
     renderGuestWelcome();
     welcomeShow(preview);
   });
+
+  document.getElementById('previewWelcomeA5Btn')?.addEventListener('click',()=>{
+    saveWelcomeProperty();
+    saveWelcomeUnit();
+    renderWelcomeA5();
+    welcomeShow(a5);
+  });
+  document.getElementById('printWelcomeA5Btn')?.addEventListener('click',()=>{
+    saveWelcomeProperty();
+    saveWelcomeUnit();
+    renderWelcomeA5();
+    welcomeShow(a5);
+    setTimeout(()=>printWelcomeA5(),120);
+  });
+  document.getElementById('welcomeA5BackBtn')?.addEventListener('click',()=>welcomeShow(page));
+  document.getElementById('welcomeA5PrintBtn')?.addEventListener('click',printWelcomeA5);
 
   document.getElementById('welcomeGuestPreview')?.addEventListener('click',event=>{
     const tile=event.target.closest('[data-welcome-panel]');
