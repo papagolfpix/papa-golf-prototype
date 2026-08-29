@@ -379,3 +379,8 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 ## v0.18.5
 - Uses one identical active-photo rendering rule for original and related images.
 - Removes the image border that was visually masking portrait-image corner rounding on iPhone Safari.
+
+## v0.18.6
+- Establishes an 18px Papa Golf photo radius across library, detail, related-photo, Visitor View and gallery displays.
+- Applies the same rounded-photo design to newly generated standalone public pages.
+- Keeps the visual treatment consistent across landscape and portrait photos on iPhone Safari.

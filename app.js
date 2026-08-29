@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.18.5';
+const RUNTIME_VERSION = '0.18.6';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -1226,6 +1226,14 @@ async function buildStandalonePublicPage(record) {
       .public-thumb.active{border-color:currentColor}
       .public-thumb img{display:block;width:78px;height:78px;object-fit:cover}
       .filmstrip-hint{font-size:.82rem;opacity:.7;margin-top:5px}
+
+  img { border-radius: 18px; }
+  .hero img, .hero-image, .visitor-image, .filmstrip img, .thumb img {
+    border-radius: 18px !important;
+    overflow: hidden;
+    clip-path: inset(0 round 18px);
+    -webkit-clip-path: inset(0 round 18px);
+  }
 </style></head><body><main class="page"><div class="brand">PAPA GOLF</div>${imageData?`<img class="hero" src="${safeImage}" alt="${safeTitle}">`:''}<div class="content">${category?`<div class="category">${safeCategory}</div>`:''}<h1>${safeTitle}</h1>${place?`<div class="place">${safePlace}</div>`:''}${description?`<div class="description">${safeDescription}</div>`:''}${rows?`<div class="fields">${rows}</div>`:''}${mapHtml}<div class="footer">Papa Golf · Explore the story behind the place</div></div></main>${mapScripts}</body></html>`;
 }
 async function downloadPublishedPage(){

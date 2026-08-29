@@ -704,3 +704,42 @@ svg.leaflet-image-layer.leaflet-interactive path {
   clip-path: inset(0 round 18px) !important;
   box-shadow: 0 0 0 1px var(--line) !important;
 }
+
+/* v0.18.6 — Papa Golf photographic display language
+   All normal displayed photos use the same soft rounded treatment.
+   Tiny utility icons/QR canvases are intentionally excluded. */
+:root { --photo-radius: 18px; }
+
+.photo-card img,
+.library-card img,
+.saved-photo img,
+#detailImage,
+.detail-image,
+.supporting-thumb img,
+.related-photo-thumb img,
+.gallery-thumb img,
+.visitor-hero img,
+#visitorImage,
+.visitor-image,
+#visitorFilmstrip img,
+.visitor-filmstrip img,
+.public-photo img,
+.public-hero img,
+.hero-photo img,
+.guest-card img {
+  border-radius: var(--photo-radius) !important;
+  overflow: hidden !important;
+  clip-path: inset(0 round var(--photo-radius)) !important;
+  -webkit-clip-path: inset(0 round var(--photo-radius)) !important;
+}
+
+/* Active/hero photos get the same edge treatment on iPhone Safari. */
+#detailImage,
+#visitorImage,
+.visitor-image,
+.visitor-hero img,
+.public-hero img,
+.hero-photo img {
+  -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
+  -webkit-mask-clip: border-box !important;
+}
