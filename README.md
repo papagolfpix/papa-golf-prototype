@@ -611,3 +611,12 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Manual Refresh Nearby clears stale automatic results first.
 - Guest UI explicitly labels Google results as `Google nearby` and status as `Google utility places`.
 - Sticky map, 750 m starting view, and YOU ARE HERE + selected-place best-fit are preserved.
+
+
+## v0.20.13 — Nearby provider race-condition fix
+- Added a request-generation lock so overlapping Nearby searches cannot overwrite each other.
+- Google Places remains the first-choice automatic utility provider.
+- If Google succeeds, any older/later stale OpenStreetMap response is ignored.
+- OpenStreetMap is only used when Google genuinely fails or no Google key is available.
+- Starting a new refresh invalidates any previous in-flight Nearby request.
+- Existing sticky map, nearest-first list, 750 m start view, and YOU ARE HERE + destination best-fit remain unchanged.

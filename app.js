@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.20.12';
+const RUNTIME_VERSION = '0.20.13';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2540,14 +2540,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0212';
+    const key = 'papaGolfSwReloaded0213';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.20.12', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.20.13', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2610,6 +2610,8 @@ let welcomeAutomaticError = '';
 const WELCOME_AUTO_CACHE_KEY = 'papaGolfWelcomeAutomaticPlacesV1';
 const WELCOME_GOOGLE_PLACES_KEY = 'papaGolfGooglePlacesApiKey';
 const WELCOME_GOOGLE_TEST_RADIUS_METERS = 2500;
+let welcomeNearbyLoadGeneration = 0;
+let welcomeNearbyProvider = '';
 const WELCOME_AUTO_CACHE_MS = 6 * 60 * 60 * 1000;
 const WELCOME_AUTO_MAX_QUERY_RADIUS_METERS = 10000;
 const WELCOME_MAP_HALF_SPAN_METERS = 750;
@@ -3193,29 +3195,56 @@ async function fetchGoogleAutomaticPlaces(){
 }
 
 async function refreshWelcomeNearbyPlaces(){
+  const generation=++welcomeNearbyLoadGeneration;
   const status=document.getElementById('welcomeNearbyStatus');
   const hasGoogle=!!getPapaGolfGooglePlacesKey();
+
+  // Clear prior automatic data immediately so an older provider result
+  // cannot remain visible while a new request is in flight.
+  welcomeAutomaticPlaces=[];
+  welcomeNearbyProvider='';
+  renderWelcomeNearbyMap();
 
   if(hasGoogle){
     try{
       if(status) status.textContent='Loading nearby places from Google…';
       const googlePlaces=await fetchGoogleAutomaticPlaces();
+
+      // Ignore stale responses from an earlier request.
+      if(generation!==welcomeNearbyLoadGeneration) return;
+
+      welcomeNearbyProvider='google';
       welcomeAutomaticPlaces=googlePlaces;
-      localStorage.setItem(WELCOME_AUTOMATIC_CACHE_KEY,JSON.stringify({
-        provider:'google',
-        savedAt:Date.now(),
-        places:googlePlaces
-      }));
+      try{
+        localStorage.setItem(WELCOME_AUTOMATIC_CACHE_KEY,JSON.stringify({
+          provider:'google',
+          savedAt:Date.now(),
+          places:googlePlaces
+        }));
+      }catch{}
+
       if(status) status.textContent=`Google Places loaded ${googlePlaces.length} nearby utility places.`;
       renderWelcomeNearbyMap();
       return;
     }catch(err){
+      if(generation!==welcomeNearbyLoadGeneration) return;
       console.warn('Google Places automatic search failed; falling back to OpenStreetMap',err);
       if(status) status.textContent='Google Places unavailable. Using OpenStreetMap fallback…';
     }
   }
 
-  await fetchWelcomeAutomaticPlaces(true);
+  // Only reach OSM if Google is unavailable/failed. If a newer refresh starts,
+  // this generation becomes stale and will not be allowed to overwrite Google.
+  try{
+    const beforeGeneration=generation;
+    await fetchWelcomeAutomaticPlaces(true);
+    if(beforeGeneration!==welcomeNearbyLoadGeneration) return;
+    welcomeNearbyProvider='osm';
+    renderWelcomeNearbyMap();
+  }catch(err){
+    if(generation!==welcomeNearbyLoadGeneration) return;
+    if(status) status.textContent=`Nearby places failed: ${err?.message||err}`;
+  }
 }
 
 function welcomeFilteredAutomaticPlaces(){
@@ -3355,7 +3384,7 @@ function renderWelcomeNearbyMap(){
       const curatedCount=welcomeFilteredPartners().length;
       const parts=[];
       if(automaticActive){
-        const provider=welcomeAutomaticPlaces.some(p=>p.source==='google')?'Google':'OpenStreetMap';
+        const provider=welcomeNearbyProvider==='google'?'Google':(welcomeNearbyProvider==='osm'?'OpenStreetMap':(welcomeAutomaticPlaces.some(p=>p.source==='google')?'Google':'OpenStreetMap'));
         parts.push(`${autoCount} ${provider} utility place${autoCount===1?'':'s'}`);
       }
       if(curatedCount)parts.push(`${curatedCount} approved place${curatedCount===1?'':'s'}`);
@@ -3575,7 +3604,6 @@ function initWelcomeModule(){
 
   document.getElementById('refreshWelcomeNearbyBtn')?.addEventListener('click',async()=>{
     try{localStorage.removeItem(WELCOME_AUTO_CACHE_KEY)}catch{}
-    welcomeAutomaticPlaces=[];
     await refreshWelcomeNearbyPlaces();
   });
 
