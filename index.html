@@ -7,13 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=0.19.8" />
+<link rel="stylesheet" href="styles.css?v=0.20.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.19.8</div>
+      <div class="eyebrow">PAPA GOLF · V0.20.0</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -100,64 +99,169 @@
     </section>
 
   
+
 <section id="welcomeModule" class="screen hidden">
   <div class="screen-header">
     <button id="welcomeBackBtn" class="secondary-btn">← Back</button>
-    <div><h2>Papa Golf Welcome</h2><p class="muted">Property guest information and local discovery.</p></div>
+    <div><h2>Property Welcome</h2><p class="muted">Branding, guest information, nearby discovery and partner recommendations.</p></div>
   </div>
+
   <div class="welcome-grid">
-    <article class="panel">
-      <h3>Property</h3>
-      <label>Property name<input id="welcomePropertyName" type="text" placeholder="e.g. Coconut Beach Villas"></label>
-      <label>General host / manager contact<input id="welcomePropertyHost" type="text" placeholder="Name / phone / LINE / WhatsApp"></label>
-      <label>Property address / location<input id="welcomePropertyAddress" type="text" placeholder="Address or location"></label>
-      <label>Emergency information<textarea id="welcomePropertyEmergency" rows="3" placeholder="Emergency contacts, hospital, police, etc."></textarea></label>
-      <label>Shared recommendations<textarea id="welcomePropertyRecommendations" rows="4" placeholder="Restaurants, attractions, transport, useful local information"></textarea></label>
+    <article class="panel welcome-brand-panel">
+      <h3>Property identity</h3>
+      <img id="welcomeBrandPreview" class="welcome-brand-preview" src="magic-dragon-villa-logo.png" alt="Property logo">
+      <label>Property / development name
+        <input id="welcomePropertyName" type="text" placeholder="e.g. Magic Dragon Villa">
+      </label>
+      <label>Developer / host brand
+        <input id="welcomePropertyDeveloper" type="text" placeholder="Optional developer or management name">
+      </label>
+      <label>Area
+        <input id="welcomePropertyAddress" type="text" placeholder="e.g. Bangrak, Koh Samui">
+      </label>
+      <div class="welcome-coordinate-grid">
+        <label>Latitude<input id="welcomePropertyLat" type="text" inputmode="decimal"></label>
+        <label>Longitude<input id="welcomePropertyLng" type="text" inputmode="decimal"></label>
+      </div>
+      <p class="small muted">These coordinates are the origin for nearby places, distance and future route calculations.</p>
+      <label>General host / manager contact
+        <input id="welcomePropertyHost" type="text" placeholder="Name / phone / LINE / WhatsApp">
+      </label>
+      <label>Emergency information
+        <textarea id="welcomePropertyEmergency" rows="3" placeholder="Emergency contacts, hospital, police, etc."></textarea>
+      </label>
       <button id="saveWelcomePropertyBtn" class="primary-btn">Save Property</button>
     </article>
 
     <article class="panel">
-      <h3>Accommodation Unit</h3>
-      <label>Unit / villa name<input id="welcomeUnitName" type="text" placeholder="e.g. Villa 3"></label>
+      <h3>Villa guest information</h3>
+      <label>Guest-facing villa name
+        <input id="welcomeUnitName" type="text" placeholder="e.g. Magic Dragon Villa">
+      </label>
       <label>Wi-Fi name<input id="welcomeWifiName" type="text" placeholder="Wi-Fi network"></label>
       <label>Wi-Fi password<input id="welcomeWifiPassword" type="text" placeholder="Wi-Fi password"></label>
       <label>Bluetooth / entertainment<textarea id="welcomeBluetooth" rows="3" placeholder="Speaker, TV, streaming or Bluetooth instructions"></textarea></label>
-      <label>Villa instructions<textarea id="welcomeVillaInfo" rows="4" placeholder="Check-in/out, rubbish, air-con, appliances, housekeeping, etc."></textarea></label>
+      <label>Villa Guide<textarea id="welcomeVillaInfo" rows="5" placeholder="Check-in/out, rubbish, air-con, appliances, housekeeping, pool, gates, etc."></textarea></label>
 
       <div class="inheritance-box">
-        <strong>Inheritance</strong>
-        <p class="muted">Shared information inherits from the Property unless this unit overrides it.</p>
+        <strong>Property inheritance</strong>
+        <p class="muted">Shared information comes from the property unless this accommodation unit overrides it.</p>
         <label><input id="overrideWelcomeHost" type="checkbox"> Override host / manager contact</label>
         <input id="welcomeUnitHost" type="text" placeholder="Unit-specific host contact" disabled>
         <label><input id="overrideWelcomeEmergency" type="checkbox"> Override emergency information</label>
         <textarea id="welcomeUnitEmergency" rows="3" placeholder="Unit-specific emergency information" disabled></textarea>
-        <label><input id="overrideWelcomeRecommendations" type="checkbox"> Override recommendations</label>
-        <textarea id="welcomeUnitRecommendations" rows="4" placeholder="Unit-specific recommendations" disabled></textarea>
       </div>
 
-      <button id="saveWelcomeUnitBtn" class="primary-btn">Save Unit</button>
-      <button id="previewWelcomeGuestBtn" class="secondary-btn">Preview Guest Welcome</button>
+      <button id="saveWelcomeUnitBtn" class="primary-btn">Save Villa</button>
     </article>
+
+    <article class="panel welcome-categories-panel">
+      <h3>Explore Nearby categories</h3>
+      <p class="muted">You decide what guests are allowed to discover. Utility categories can later use live nearby search; commercial categories can be restricted to your approved partners.</p>
+      <div id="welcomeCategoryEditor" class="welcome-category-editor"></div>
+      <button id="saveWelcomeCategoriesBtn" class="primary-btn">Save Categories</button>
+    </article>
+
+    <article class="panel welcome-partners-panel">
+      <h3>Curated / affiliate places</h3>
+      <p class="muted">Add businesses or places that you specifically want guests to see. These already work on the guest map in this prototype.</p>
+      <div class="welcome-partner-form">
+        <label>Name<input id="welcomePartnerName" type="text" placeholder="e.g. Favourite Beach Bar"></label>
+        <label>Category<select id="welcomePartnerCategory"></select></label>
+        <div class="welcome-coordinate-grid">
+          <label>Latitude<input id="welcomePartnerLat" type="text" inputmode="decimal" placeholder="9.55..."></label>
+          <label>Longitude<input id="welcomePartnerLng" type="text" inputmode="decimal" placeholder="100.05..."></label>
+        </div>
+        <label>Short guest note<input id="welcomePartnerNote" type="text" placeholder="Why you recommend it / partner offer"></label>
+        <button id="addWelcomePartnerBtn" class="secondary-btn" type="button">+ Add curated place</button>
+      </div>
+      <div id="welcomePartnerList" class="welcome-partner-list"></div>
+    </article>
+  </div>
+
+  <div class="welcome-preview-action">
+    <button id="previewWelcomeGuestBtn" class="primary-btn">Open Guest Welcome Preview</button>
   </div>
 </section>
 
 <section id="welcomeGuestPreview" class="screen hidden">
-  <div class="screen-header">
-    <button id="welcomeGuestBackBtn" class="secondary-btn">← Back</button>
-    <div><h2 id="guestWelcomeTitle">Welcome</h2><p id="guestWelcomeProperty" class="muted"></p></div>
+  <div class="welcome-guest-topbar">
+    <button id="welcomeGuestBackBtn" class="secondary-btn">← Edit Welcome</button>
   </div>
+
   <div class="guest-welcome-shell">
-    <div class="guest-welcome-hero"><h1 id="guestWelcomeHeading">Welcome</h1><p>Everything you need during your stay.</p></div>
-    <div class="guest-welcome-cards">
-      <article class="guest-card"><h3>📶 Wi-Fi & Technology</h3><div id="guestWifiInfo"></div><div id="guestBluetoothInfo"></div></article>
-      <article class="guest-card"><h3>🏠 Your Villa</h3><div id="guestVillaInfo"></div><div id="guestHostInfo"></div></article>
-      <article class="guest-card"><h3>🍽 Eat, Drink & Explore</h3><div id="guestRecommendationsInfo"></div></article>
-      <article class="guest-card"><h3>🆘 Help & Emergency</h3><div id="guestEmergencyInfo"></div></article>
-      <article class="guest-card"><h3>📸 Explore Papa Golf</h3><p>See a photograph around the property that interests you? Scan its Papa Golf code to discover where it was taken, its story, how to get there and related places nearby.</p></article>
-      <article class="guest-card"><h3>🗺 Plan Your Stay</h3><p>Future feature: choose your dates, interests and activity priorities to create a personalised itinerary with weather-aware Plan B options.</p></article>
+    <header class="guest-property-brand">
+      <img id="guestWelcomeLogo" src="magic-dragon-villa-logo.png" alt="Villa logo">
+      <div id="guestWelcomeDeveloper" class="guest-developer"></div>
+      <div id="guestWelcomeProperty" class="guest-property-location"></div>
+    </header>
+
+    <div class="guest-welcome-intro">
+      <h1 id="guestWelcomeHeading">Welcome</h1>
+      <p>Everything you need during your stay, all in one place.</p>
     </div>
+
+    <div id="guestWelcomeHome" class="guest-welcome-home">
+      <div class="guest-menu-grid">
+        <button class="guest-menu-tile" type="button" data-welcome-panel="guestVillaPanel"><span>🏠</span><strong>Villa Guide</strong><small>House information & help</small></button>
+        <button class="guest-menu-tile" type="button" data-welcome-panel="guestWifiPanel"><span>📶</span><strong>Wi-Fi</strong><small>Network & technology</small></button>
+        <button class="guest-menu-tile guest-menu-featured" type="button" data-welcome-panel="guestExplorePanel"><span>🗺</span><strong>Explore Nearby</strong><small>Map, essentials & partners</small></button>
+        <button class="guest-menu-tile" type="button" data-welcome-panel="guestFoodPanel"><span>🍽</span><strong>Food & Drink</strong><small>Our approved places</small></button>
+        <button class="guest-menu-tile" type="button" data-welcome-panel="guestTransportPanel"><span>🛵</span><strong>Transport</strong><small>Getting around Samui</small></button>
+        <button class="guest-menu-tile" type="button" data-welcome-panel="guestEmergencyPanel"><span>🆘</span><strong>Help & Emergency</strong><small>Contacts & important info</small></button>
+      </div>
+    </div>
+
+    <section id="guestVillaPanel" class="guest-welcome-panel hidden">
+      <button class="guest-panel-back" type="button">← Welcome menu</button>
+      <h2>🏠 Villa Guide</h2>
+      <div id="guestVillaInfo" class="guest-info-card"></div>
+      <div id="guestHostInfo" class="guest-info-card"></div>
+    </section>
+
+    <section id="guestWifiPanel" class="guest-welcome-panel hidden">
+      <button class="guest-panel-back" type="button">← Welcome menu</button>
+      <h2>📶 Wi-Fi & Technology</h2>
+      <div id="guestWifiInfo" class="guest-info-card"></div>
+      <div id="guestBluetoothInfo" class="guest-info-card"></div>
+    </section>
+
+    <section id="guestExplorePanel" class="guest-welcome-panel hidden">
+      <button class="guest-panel-back" type="button">← Welcome menu</button>
+      <div class="guest-panel-heading">
+        <div><h2>🗺 Explore Nearby</h2><p class="muted">Choose only what you want to see.</p></div>
+      </div>
+      <div id="welcomeGuestFilters" class="welcome-filter-chips"></div>
+      <div id="welcomeNearbyMap" class="welcome-nearby-map"></div>
+      <div id="welcomeNearbyStatus" class="small muted"></div>
+      <div id="welcomeNearbyList" class="welcome-nearby-list"></div>
+    </section>
+
+    <section id="guestFoodPanel" class="guest-welcome-panel hidden">
+      <button class="guest-panel-back" type="button">← Welcome menu</button>
+      <h2>🍽 Food & Drink</h2>
+      <p class="muted">Only Papa Golf / property-approved restaurants and bars are shown here.</p>
+      <div id="guestFoodList" class="welcome-nearby-list"></div>
+    </section>
+
+    <section id="guestTransportPanel" class="guest-welcome-panel hidden">
+      <button class="guest-panel-back" type="button">← Welcome menu</button>
+      <h2>🛵 Transport</h2>
+      <div class="guest-info-card">
+        <p>Nearby transport, scooter/car hire and route tools will appear here as the live routing layer is connected.</p>
+      </div>
+    </section>
+
+    <section id="guestEmergencyPanel" class="guest-welcome-panel hidden">
+      <button class="guest-panel-back" type="button">← Welcome menu</button>
+      <h2>🆘 Help & Emergency</h2>
+      <div id="guestEmergencyInfo" class="guest-info-card"></div>
+    </section>
+
+    <div class="guest-welcome-footer">Powered by Papa Golf</div>
   </div>
 </section>
+
 
 </main>
 
@@ -334,6 +438,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.19.8" defer></script>
+  <script src="app.js?v=0.20.0" defer></script>
 </body>
 </html>

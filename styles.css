@@ -849,3 +849,62 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .related-inherited-editor textarea:focus::placeholder{
   opacity:.52;
 }
+
+
+/* ---- Papa Golf Welcome v0.20 ---- */
+.welcome-brand-panel{overflow:hidden}
+.welcome-brand-preview{display:block;width:100%;max-height:220px;object-fit:contain;background:#050505;border:1px solid rgba(224,188,102,.22);border-radius:18px;margin:.5rem 0 1rem}
+.welcome-coordinate-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.welcome-category-editor{display:grid;gap:.65rem;margin:.8rem 0}
+.welcome-category-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,.9fr);gap:.7rem;align-items:center;padding:.7rem;border:1px solid rgba(255,255,255,.1);border-radius:13px;background:rgba(255,255,255,.025)}
+.welcome-category-enable{display:flex!important;gap:.55rem;align-items:center;margin:0!important}
+.welcome-category-row select{width:100%}
+.welcome-partner-form{padding:.75rem;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.025)}
+.welcome-partner-list{display:grid;gap:.55rem;margin-top:.8rem}
+.welcome-partner-row{display:flex;gap:.75rem;justify-content:space-between;align-items:center;padding:.75rem;border:1px solid rgba(255,255,255,.1);border-radius:13px}
+.welcome-partner-row button{flex:0 0 auto}
+.welcome-preview-action{display:flex;justify-content:center;padding:1rem 0 2rem}
+.welcome-preview-action button{min-height:54px;min-width:min(100%,360px)}
+.welcome-guest-topbar{max-width:760px;margin:0 auto;padding:8px 0 10px}
+.guest-property-brand{text-align:center;padding:10px 8px 4px}
+.guest-property-brand img{display:block;width:100%;max-width:650px;max-height:220px;object-fit:contain;margin:0 auto;background:#050505;border-radius:18px}
+.guest-developer{margin-top:9px;color:#e0bc66;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.guest-property-location{margin-top:5px;color:#aaa49a;font-size:13px}
+.guest-welcome-intro{text-align:center;padding:1.2rem .8rem 1rem}
+.guest-welcome-intro h1{margin:0;font-size:clamp(29px,8vw,42px)}
+.guest-welcome-intro p{margin:.5rem 0 0;color:#aaa49a}
+.guest-menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.guest-menu-tile{display:flex;flex-direction:column;align-items:flex-start;text-align:left;min-height:135px;padding:1rem;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.035);color:inherit}
+.guest-menu-tile span{font-size:27px;margin-bottom:.65rem}
+.guest-menu-tile strong{font-size:17px}
+.guest-menu-tile small{margin-top:.35rem;color:#979188;font-size:12px}
+.guest-menu-featured{border-color:rgba(224,188,102,.48);background:linear-gradient(145deg,rgba(224,188,102,.12),rgba(255,255,255,.025))}
+.guest-welcome-panel{padding-bottom:1rem}
+.guest-panel-back{margin-bottom:1rem;border:0;background:none;color:#e0bc66;font:700 14px inherit;padding:0}
+.guest-panel-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+.guest-info-card{padding:1rem;margin:.7rem 0;border:1px solid rgba(255,255,255,.11);border-radius:16px;background:rgba(255,255,255,.03)}
+.guest-info-card p:first-child{margin-top:0}.guest-info-card p:last-child{margin-bottom:0}
+.welcome-filter-chips{display:flex;gap:.5rem;overflow-x:auto;padding:.2rem 0 .75rem;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.welcome-filter-chips::-webkit-scrollbar{display:none}
+.welcome-filter-chip{flex:0 0 auto;padding:.62rem .82rem;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:#171717;color:#eee;font:700 12px inherit;white-space:nowrap}
+.welcome-filter-chip.active{background:#e0bc66;color:#111;border-color:#e0bc66}
+.welcome-nearby-map{height:360px;border:1px solid rgba(255,255,255,.14);border-radius:18px;overflow:hidden;background:#161616}
+#welcomeNearbyStatus{padding:.6rem .15rem .25rem;line-height:1.45}
+.welcome-nearby-list{display:grid;gap:.65rem;margin-top:.75rem}
+.welcome-place-card{display:grid;grid-template-columns:42px minmax(0,1fr);gap:.75rem;padding:.85rem;border:1px solid rgba(255,255,255,.11);border-radius:16px;background:rgba(255,255,255,.03)}
+.welcome-place-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:rgba(224,188,102,.12);font-size:21px}
+.welcome-place-copy strong{font-size:16px}
+.welcome-place-note{margin:.4rem 0;font-size:13px;line-height:1.4}
+.welcome-map-link{display:inline-block;margin-top:.45rem;color:#e0bc66;font-weight:800;font-size:13px;text-decoration:none}
+.guest-welcome-footer{margin:1.5rem 0 .5rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.08);text-align:center;color:#716c63;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.welcome-empty-note{padding:.85rem;border:1px dashed rgba(255,255,255,.12);border-radius:13px}
+@media(max-width:600px){
+  .welcome-coordinate-grid,.welcome-category-row{grid-template-columns:1fr}
+  .guest-menu-grid{grid-template-columns:1fr 1fr}
+  .guest-property-brand img{max-height:180px}
+  .welcome-nearby-map{height:330px}
+}
+@media(max-width:390px){
+  .guest-menu-grid{grid-template-columns:1fr}
+  .guest-menu-tile{min-height:105px}
+}

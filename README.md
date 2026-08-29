@@ -455,3 +455,24 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Typing a related-photo description makes that photo different from the main photo.
 - Legacy related `placeOverrides.description` values are migrated into the related photo description so existing edits are preserved.
 - Shared structured place fields (Category, Area, Location, Features, Cost, Rating, Best Time, Transport, Warnings, Website, etc.) continue to inherit independently.
+
+
+## v0.20.0 — Magic Dragon Villa Welcome foundation
+- First real-world property seeded as Magic Dragon Villa, Bangrak, Samui.
+- Property origin coordinates: 9.5487116, 100.0513577.
+- Packaged Magic Dragon Villa logo used as the guest Welcome header.
+- Added customizable developer/management branding.
+- Rebuilt Welcome guest experience around large mobile menu tiles.
+- Added Explore Nearby category management.
+- Each category can be enabled/disabled and set to:
+  - Automatic nearby search (future live Places layer), or
+  - Approved / affiliate only.
+- Restaurants, bars, cafés and other commercial categories default to approved-only.
+- Convenience stores, supermarkets, petrol, ATM, pharmacy and medical default to automatic search.
+- Added curated/affiliate place editor with name, category, coordinates and guest note.
+- Curated places display immediately on the in-app satellite Explore Nearby map.
+- Guest filters dynamically reduce map/list clutter.
+- Approved Food & Drink places appear in a dedicated guest section.
+- Google Maps navigation handoff is available for curated pins.
+- Live utility-place discovery and route-time calculations remain deliberately provider-independent for the next integration layer.
+- Removed stale manifest link from app shell.

@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.19.8';
+const RUNTIME_VERSION = '0.20.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2540,14 +2540,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0198';
+    const key = 'papaGolfSwReloaded0200';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.19.8', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.20.0', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2556,15 +2556,93 @@ if ('serviceWorker' in navigator) {
 renderGallery().catch(error => { backupStatus.textContent = `Storage error: ${error.message || error}`; });
 
 
-// ---- Papa Golf Welcome v0.18 ----
+// ---- Papa Golf Welcome v0.20 ----
 const WELCOME_PROPERTY_KEY = 'papaGolfWelcomeProperty';
 const WELCOME_UNIT_KEY = 'papaGolfWelcomeUnit';
+const WELCOME_CATEGORY_KEY = 'papaGolfWelcomeCategories';
+const WELCOME_PARTNER_KEY = 'papaGolfWelcomePartners';
 
-function getWelcomeProperty(){try{return JSON.parse(localStorage.getItem(WELCOME_PROPERTY_KEY)||'{}')}catch{return {}}}
-function getWelcomeUnit(){try{return JSON.parse(localStorage.getItem(WELCOME_UNIT_KEY)||'{}')}catch{return {}}}
+const WELCOME_DEFAULT_PROPERTY = {
+  name:'Magic Dragon Villa',
+  developer:'',
+  address:'Bangrak, Samui',
+  lat:9.5487116,
+  lng:100.0513577,
+  host:'',
+  emergency:'',
+  logo:'magic-dragon-villa-logo.png'
+};
+
+const WELCOME_DEFAULT_UNIT = {
+  name:'Magic Dragon Villa',
+  wifiName:'',
+  wifiPassword:'',
+  bluetooth:'',
+  villaInfo:'',
+  overrideHost:false,
+  host:'',
+  overrideEmergency:false,
+  emergency:''
+};
+
+const WELCOME_CATEGORY_DEFS = [
+  {id:'convenience',label:'Convenience Stores',icon:'🛒',source:'automatic',enabled:true},
+  {id:'supermarket',label:'Supermarkets',icon:'🛍',source:'automatic',enabled:true},
+  {id:'petrol',label:'Petrol Stations',icon:'⛽',source:'automatic',enabled:true},
+  {id:'atm',label:'ATMs / Banks',icon:'🏧',source:'automatic',enabled:true},
+  {id:'pharmacy',label:'Pharmacies',icon:'💊',source:'automatic',enabled:true},
+  {id:'medical',label:'Hospitals / Clinics',icon:'🏥',source:'automatic',enabled:true},
+  {id:'restaurant',label:'Restaurants',icon:'🍽',source:'approved',enabled:true},
+  {id:'bar',label:'Bars',icon:'🍹',source:'approved',enabled:true},
+  {id:'cafe',label:'Cafés',icon:'☕',source:'approved',enabled:true},
+  {id:'activity',label:'Things To Do',icon:'🏝',source:'approved',enabled:true},
+  {id:'transport',label:'Transport / Rental',icon:'🛵',source:'approved',enabled:true},
+  {id:'spa',label:'Massage / Spa',icon:'🌺',source:'approved',enabled:true}
+];
+
+let welcomeNearbyMap = null;
+let welcomeNearbyLayer = null;
+let welcomeActiveFilter = 'all';
+
+function readWelcomeJson(key,fallback){
+  try{
+    const raw=localStorage.getItem(key);
+    return raw?JSON.parse(raw):fallback;
+  }catch{return fallback}
+}
+function getWelcomeProperty(){
+  const saved=readWelcomeJson(WELCOME_PROPERTY_KEY,{});
+  return {...WELCOME_DEFAULT_PROPERTY,...saved};
+}
+function getWelcomeUnit(){
+  const saved=readWelcomeJson(WELCOME_UNIT_KEY,{});
+  return {...WELCOME_DEFAULT_UNIT,...saved};
+}
+function getWelcomeCategories(){
+  const saved=readWelcomeJson(WELCOME_CATEGORY_KEY,null);
+  if(!Array.isArray(saved)) return WELCOME_CATEGORY_DEFS.map(x=>({...x}));
+  return WELCOME_CATEGORY_DEFS.map(def=>({...def,...(saved.find(x=>x.id===def.id)||{})}));
+}
+function getWelcomePartners(){
+  const saved=readWelcomeJson(WELCOME_PARTNER_KEY,[]);
+  return Array.isArray(saved)?saved:[];
+}
+function saveWelcomePartners(items){
+  localStorage.setItem(WELCOME_PARTNER_KEY,JSON.stringify(items));
+}
 function welcomeVal(id){const e=document.getElementById(id);return e?e.value.trim():''}
-function welcomeSet(id,v){const e=document.getElementById(id);if(e)e.value=v||''}
-function welcomeToggle(cbId,fieldId){const c=document.getElementById(cbId),f=document.getElementById(fieldId);if(c&&f)f.disabled=!c.checked}
+function welcomeSet(id,v){const e=document.getElementById(id);if(e)e.value=(v??'')}
+function welcomeToggle(cbId,fieldId){const cb=document.getElementById(cbId),field=document.getElementById(fieldId);if(cb&&field)field.disabled=!cb.checked}
+function welcomeCategoryDef(id){return getWelcomeCategories().find(x=>x.id===id)||WELCOME_CATEGORY_DEFS.find(x=>x.id===id)}
+function welcomeDistanceKm(lat1,lng1,lat2,lng2){
+  const R=6371,toRad=x=>x*Math.PI/180;
+  const dLat=toRad(lat2-lat1),dLng=toRad(lng2-lng1);
+  const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function welcomeGoogleMapsUrl(lat,lng){
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(lat+','+lng)}`;
+}
 function welcomeShow(target){
   const photos=document.getElementById('photosView');
   const map=document.getElementById('mapView');
@@ -2576,81 +2654,336 @@ function welcomeShow(target){
   if(tools)tools.classList.add('hidden');
   if(target)target.classList.remove('hidden');
   document.querySelectorAll('.view-tab').forEach(el=>el.classList.remove('active'));
-  if(target===welcome){
-    const b=document.getElementById('openWelcomeModuleBtn');
-    if(b)b.classList.add('active');
-  }
+  if(target===welcome)document.getElementById('openWelcomeModuleBtn')?.classList.add('active');
   window.scrollTo(0,0);
 }
 function loadWelcomeEditor(){
   const p=getWelcomeProperty(),u=getWelcomeUnit();
-  welcomeSet('welcomePropertyName',p.name); welcomeSet('welcomePropertyHost',p.host);
-  welcomeSet('welcomePropertyAddress',p.address); welcomeSet('welcomePropertyEmergency',p.emergency);
-  welcomeSet('welcomePropertyRecommendations',p.recommendations);
-  welcomeSet('welcomeUnitName',u.name); welcomeSet('welcomeWifiName',u.wifiName);
-  welcomeSet('welcomeWifiPassword',u.wifiPassword); welcomeSet('welcomeBluetooth',u.bluetooth);
-  welcomeSet('welcomeVillaInfo',u.villaInfo); welcomeSet('welcomeUnitHost',u.host);
-  welcomeSet('welcomeUnitEmergency',u.emergency); welcomeSet('welcomeUnitRecommendations',u.recommendations);
-  const oh=document.getElementById('overrideWelcomeHost'), oe=document.getElementById('overrideWelcomeEmergency'), or=document.getElementById('overrideWelcomeRecommendations');
-  if(oh)oh.checked=!!u.overrideHost; if(oe)oe.checked=!!u.overrideEmergency; if(or)or.checked=!!u.overrideRecommendations;
-  welcomeToggle('overrideWelcomeHost','welcomeUnitHost'); welcomeToggle('overrideWelcomeEmergency','welcomeUnitEmergency'); welcomeToggle('overrideWelcomeRecommendations','welcomeUnitRecommendations');
+  welcomeSet('welcomePropertyName',p.name);
+  welcomeSet('welcomePropertyDeveloper',p.developer);
+  welcomeSet('welcomePropertyAddress',p.address);
+  welcomeSet('welcomePropertyLat',p.lat);
+  welcomeSet('welcomePropertyLng',p.lng);
+  welcomeSet('welcomePropertyHost',p.host);
+  welcomeSet('welcomePropertyEmergency',p.emergency);
+  welcomeSet('welcomeUnitName',u.name);
+  welcomeSet('welcomeWifiName',u.wifiName);
+  welcomeSet('welcomeWifiPassword',u.wifiPassword);
+  welcomeSet('welcomeBluetooth',u.bluetooth);
+  welcomeSet('welcomeVillaInfo',u.villaInfo);
+  welcomeSet('welcomeUnitHost',u.host);
+  welcomeSet('welcomeUnitEmergency',u.emergency);
+  const oh=document.getElementById('overrideWelcomeHost'),oe=document.getElementById('overrideWelcomeEmergency');
+  if(oh)oh.checked=!!u.overrideHost;
+  if(oe)oe.checked=!!u.overrideEmergency;
+  welcomeToggle('overrideWelcomeHost','welcomeUnitHost');
+  welcomeToggle('overrideWelcomeEmergency','welcomeUnitEmergency');
+  renderWelcomeCategoryEditor();
+  renderWelcomePartnerEditor();
 }
 function effectiveWelcome(){
   const p=getWelcomeProperty(),u=getWelcomeUnit();
   return {
-    propertyName:p.name||'Papa Golf Property', unitName:u.name||'Your Villa', address:p.address||'',
+    propertyName:p.name||'Magic Dragon Villa',
+    developer:p.developer||'',
+    unitName:u.name||p.name||'Your Villa',
+    address:p.address||'',
+    lat:Number(p.lat),
+    lng:Number(p.lng),
+    logo:p.logo||'magic-dragon-villa-logo.png',
     host:u.overrideHost?(u.host||''):(p.host||''),
     emergency:u.overrideEmergency?(u.emergency||''):(p.emergency||''),
-    recommendations:u.overrideRecommendations?(u.recommendations||''):(p.recommendations||''),
-    wifiName:u.wifiName||'', wifiPassword:u.wifiPassword||'', bluetooth:u.bluetooth||'', villaInfo:u.villaInfo||''
+    wifiName:u.wifiName||'',
+    wifiPassword:u.wifiPassword||'',
+    bluetooth:u.bluetooth||'',
+    villaInfo:u.villaInfo||''
   };
+}
+function saveWelcomeProperty(){
+  const old=getWelcomeProperty();
+  const lat=Number(welcomeVal('welcomePropertyLat')),lng=Number(welcomeVal('welcomePropertyLng'));
+  const data={
+    ...old,
+    name:welcomeVal('welcomePropertyName')||WELCOME_DEFAULT_PROPERTY.name,
+    developer:welcomeVal('welcomePropertyDeveloper'),
+    address:welcomeVal('welcomePropertyAddress'),
+    lat:Number.isFinite(lat)?lat:WELCOME_DEFAULT_PROPERTY.lat,
+    lng:Number.isFinite(lng)?lng:WELCOME_DEFAULT_PROPERTY.lng,
+    host:welcomeVal('welcomePropertyHost'),
+    emergency:welcomeVal('welcomePropertyEmergency'),
+    logo:'magic-dragon-villa-logo.png'
+  };
+  localStorage.setItem(WELCOME_PROPERTY_KEY,JSON.stringify(data));
+}
+function saveWelcomeUnit(){
+  localStorage.setItem(WELCOME_UNIT_KEY,JSON.stringify({
+    name:welcomeVal('welcomeUnitName')||WELCOME_DEFAULT_UNIT.name,
+    wifiName:welcomeVal('welcomeWifiName'),
+    wifiPassword:welcomeVal('welcomeWifiPassword'),
+    bluetooth:welcomeVal('welcomeBluetooth'),
+    villaInfo:welcomeVal('welcomeVillaInfo'),
+    overrideHost:!!document.getElementById('overrideWelcomeHost')?.checked,
+    host:welcomeVal('welcomeUnitHost'),
+    overrideEmergency:!!document.getElementById('overrideWelcomeEmergency')?.checked,
+    emergency:welcomeVal('welcomeUnitEmergency')
+  }));
+}
+function renderWelcomeCategoryEditor(){
+  const host=document.getElementById('welcomeCategoryEditor');
+  if(!host)return;
+  host.innerHTML=getWelcomeCategories().map(cat=>`
+    <div class="welcome-category-row" data-category-id="${escapeHtml(cat.id)}">
+      <label class="welcome-category-enable">
+        <input type="checkbox" data-role="enabled" ${cat.enabled?'checked':''}>
+        <span>${cat.icon} <strong>${escapeHtml(cat.label)}</strong></span>
+      </label>
+      <select data-role="source">
+        <option value="automatic" ${cat.source==='automatic'?'selected':''}>Automatic nearby search</option>
+        <option value="approved" ${cat.source==='approved'?'selected':''}>Approved / affiliate only</option>
+      </select>
+    </div>
+  `).join('');
+}
+function saveWelcomeCategories(){
+  const rows=[...document.querySelectorAll('#welcomeCategoryEditor .welcome-category-row')];
+  const current=getWelcomeCategories();
+  const next=current.map(cat=>{
+    const row=rows.find(r=>r.dataset.categoryId===cat.id);
+    return {...cat,enabled:!!row?.querySelector('[data-role="enabled"]')?.checked,source:row?.querySelector('[data-role="source"]')?.value||cat.source};
+  });
+  localStorage.setItem(WELCOME_CATEGORY_KEY,JSON.stringify(next));
+}
+function renderWelcomePartnerCategorySelect(){
+  const sel=document.getElementById('welcomePartnerCategory');
+  if(!sel)return;
+  const cats=getWelcomeCategories().filter(x=>x.source==='approved');
+  sel.innerHTML=cats.map(c=>`<option value="${escapeHtml(c.id)}">${c.icon} ${escapeHtml(c.label)}</option>`).join('');
+}
+function renderWelcomePartnerEditor(){
+  renderWelcomePartnerCategorySelect();
+  const host=document.getElementById('welcomePartnerList');
+  if(!host)return;
+  const p=getWelcomeProperty(),items=getWelcomePartners();
+  if(!items.length){
+    host.innerHTML='<div class="small muted welcome-empty-note">No curated places yet. Add your first affiliate or recommendation above.</div>';
+    return;
+  }
+  host.innerHTML=items.map((item,index)=>{
+    const cat=welcomeCategoryDef(item.category)||{};
+    const dist=(Number.isFinite(Number(item.lat))&&Number.isFinite(Number(item.lng)))?welcomeDistanceKm(Number(p.lat),Number(p.lng),Number(item.lat),Number(item.lng)):null;
+    return `<div class="welcome-partner-row">
+      <div><strong>${cat.icon||'📍'} ${escapeHtml(item.name||'Unnamed place')}</strong>
+      <div class="small muted">${escapeHtml(cat.label||item.category||'Place')}${dist!=null?' · '+dist.toFixed(dist<1?2:1)+' km':''}${item.note?' · '+escapeHtml(item.note):''}</div></div>
+      <button type="button" class="text-danger" data-remove-welcome-partner="${index}">Remove</button>
+    </div>`;
+  }).join('');
+}
+function addWelcomePartner(){
+  const name=welcomeVal('welcomePartnerName');
+  const category=welcomeVal('welcomePartnerCategory');
+  const lat=Number(welcomeVal('welcomePartnerLat')),lng=Number(welcomeVal('welcomePartnerLng'));
+  const note=welcomeVal('welcomePartnerNote');
+  if(!name){alert('Add a place name first.');return}
+  if(!Number.isFinite(lat)||!Number.isFinite(lng)){alert('Add valid latitude and longitude for the place.');return}
+  const items=getWelcomePartners();
+  items.push({id:'wp-'+Date.now(),name,category,lat,lng,note,approved:true,createdAt:new Date().toISOString()});
+  saveWelcomePartners(items);
+  ['welcomePartnerName','welcomePartnerLat','welcomePartnerLng','welcomePartnerNote'].forEach(id=>welcomeSet(id,''));
+  renderWelcomePartnerEditor();
+}
+function showGuestWelcomeHome(){
+  document.getElementById('guestWelcomeHome')?.classList.remove('hidden');
+  document.querySelectorAll('.guest-welcome-panel').forEach(el=>el.classList.add('hidden'));
+  window.scrollTo(0,0);
+}
+function openGuestWelcomePanel(id){
+  document.getElementById('guestWelcomeHome')?.classList.add('hidden');
+  document.querySelectorAll('.guest-welcome-panel').forEach(el=>el.classList.toggle('hidden',el.id!==id));
+  if(id==='guestExplorePanel'){
+    setTimeout(()=>{renderWelcomeNearbyMap();},40);
+  }
+  if(id==='guestFoodPanel')renderGuestFoodList();
+  window.scrollTo(0,0);
 }
 function renderGuestWelcome(){
   const d=effectiveWelcome();
-  const title=document.getElementById('guestWelcomeTitle'), prop=document.getElementById('guestWelcomeProperty'), head=document.getElementById('guestWelcomeHeading');
-  if(title)title.textContent=d.unitName; if(prop)prop.textContent=d.propertyName+(d.address?' · '+d.address:''); if(head)head.textContent='Welcome to '+d.unitName;
+  const logo=document.getElementById('guestWelcomeLogo');
+  if(logo)logo.src=d.logo;
+  const dev=document.getElementById('guestWelcomeDeveloper');
+  if(dev)dev.textContent=d.developer?`Developed by ${d.developer}`:'';
+  const prop=document.getElementById('guestWelcomeProperty');
+  if(prop)prop.textContent=[d.propertyName,d.address].filter(Boolean).join(' · ');
+  const head=document.getElementById('guestWelcomeHeading');
+  if(head)head.textContent='Welcome to '+d.unitName;
+
   const wifi=document.getElementById('guestWifiInfo');
-  if(wifi)wifi.innerHTML=(d.wifiName||d.wifiPassword)?`<p><strong>Wi-Fi:</strong> ${escapeHtml(d.wifiName||'—')}</p><p><strong>Password:</strong> ${escapeHtml(d.wifiPassword||'—')}</p>`:'<p class="muted">No Wi-Fi information added yet.</p>';
-  const bt=document.getElementById('guestBluetoothInfo'); if(bt)bt.innerHTML=d.bluetooth?`<p>${escapeHtml(d.bluetooth)}</p>`:'';
-  const vi=document.getElementById('guestVillaInfo'); if(vi)vi.innerHTML=d.villaInfo?`<p>${escapeHtml(d.villaInfo)}</p>`:'<p class="muted">No villa instructions added yet.</p>';
-  const host=document.getElementById('guestHostInfo'); if(host)host.innerHTML=d.host?`<p><strong>Host / manager:</strong> ${escapeHtml(d.host)}</p>`:'';
-  const rec=document.getElementById('guestRecommendationsInfo'); if(rec)rec.innerHTML=d.recommendations?`<p>${escapeHtml(d.recommendations)}</p>`:'<p class="muted">No recommendations added yet.</p>';
-  const em=document.getElementById('guestEmergencyInfo'); if(em)em.innerHTML=d.emergency?`<p>${escapeHtml(d.emergency)}</p>`:'<p class="muted">No emergency information added yet.</p>';
+  if(wifi)wifi.innerHTML=(d.wifiName||d.wifiPassword)?`<p><strong>Wi-Fi:</strong> ${escapeHtml(d.wifiName||'—')}</p><p><strong>Password:</strong> ${escapeHtml(d.wifiPassword||'—')}</p>`:'<p class="muted">Wi-Fi information has not been added yet.</p>';
+  const bt=document.getElementById('guestBluetoothInfo');
+  if(bt)bt.innerHTML=d.bluetooth?`<p>${escapeHtml(d.bluetooth)}</p>`:'';
+  const vi=document.getElementById('guestVillaInfo');
+  if(vi)vi.innerHTML=d.villaInfo?`<p>${escapeHtml(d.villaInfo).replace(/\n/g,'<br>')}</p>`:'<p class="muted">Villa instructions have not been added yet.</p>';
+  const host=document.getElementById('guestHostInfo');
+  if(host)host.innerHTML=d.host?`<p><strong>Host / manager:</strong> ${escapeHtml(d.host)}</p>`:'';
+  const em=document.getElementById('guestEmergencyInfo');
+  if(em)em.innerHTML=d.emergency?`<p>${escapeHtml(d.emergency).replace(/\n/g,'<br>')}</p>`:'<p class="muted">Emergency information has not been added yet.</p>';
+
+  renderWelcomeGuestFilters();
+  renderGuestFoodList();
+  showGuestWelcomeHome();
 }
-function initWelcomeModule(){
-  const open=document.getElementById('openWelcomeModuleBtn'), page=document.getElementById('welcomeModule'), preview=document.getElementById('welcomeGuestPreview');
-  if(open)open.addEventListener('click',()=>{loadWelcomeEditor();welcomeShow(page)});
-  const back=document.getElementById('welcomeBackBtn');
-  if(back)back.addEventListener('click',()=>{
-    const welcome=document.getElementById('welcomeModule'), preview=document.getElementById('welcomeGuestPreview');
-    if(welcome)welcome.classList.add('hidden'); if(preview)preview.classList.add('hidden');
-    const photos=document.getElementById('photosView'), tools=document.querySelector('.library-tools');
-    if(photos)photos.classList.remove('hidden'); if(tools)tools.classList.remove('hidden');
-    document.querySelectorAll('.view-tab').forEach(el=>el.classList.remove('active'));
-    const photosBtn=document.getElementById('photosTabBtn'); if(photosBtn)photosBtn.classList.add('active');
-    window.scrollTo(0,0);
-  });
-  const pback=document.getElementById('welcomeGuestBackBtn'); if(pback)pback.addEventListener('click',()=>welcomeShow(page));
-  [['overrideWelcomeHost','welcomeUnitHost'],['overrideWelcomeEmergency','welcomeUnitEmergency'],['overrideWelcomeRecommendations','welcomeUnitRecommendations']].forEach(([a,b])=>{
-    const e=document.getElementById(a); if(e)e.addEventListener('change',()=>welcomeToggle(a,b));
-  });
-  const sp=document.getElementById('saveWelcomePropertyBtn');
-  if(sp)sp.addEventListener('click',()=>{localStorage.setItem(WELCOME_PROPERTY_KEY,JSON.stringify({name:welcomeVal('welcomePropertyName'),host:welcomeVal('welcomePropertyHost'),address:welcomeVal('welcomePropertyAddress'),emergency:welcomeVal('welcomePropertyEmergency'),recommendations:welcomeVal('welcomePropertyRecommendations')}));alert('Property information saved.')});
-  const su=document.getElementById('saveWelcomeUnitBtn');
-  if(su)su.addEventListener('click',()=>{localStorage.setItem(WELCOME_UNIT_KEY,JSON.stringify({name:welcomeVal('welcomeUnitName'),wifiName:welcomeVal('welcomeWifiName'),wifiPassword:welcomeVal('welcomeWifiPassword'),bluetooth:welcomeVal('welcomeBluetooth'),villaInfo:welcomeVal('welcomeVillaInfo'),overrideHost:!!document.getElementById('overrideWelcomeHost')?.checked,host:welcomeVal('welcomeUnitHost'),overrideEmergency:!!document.getElementById('overrideWelcomeEmergency')?.checked,emergency:welcomeVal('welcomeUnitEmergency'),overrideRecommendations:!!document.getElementById('overrideWelcomeRecommendations')?.checked,recommendations:welcomeVal('welcomeUnitRecommendations')}));alert('Accommodation unit saved.')});
-  
-  ['photosTabBtn','mapTabBtn','areasTabBtn'].forEach(id=>{
-    const b=document.getElementById(id);
-    if(b)b.addEventListener('click',()=>{
-      const welcome=document.getElementById('welcomeModule'), preview=document.getElementById('welcomeGuestPreview');
-      if(welcome)welcome.classList.add('hidden');
-      if(preview)preview.classList.add('hidden');
-      const tools=document.querySelector('.library-tools');
-      if(tools)tools.classList.remove('hidden');
-    });
+function renderWelcomeGuestFilters(){
+  const host=document.getElementById('welcomeGuestFilters');
+  if(!host)return;
+  const cats=getWelcomeCategories().filter(c=>c.enabled);
+  host.innerHTML=`<button type="button" class="welcome-filter-chip ${welcomeActiveFilter==='all'?'active':''}" data-welcome-filter="all">All</button>`+
+    cats.map(c=>`<button type="button" class="welcome-filter-chip ${welcomeActiveFilter===c.id?'active':''}" data-welcome-filter="${escapeHtml(c.id)}">${c.icon} ${escapeHtml(c.label)}</button>`).join('');
+}
+function welcomeFilteredPartners(){
+  const cats=getWelcomeCategories().filter(c=>c.enabled);
+  const allowed=new Set(cats.map(c=>c.id));
+  return getWelcomePartners().filter(p=>allowed.has(p.category)&&(welcomeActiveFilter==='all'||p.category===welcomeActiveFilter));
+}
+function renderWelcomeNearbyMap(){
+  const d=effectiveWelcome();
+  const mapEl=document.getElementById('welcomeNearbyMap');
+  const status=document.getElementById('welcomeNearbyStatus');
+  const list=document.getElementById('welcomeNearbyList');
+  if(!mapEl||!Number.isFinite(d.lat)||!Number.isFinite(d.lng))return;
+
+  if(!welcomeNearbyMap){
+    welcomeNearbyMap=L.map(mapEl,{scrollWheelZoom:false}).setView([d.lat,d.lng],15);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+      maxZoom:19,
+      attribution:'Tiles &copy; Esri'
+    }).addTo(welcomeNearbyMap);
+    welcomeNearbyLayer=L.layerGroup().addTo(welcomeNearbyMap);
+  }
+  welcomeNearbyMap.invalidateSize();
+  welcomeNearbyLayer.clearLayers();
+
+  const villa=L.marker([d.lat,d.lng]).addTo(welcomeNearbyLayer).bindPopup(`<strong>${escapeHtml(d.unitName)}</strong><br>You are here`);
+  const items=welcomeFilteredPartners();
+  const bounds=[[d.lat,d.lng]];
+
+  items.forEach(item=>{
+    const lat=Number(item.lat),lng=Number(item.lng);
+    if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
+    const cat=welcomeCategoryDef(item.category)||{};
+    const dist=welcomeDistanceKm(d.lat,d.lng,lat,lng);
+    L.marker([lat,lng]).addTo(welcomeNearbyLayer).bindPopup(`<strong>${escapeHtml(item.name)}</strong><br>${escapeHtml(cat.label||'Place')} · ${dist.toFixed(dist<1?2:1)} km${item.note?'<br>'+escapeHtml(item.note):''}`);
+    bounds.push([lat,lng]);
   });
 
-  const pv=document.getElementById('previewWelcomeGuestBtn');
-  if(pv)pv.addEventListener('click',()=>{sp?.click();su?.click();renderGuestWelcome();welcomeShow(preview)});
+  if(bounds.length>1)welcomeNearbyMap.fitBounds(bounds,{padding:[35,35],maxZoom:16});
+  else welcomeNearbyMap.setView([d.lat,d.lng],15);
+
+  const activeCat=welcomeActiveFilter==='all'?null:welcomeCategoryDef(welcomeActiveFilter);
+  const automaticActive=(welcomeActiveFilter==='all'
+    ? getWelcomeCategories().some(c=>c.enabled&&c.source==='automatic')
+    : activeCat?.source==='automatic');
+
+  if(status){
+    status.textContent=automaticActive
+      ? 'Curated places are live now. Automatic utility results (7-Eleven, petrol, ATM, pharmacy, etc.) will populate here when the live Places search layer is connected.'
+      : `${items.length} approved place${items.length===1?'':'s'} shown.`;
+  }
+
+  if(list){
+    list.innerHTML=items.length?items.map(item=>{
+      const cat=welcomeCategoryDef(item.category)||{};
+      const dist=welcomeDistanceKm(d.lat,d.lng,Number(item.lat),Number(item.lng));
+      return `<article class="welcome-place-card">
+        <div class="welcome-place-icon">${cat.icon||'📍'}</div>
+        <div class="welcome-place-copy">
+          <strong>${escapeHtml(item.name)}</strong>
+          <div class="small muted">${escapeHtml(cat.label||'Place')} · ${dist.toFixed(dist<1?2:1)} km away</div>
+          ${item.note?`<div class="welcome-place-note">${escapeHtml(item.note)}</div>`:''}
+          <a class="welcome-map-link" href="${welcomeGoogleMapsUrl(item.lat,item.lng)}" target="_blank" rel="noopener">Navigate with Google Maps</a>
+        </div>
+      </article>`;
+    }).join(''):'<div class="guest-info-card"><p class="muted">No approved places have been added for this filter yet.</p></div>';
+  }
+}
+function renderGuestFoodList(){
+  const host=document.getElementById('guestFoodList');
+  if(!host)return;
+  const d=effectiveWelcome();
+  const categories=new Set(['restaurant','bar','cafe']);
+  const items=getWelcomePartners().filter(x=>categories.has(x.category)&&welcomeCategoryDef(x.category)?.enabled);
+  host.innerHTML=items.length?items.map(item=>{
+    const cat=welcomeCategoryDef(item.category)||{};
+    const dist=welcomeDistanceKm(d.lat,d.lng,Number(item.lat),Number(item.lng));
+    return `<article class="welcome-place-card">
+      <div class="welcome-place-icon">${cat.icon||'🍽'}</div>
+      <div class="welcome-place-copy"><strong>${escapeHtml(item.name)}</strong>
+      <div class="small muted">${escapeHtml(cat.label||'Food & Drink')} · ${dist.toFixed(dist<1?2:1)} km away</div>
+      ${item.note?`<div class="welcome-place-note">${escapeHtml(item.note)}</div>`:''}
+      <a class="welcome-map-link" href="${welcomeGoogleMapsUrl(item.lat,item.lng)}" target="_blank" rel="noopener">Navigate with Google Maps</a></div>
+    </article>`;
+  }).join(''):'<div class="guest-info-card"><p class="muted">No approved restaurants or bars have been added yet.</p></div>';
+}
+function initWelcomeModule(){
+  // Seed the first real-world property only when Welcome has never been configured.
+  if(!localStorage.getItem(WELCOME_PROPERTY_KEY))localStorage.setItem(WELCOME_PROPERTY_KEY,JSON.stringify(WELCOME_DEFAULT_PROPERTY));
+  if(!localStorage.getItem(WELCOME_UNIT_KEY))localStorage.setItem(WELCOME_UNIT_KEY,JSON.stringify(WELCOME_DEFAULT_UNIT));
+
+  const open=document.getElementById('openWelcomeModuleBtn'),page=document.getElementById('welcomeModule'),preview=document.getElementById('welcomeGuestPreview');
+  open?.addEventListener('click',()=>{loadWelcomeEditor();welcomeShow(page)});
+
+  document.getElementById('welcomeBackBtn')?.addEventListener('click',()=>{
+    page?.classList.add('hidden');preview?.classList.add('hidden');
+    document.getElementById('photosView')?.classList.remove('hidden');
+    document.querySelector('.library-tools')?.classList.remove('hidden');
+    document.querySelectorAll('.view-tab').forEach(el=>el.classList.remove('active'));
+    document.getElementById('photosTabBtn')?.classList.add('active');
+    window.scrollTo(0,0);
+  });
+  document.getElementById('welcomeGuestBackBtn')?.addEventListener('click',()=>welcomeShow(page));
+
+  [['overrideWelcomeHost','welcomeUnitHost'],['overrideWelcomeEmergency','welcomeUnitEmergency']].forEach(([a,b])=>{
+    document.getElementById(a)?.addEventListener('change',()=>welcomeToggle(a,b));
+  });
+
+  document.getElementById('saveWelcomePropertyBtn')?.addEventListener('click',()=>{saveWelcomeProperty();alert('Property information saved.')});
+  document.getElementById('saveWelcomeUnitBtn')?.addEventListener('click',()=>{saveWelcomeUnit();alert('Villa information saved.')});
+  document.getElementById('saveWelcomeCategoriesBtn')?.addEventListener('click',()=>{saveWelcomeCategories();renderWelcomePartnerCategorySelect();alert('Explore Nearby categories saved.')});
+  document.getElementById('addWelcomePartnerBtn')?.addEventListener('click',addWelcomePartner);
+
+  document.getElementById('welcomePartnerList')?.addEventListener('click',event=>{
+    const btn=event.target.closest('[data-remove-welcome-partner]');
+    if(!btn)return;
+    const index=Number(btn.dataset.removeWelcomePartner);
+    const items=getWelcomePartners();
+    items.splice(index,1);
+    saveWelcomePartners(items);
+    renderWelcomePartnerEditor();
+  });
+
+  document.getElementById('previewWelcomeGuestBtn')?.addEventListener('click',()=>{
+    saveWelcomeProperty();
+    saveWelcomeUnit();
+    saveWelcomeCategories();
+    renderGuestWelcome();
+    welcomeShow(preview);
+  });
+
+  document.getElementById('welcomeGuestPreview')?.addEventListener('click',event=>{
+    const tile=event.target.closest('[data-welcome-panel]');
+    if(tile){openGuestWelcomePanel(tile.dataset.welcomePanel);return}
+    if(event.target.closest('.guest-panel-back')){showGuestWelcomeHome();return}
+    const filter=event.target.closest('[data-welcome-filter]');
+    if(filter){
+      welcomeActiveFilter=filter.dataset.welcomeFilter;
+      renderWelcomeGuestFilters();
+      renderWelcomeNearbyMap();
+    }
+  });
+
+  ['photosTabBtn','mapTabBtn','areasTabBtn'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('click',()=>{
+      page?.classList.add('hidden');preview?.classList.add('hidden');
+      document.querySelector('.library-tools')?.classList.remove('hidden');
+    });
+  });
 }
 window.addEventListener('DOMContentLoaded',initWelcomeModule);
