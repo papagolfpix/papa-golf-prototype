@@ -671,3 +671,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .guest-welcome-hero{text-align:center;padding:2rem 1rem;border-radius:20px;margin-bottom:1rem;background:rgba(255,255,255,.045)}
 .guest-welcome-cards{display:grid;gap:1rem}
 .guest-card h3{margin-top:0}
+
+/* v0.18.3 — consistent active photo corner radius */
+#detailImage, .detail-image, #detailImageWrap img, .detail-image-wrap img, .active-photo-image {
+  border-radius: 18px !important;
+}
+#detailImageWrap, .detail-image-wrap {
+  border-radius: 18px !important;
+  overflow: hidden;
+}

@@ -369,3 +369,6 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Opening Welcome now hides the photo interface and shows the Welcome editor at the top.
 - Back restores Photos and the search tools.
 - Welcome now uses the same visible tab styling as Photos, Map and Areas.
+
+## v0.18.3
+- Original and related active photos now use the same rounded corner radius.
