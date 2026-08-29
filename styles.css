@@ -1129,3 +1129,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
     top:4px;
   }
 }
+
+
+/* ---- Google Places setup v0.20.9 ---- */
+.welcome-google-places-setup{margin-top:0}
+.welcome-google-places-setup input[type="password"]{width:100%}
+.welcome-google-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin:.65rem 0}
+.welcome-google-test-results{display:grid;gap:.5rem;margin-top:.65rem}
+.welcome-google-test-card{display:grid;grid-template-columns:34px 1fr auto;gap:.65rem;align-items:start;padding:.7rem;border:1px solid rgba(224,188,102,.16);border-radius:10px;background:rgba(255,255,255,.025)}
+.welcome-google-test-rank{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;background:rgba(224,188,102,.12)}
+.welcome-google-test-main{min-width:0}
+@media(max-width:650px){.welcome-google-test-card{grid-template-columns:32px 1fr}.welcome-google-test-card>a{grid-column:2}}

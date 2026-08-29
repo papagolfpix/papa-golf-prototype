@@ -575,3 +575,12 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - If the map is already visible, tapping a result no longer jumps the page back to the map.
 - Existing 750 m initial map extent and nearest-first result behaviour remain unchanged.
 - Google Places is not yet enabled; current live place source remains OpenStreetMap/Overpass.
+
+
+## v0.20.9 — Google Places local-key test
+- Added a Google Places API section to Welcome/Property setup.
+- The Google Places key is stored only in this browser/device localStorage and is not embedded in the update ZIP or GitHub repository.
+- Added Save key and Test Google Places controls.
+- Test uses Places API (New) Nearby Search around the property's coordinates and ranks results nearest-first.
+- Test result cards show name, type, distance, address and Google Maps link.
+- Existing OpenStreetMap/Overpass guest Nearby system remains unchanged while we compare coverage.

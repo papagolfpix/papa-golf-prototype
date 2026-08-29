@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.20.8';
+const RUNTIME_VERSION = '0.20.9';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2540,14 +2540,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0208';
+    const key = 'papaGolfSwReloaded0209';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.20.8', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.20.9', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2608,6 +2608,8 @@ let welcomeAutomaticPlaces = [];
 let welcomeAutomaticLoading = false;
 let welcomeAutomaticError = '';
 const WELCOME_AUTO_CACHE_KEY = 'papaGolfWelcomeAutomaticPlacesV1';
+const WELCOME_GOOGLE_PLACES_KEY = 'papaGolfGooglePlacesApiKey';
+const WELCOME_GOOGLE_TEST_RADIUS_METERS = 2500;
 const WELCOME_AUTO_CACHE_MS = 6 * 60 * 60 * 1000;
 const WELCOME_AUTO_MAX_QUERY_RADIUS_METERS = 10000;
 const WELCOME_MAP_HALF_SPAN_METERS = 750;
@@ -3035,6 +3037,55 @@ function welcomeSelectDirectionalSpread(items,maxResults,originLat,originLng){
   }
   return selected.sort((a,b)=>a.distanceKm-b.distanceKm);
 }
+
+function getPapaGolfGooglePlacesKey(){
+  return (localStorage.getItem(WELCOME_GOOGLE_PLACES_KEY)||'').trim();
+}
+function savePapaGolfGooglePlacesKey(value){
+  const clean=String(value||'').trim();
+  if(clean)localStorage.setItem(WELCOME_GOOGLE_PLACES_KEY,clean);
+  else localStorage.removeItem(WELCOME_GOOGLE_PLACES_KEY);
+  return clean;
+}
+async function testPapaGolfGooglePlaces(){
+  const status=document.getElementById('welcomeGooglePlacesStatus');
+  const list=document.getElementById('welcomeGooglePlacesTestResults');
+  const input=document.getElementById('welcomeGooglePlacesApiKey');
+  const apiKey=savePapaGolfGooglePlacesKey(input?.value||'');
+  const d=effectiveWelcome();
+  if(status)status.textContent='';
+  if(list)list.innerHTML='';
+  if(!apiKey){if(status)status.textContent='Paste your Google Places API key first.';return;}
+  if(!Number.isFinite(Number(d.lat))||!Number.isFinite(Number(d.lng))){if(status)status.textContent='This property needs valid latitude and longitude first.';return;}
+  if(status)status.textContent='Testing Google Places near this property…';
+  const body={
+    includedTypes:['convenience_store','supermarket','grocery_store','gas_station','pharmacy','hospital','atm'],
+    maxResultCount:20,
+    rankPreference:'DISTANCE',
+    locationRestriction:{circle:{center:{latitude:Number(d.lat),longitude:Number(d.lng)},radius:WELCOME_GOOGLE_TEST_RADIUS_METERS}}
+  };
+  try{
+    const res=await fetch('https://places.googleapis.com/v1/places:searchNearby',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'X-Goog-Api-Key':apiKey,
+        'X-Goog-FieldMask':'places.id,places.displayName,places.primaryType,places.types,places.location,places.formattedAddress,places.googleMapsUri'
+      },
+      body:JSON.stringify(body)
+    });
+    const text=await res.text();
+    let data={};try{data=text?JSON.parse(text):{}}catch{}
+    if(!res.ok)throw new Error(data?.error?.message||`Google Places returned HTTP ${res.status}.`);
+    const places=(Array.isArray(data.places)?data.places:[]).map(p=>{
+      const lat=Number(p?.location?.latitude),lng=Number(p?.location?.longitude);
+      return {id:p?.id||'',name:p?.displayName?.text||'Unnamed place',type:p?.primaryType||'',address:p?.formattedAddress||'',lat,lng,googleMapsUri:p?.googleMapsUri||'',distanceKm:welcomeDistanceKm(Number(d.lat),Number(d.lng),lat,lng)};
+    }).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng)).sort((a,b)=>a.distanceKm-b.distanceKm);
+    if(status)status.textContent=places.length?`Google Places found ${places.length} nearby places, nearest first.`:'Google Places returned no matching places in this test radius.';
+    if(list)list.innerHTML=places.map((p,i)=>`<div class="welcome-google-test-card"><div class="welcome-google-test-rank">${i+1}</div><div class="welcome-google-test-main"><strong>${escapeHtml(p.name)}</strong><div class="small muted">${escapeHtml(p.type||'place')} · ${p.distanceKm.toFixed(2)} km</div>${p.address?`<div class="small muted">${escapeHtml(p.address)}</div>`:''}</div>${p.googleMapsUri?`<a href="${escapeAttr(p.googleMapsUri)}" target="_blank" rel="noopener">Google Maps</a>`:''}</div>`).join('');
+  }catch(err){if(status)status.textContent=`Google Places test failed: ${err?.message||err}`;}
+}
+
 function welcomeFilteredAutomaticPlaces(){
   const d=effectiveWelcome();
   const cats=getWelcomeCategories().filter(c=>c.enabled&&c.source==='automatic');
@@ -3297,6 +3348,8 @@ function initWelcomeModule(){
   }
 
   const open=document.getElementById('openWelcomeModuleBtn'),page=document.getElementById('welcomeModule'),preview=document.getElementById('welcomeGuestPreview'),a5=document.getElementById('welcomeA5Preview');
+  const googlePlacesInput=document.getElementById('welcomeGooglePlacesApiKey');
+  if(googlePlacesInput)googlePlacesInput.value=getPapaGolfGooglePlacesKey();
   open?.addEventListener('click',()=>{loadWelcomeEditor();welcomeShow(page)});
 
   document.getElementById('welcomeBackBtn')?.addEventListener('click',()=>{
@@ -3315,6 +3368,14 @@ function initWelcomeModule(){
 
   document.getElementById('saveWelcomePropertyBtn')?.addEventListener('click',()=>{saveWelcomeProperty();alert('Property information saved.')});
   document.getElementById('saveWelcomeUnitBtn')?.addEventListener('click',()=>{saveWelcomeUnit();alert('Villa information saved.')});
+  document.getElementById('welcomeSaveGooglePlacesKey')?.addEventListener('click',()=>{
+    const input=document.getElementById('welcomeGooglePlacesApiKey');
+    const status=document.getElementById('welcomeGooglePlacesStatus');
+    const saved=savePapaGolfGooglePlacesKey(input?.value||'');
+    if(status)status.textContent=saved?'Google Places key saved on this device.':'Google Places key removed.';
+  });
+  document.getElementById('welcomeTestGooglePlaces')?.addEventListener('click',testPapaGolfGooglePlaces);
+
   document.getElementById('welcomeCategoryEditor')?.addEventListener('change',event=>{
     if(event.target?.dataset?.role!=='source')return;
     const rows=[...document.querySelectorAll('#welcomeCategoryEditor .welcome-category-row')];
