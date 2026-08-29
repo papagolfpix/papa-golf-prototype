@@ -743,3 +743,52 @@ svg.leaflet-image-layer.leaflet-interactive path {
   -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
   -webkit-mask-clip: border-box !important;
 }
+
+/* v0.18.7 — Visitor View photos: full aspect ratio + visible soft corners */
+#visitorView .visitor-image,
+#visitorView #visitorImage,
+#visitorImage {
+  display: block !important;
+  width: calc(100% - 32px) !important;
+  height: auto !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  margin: 16px auto 0 !important;
+  border: 0 !important;
+  border-radius: 18px !important;
+  clip-path: inset(0 round 18px) !important;
+  -webkit-clip-path: inset(0 round 18px) !important;
+  overflow: hidden !important;
+  background: transparent !important;
+}
+#visitorView .visitor-filmstrip img,
+#visitorView #visitorFilmstrip img,
+#visitorFilmstrip img {
+  object-fit: cover !important;
+  border-radius: 18px !important;
+}
+
+/* v0.18.7 exact Visitor View selector */
+#visitorHeroWrap {
+  width: 100% !important;
+  height: auto !important;
+  overflow: visible !important;
+  background: transparent !important;
+}
+#visitorHeroWrap #visitorHero,
+#visitorHero.visitor-hero {
+  display: block !important;
+  width: calc(100% - 32px) !important;
+  height: auto !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  margin: 16px auto 0 !important;
+  border-radius: 18px !important;
+  clip-path: inset(0 round 18px) !important;
+  -webkit-clip-path: inset(0 round 18px) !important;
+  overflow: hidden !important;
+}

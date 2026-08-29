@@ -384,3 +384,8 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Establishes an 18px Papa Golf photo radius across library, detail, related-photo, Visitor View and gallery displays.
 - Applies the same rounded-photo design to newly generated standalone public pages.
 - Keeps the visual treatment consistent across landscape and portrait photos on iPhone Safari.
+
+## v0.18.7
+- Visitor View hero photos now preserve their original aspect ratio; portrait photos are no longer square-cropped.
+- Visitor hero photos receive a 16px page inset so the 18px rounded corners are actually visible.
+- Applies the same full-aspect-ratio rounded treatment to newly generated public pages.
