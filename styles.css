@@ -832,9 +832,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
   width:auto !important;
   white-space:nowrap;
 }
-.main-photo-fields-collapsed{
-  display:none !important;
-}
 .related-inherited-editor{
   margin-top:12px;
 }

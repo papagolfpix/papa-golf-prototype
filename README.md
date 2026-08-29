@@ -407,3 +407,10 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Keeps related-photo editing prominent.
 - Keeps inherited place-information overrides collapsed by default.
 - No photo or metadata is deleted; this is a UI-only cleanup.
+
+
+## v0.19.2 — performance correction
+- Removes the broad MutationObserver introduced in v0.19.1.
+- Main-photo edit visibility now changes only when Edit is opened or the toggle is tapped.
+- Prevents repeated whole-page mutation handling and object-URL recreation during normal UI updates.
+- Keeps the compact main-photo editor and collapsed inherited overrides.
