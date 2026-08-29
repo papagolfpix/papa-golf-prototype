@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.19.5';
+const RUNTIME_VERSION = '0.19.6';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -1075,6 +1075,48 @@ function relatedBlob(item) {
   return null;
 }
 
+
+function inheritedValueForRelated(record, fieldId){
+  if(!record) return '';
+
+  const directMap = {
+    description: record?.fields?.description ?? record?.description ?? '',
+    category: record?.fields?.category ?? record?.category ?? '',
+    locationName: record?.fields?.locationName ?? record?.locationName ?? '',
+    areaName: record?.fields?.areaName ?? record?.areaName ?? '',
+    people: record?.fields?.people ?? record?.people ?? '',
+    tags: record?.fields?.tags ?? record?.tags ?? ''
+  };
+  if(Object.prototype.hasOwnProperty.call(directMap, fieldId)) return directMap[fieldId];
+
+  if(record?.fields && Object.prototype.hasOwnProperty.call(record.fields, fieldId)){
+    return record.fields[fieldId];
+  }
+  if(record?.visitorFields && Object.prototype.hasOwnProperty.call(record.visitorFields, fieldId)){
+    return record.visitorFields[fieldId];
+  }
+
+  // Some visitor/place fields may be stored under a custom-field ID.
+  const wanted = String(fieldId || '').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const fieldDef = (typeof customFields !== 'undefined' ? customFields : []).find(f => {
+    const id = String(f?.id || '').toLowerCase().replace(/[^a-z0-9]/g,'');
+    const label = String(f?.label || '').toLowerCase().replace(/[^a-z0-9]/g,'');
+    return id === wanted || label === wanted;
+  });
+  if(fieldDef){
+    if(record?.fields && record.fields[fieldDef.id] !== undefined) return record.fields[fieldDef.id];
+    if(record?.visitorFields && record.visitorFields[fieldDef.id] !== undefined) return record.visitorFields[fieldDef.id];
+  }
+
+  return '';
+}
+
+function inheritedPlaceholderForRelated(record, fieldId){
+  const value = inheritedValueForRelated(record, fieldId);
+  const shown = displayInheritedValue(value);
+  return shown ? `Inherited: ${shown}` : 'Inherited: no value set';
+}
+
 function renderSupportingPreview(items = []) {
   if (!supportingPhotosPreview) return;
   supportingPhotosPreview.innerHTML = '';
@@ -1116,16 +1158,16 @@ function renderSupportingPreview(items = []) {
         <summary>Inherited place information · edit for this photo</summary>
         <p class="small muted">The current inherited value is shown in each field. Leave it unchanged to keep inheriting, or type a different value for this photo.</p>
         <label>Photo-specific place description override
-          <textarea data-place-override="description" rows="3" placeholder="${escapeHtml(relatedInheritedPlaceholder(activeRecord, 'description', 'Inherited description'))}"></textarea>
+          <textarea data-place-override="description" rows="3" placeholder="${escapeHtml(inheritedPlaceholderForRelated(activeRecord, 'description'))}"></textarea>
         </label>
         <label>Category override
-          <input data-place-override="category" type="text" placeholder="${escapeHtml(relatedInheritedPlaceholder(activeRecord, 'category', 'Inherited category'))}">
+          <input data-place-override="category" type="text" placeholder="${escapeHtml(inheritedPlaceholderForRelated(activeRecord, 'category'))}">
         </label>
         <label>Location name override
-          <input data-place-override="locationName" type="text" placeholder="${escapeHtml(relatedInheritedPlaceholder(activeRecord, 'locationName', 'Inherited location'))}">
+          <input data-place-override="locationName" type="text" placeholder="${escapeHtml(inheritedPlaceholderForRelated(activeRecord, 'locationName'))}">
         </label>
         <label>Area / Place override
-          <input data-place-override="areaName" type="text" placeholder="${escapeHtml(relatedInheritedPlaceholder(activeRecord, 'areaName', 'Inherited area / place'))}">
+          <input data-place-override="areaName" type="text" placeholder="${escapeHtml(inheritedPlaceholderForRelated(activeRecord, 'areaName'))}">
         </label>
         <div class="related-custom-overrides"></div>
       </details>
@@ -1149,7 +1191,7 @@ function renderSupportingPreview(items = []) {
       const input=document.createElement('input');
       input.type='text';
       input.dataset.placeOverride=field.id;
-      input.placeholder='Inherited unless overridden';
+      input.placeholder = inheritedPlaceholderForRelated(activeRecord, field.id);
       input.value=visitorText(photo.placeOverrides?.[field.id]||'');
       lab.appendChild(input); overrideBox.appendChild(lab);
     });
@@ -2444,14 +2486,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0195';
+    const key = 'papaGolfSwReloaded0196';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.19.5', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.19.6', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })

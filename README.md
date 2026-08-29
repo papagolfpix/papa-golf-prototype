@@ -434,3 +434,9 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - This error occurred when opening a saved photo and stopped openDetail() before the detail dialog appeared.
 - Related-photo inherited placeholders now read from activeRecord.
 - No photo records or IndexedDB data changed.
+
+## v0.19.6 — inherited field display completion
+- Updated 4 related-photo override input(s) to show the actual inherited parent value.
+- Covers core fields and visitor/custom fields such as Features, Cost, Rating, Best Time, Visit Time, Transport, Warnings and Website.
+- Empty parent values display `Inherited: no value set`.
+- No data schema or photo records changed.
