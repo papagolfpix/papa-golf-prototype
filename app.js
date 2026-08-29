@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.19.4';
+const RUNTIME_VERSION = '0.19.5';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -1116,16 +1116,16 @@ function renderSupportingPreview(items = []) {
         <summary>Inherited place information · edit for this photo</summary>
         <p class="small muted">The current inherited value is shown in each field. Leave it unchanged to keep inheriting, or type a different value for this photo.</p>
         <label>Photo-specific place description override
-          <textarea data-place-override="description" rows="3" placeholder="${escapeHtml(relatedInheritedPlaceholder(record, 'description', 'Inherited description'))}"></textarea>
+          <textarea data-place-override="description" rows="3" placeholder="${escapeHtml(relatedInheritedPlaceholder(activeRecord, 'description', 'Inherited description'))}"></textarea>
         </label>
         <label>Category override
-          <input data-place-override="category" type="text" placeholder="${escapeHtml(relatedInheritedPlaceholder(record, 'category', 'Inherited category'))}">
+          <input data-place-override="category" type="text" placeholder="${escapeHtml(relatedInheritedPlaceholder(activeRecord, 'category', 'Inherited category'))}">
         </label>
         <label>Location name override
-          <input data-place-override="locationName" type="text" placeholder="${escapeHtml(relatedInheritedPlaceholder(record, 'locationName', 'Inherited location'))}">
+          <input data-place-override="locationName" type="text" placeholder="${escapeHtml(relatedInheritedPlaceholder(activeRecord, 'locationName', 'Inherited location'))}">
         </label>
         <label>Area / Place override
-          <input data-place-override="areaName" type="text" placeholder="${escapeHtml(relatedInheritedPlaceholder(record, 'areaName', 'Inherited area / place'))}">
+          <input data-place-override="areaName" type="text" placeholder="${escapeHtml(relatedInheritedPlaceholder(activeRecord, 'areaName', 'Inherited area / place'))}">
         </label>
         <div class="related-custom-overrides"></div>
       </details>
@@ -2444,14 +2444,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0194';
+    const key = 'papaGolfSwReloaded0195';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.19.4', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.19.5', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })

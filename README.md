@@ -428,3 +428,9 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Activates new service workers immediately and deletes only old Papa Golf shell caches.
 - Reloads once when the new worker takes control.
 - Does not clear or alter IndexedDB photo records.
+
+## v0.19.5 — photo click repair
+- Fixed 4 inherited-value renderer reference(s) that used an undefined record variable.
+- This error occurred when opening a saved photo and stopped openDetail() before the detail dialog appeared.
+- Related-photo inherited placeholders now read from activeRecord.
+- No photo records or IndexedDB data changed.
