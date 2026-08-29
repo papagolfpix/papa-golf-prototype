@@ -400,3 +400,10 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Every inherited field can be overridden for an individual related photo; blank override means continue inheriting.
 - Photo-specific title, story, tags and role remain independent.
 - Visitor View uses the active photo's overrides while retaining inherited values for everything not overridden.
+
+## v0.19.1 — editor cleanup
+- Replaces the long always-open main-photo edit area with a compact main-photo summary.
+- Adds an explicit Edit main photo toggle.
+- Keeps related-photo editing prominent.
+- Keeps inherited place-information overrides collapsed by default.
+- No photo or metadata is deleted; this is a UI-only cleanup.

@@ -799,3 +799,45 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .related-inherited-editor label{display:block;margin-top:10px}
 .related-inherited-editor input,.related-inherited-editor textarea{width:100%;box-sizing:border-box;margin-top:5px}
 .related-photo-metadata{margin-top:10px;line-height:1.45}
+
+/* v0.19.1 — cleaner edit workflow */
+.edit-main-photo-summary{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:0 0 14px;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:rgba(255,255,255,.035);
+}
+.edit-main-photo-summary img{
+  width:64px;
+  height:64px;
+  object-fit:cover;
+  border-radius:14px;
+  flex:0 0 64px;
+}
+.edit-main-photo-summary-copy{
+  min-width:0;
+  flex:1;
+}
+.edit-main-photo-summary-copy strong{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.compact-btn{
+  width:auto !important;
+  white-space:nowrap;
+}
+.main-photo-fields-collapsed{
+  display:none !important;
+}
+.related-inherited-editor{
+  margin-top:12px;
+}
+.related-inherited-editor:not([open]) > *:not(summary){
+  display:none;
+}

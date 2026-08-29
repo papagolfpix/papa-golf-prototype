@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.19';
+const RUNTIME_VERSION = '0.19.1';
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -2468,3 +2468,87 @@ function initWelcomeModule(){
   if(pv)pv.addEventListener('click',()=>{sp?.click();su?.click();renderGuestWelcome();welcomeShow(preview)});
 }
 window.addEventListener('DOMContentLoaded',initWelcomeModule);
+
+
+// ---- v0.19.1 compact main-photo editor ----
+function initCompactMainPhotoEditor(){
+  const editForm = document.getElementById('editForm') || document.querySelector('form[data-mode="edit"]');
+  const summary = document.getElementById('editMainPhotoSummary');
+  const thumb = document.getElementById('editMainPhotoThumb');
+  const title = document.getElementById('editMainPhotoSummaryTitle');
+  const meta = document.getElementById('editMainPhotoSummaryMeta');
+  const toggle = document.getElementById('toggleMainPhotoEditBtn');
+  if(!summary || !toggle) return;
+
+  function findRelatedBoundary(){
+    const candidates = [
+      document.getElementById('supportingPhotosSection'),
+      document.getElementById('relatedPhotosSection'),
+      document.querySelector('.supporting-photos-section'),
+      document.querySelector('.related-photos-section')
+    ].filter(Boolean);
+    if(candidates[0]) return candidates[0];
+
+    const all = [...document.querySelectorAll('h2,h3,h4,section,div,label')];
+    return all.find(el => /supporting photos|related photos/i.test((el.textContent||'').trim())) || null;
+  }
+
+  function collectMainEditBlocks(){
+    const boundary = findRelatedBoundary();
+    const blocks = [];
+    if(!editForm) return blocks;
+    [...editForm.children].forEach(child=>{
+      if(child===summary) return;
+      if(boundary && (child===boundary || child.contains(boundary) || boundary.compareDocumentPosition(child)&Node.DOCUMENT_POSITION_FOLLOWING)){
+        // Don't use document order here to avoid swallowing later buttons unpredictably.
+      }
+      const txt=(child.textContent||'').toLowerCase();
+      const isRelated=/supporting photos|related photos/.test(txt) || child.querySelector?.('[data-related-field], .related-photo-editor, .supporting-photo-editor');
+      const isAction=/save changes|cancel|delete photo/i.test(txt) && child.querySelector?.('button');
+      if(!isRelated && !isAction) blocks.push(child);
+    });
+    return blocks;
+  }
+
+  let expanded=false;
+  function applyState(){
+    const blocks=collectMainEditBlocks();
+    blocks.forEach(el=>{
+      if(expanded) el.classList.remove('main-photo-fields-collapsed');
+      else el.classList.add('main-photo-fields-collapsed');
+    });
+    toggle.textContent=expanded?'Hide main photo fields':'Edit main photo';
+    summary.classList.toggle('expanded',expanded);
+  }
+
+  toggle.addEventListener('click',()=>{
+    expanded=!expanded;
+    applyState();
+  });
+
+  // Refresh whenever Edit opens.
+  const observer = new MutationObserver(()=>{
+    if(!summary.isConnected) return;
+    const record = typeof activeRecord!=='undefined' ? activeRecord : null;
+    if(record){
+      if(title) title.textContent = record.fields?.title || record.metadata?.filename || 'Main photo';
+      if(meta){
+        const bits=[];
+        if(record.metadata?.dateTime) bits.push(record.metadata.dateTime);
+        if(record.fields?.areaName || record.fields?.locationName) bits.push([record.fields?.locationName,record.fields?.areaName].filter(Boolean).join(' · '));
+        meta.textContent=bits.join(' · ');
+      }
+      if(thumb && record.image instanceof Blob){
+        if(thumb.dataset.objectUrl) URL.revokeObjectURL(thumb.dataset.objectUrl);
+        const u=URL.createObjectURL(record.image);
+        thumb.src=u; thumb.dataset.objectUrl=u;
+      }
+    }
+    expanded=false;
+    applyState();
+  });
+  observer.observe(document.body,{attributes:true,subtree:true,attributeFilter:['class','open']});
+
+  applyState();
+}
+window.addEventListener('DOMContentLoaded',initCompactMainPhotoEditor);
