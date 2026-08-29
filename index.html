@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.20.10" />
+<link rel="stylesheet" href="styles.css?v=0.20.11" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.20.10</div>
+      <div class="eyebrow">PAPA GOLF · V0.20.11</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -143,7 +143,7 @@
         <button type="button" id="welcomeSaveGooglePlacesKey" class="secondary-btn">Save key</button>
         <button type="button" id="welcomeTestGooglePlaces" class="primary-btn">Test Google Places</button>
       </div>
-      <div id="welcomeGooglePlacesStatus" class="small muted"></div>
+      <div id="welcomeGooglePlacesStatus" class="small muted"></div><div class="small muted">When a key is saved, Explore Nearby will use Google Places for automatic utilities and fall back to OpenStreetMap if Google is unavailable.</div>
       <div id="welcomeGooglePlacesTestResults" class="welcome-google-test-results"></div>
     </article>
 
@@ -497,6 +497,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.20.10" defer></script>
+  <script src="app.js?v=0.20.11" defer></script>
 </body>
 </html>

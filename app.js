@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.20.10';
+const RUNTIME_VERSION = '0.20.11';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2540,14 +2540,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0210';
+    const key = 'papaGolfSwReloaded0211';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.20.10', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.20.11', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3084,6 +3084,138 @@ async function testPapaGolfGooglePlaces(){
     if(status)status.textContent=places.length?`Google Places found ${places.length} nearby places, nearest first.`:'Google Places returned no matching places in this test radius.';
     if(list)list.innerHTML=places.map((p,i)=>`<div class="welcome-google-test-card"><div class="welcome-google-test-rank">${i+1}</div><div class="welcome-google-test-main"><strong>${escapeHtml(p.name)}</strong><div class="small muted">${escapeHtml(p.type||'place')} · ${p.distanceKm.toFixed(2)} km</div>${p.address?`<div class="small muted">${escapeHtml(p.address)}</div>`:''}</div>${p.googleMapsUri?`<a href="${String(p.googleMapsUri).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}" target="_blank" rel="noopener">Google Maps</a>`:''}</div>`).join('');
   }catch(err){if(status)status.textContent=`Google Places test failed: ${err?.message||err}`;}
+}
+
+
+function welcomeGoogleCategory(place){
+  const primary=String(place?.primaryType||'').toLowerCase();
+  const types=Array.isArray(place?.types)?place.types.map(x=>String(x).toLowerCase()):[];
+  const all=new Set([primary,...types]);
+
+  if(all.has('convenience_store')) return 'convenience';
+  if(all.has('supermarket') || all.has('grocery_store')) return 'supermarket';
+  if(all.has('gas_station')) return 'petrol';
+  if(all.has('atm') || all.has('bank')) return 'atm';
+  if(all.has('pharmacy')) return 'pharmacy';
+  if(all.has('hospital') || all.has('medical_clinic') || all.has('doctor')) return 'medical';
+  return '';
+}
+
+async function fetchGoogleAutomaticPlaces(){
+  const apiKey=getPapaGolfGooglePlacesKey();
+  if(!apiKey) throw new Error('Google Places API key is not saved on this device.');
+
+  const d=effectiveWelcome();
+  const cats=getWelcomeCategories().filter(c=>c.enabled&&c.source==='automatic');
+  if(!cats.length) return [];
+
+  const maxRadiusKm=Math.min(
+    10,
+    Math.max(...cats.map(c=>Math.max(.5,Number(c.radiusKm)||3)))
+  );
+
+  const includedTypes=[
+    'convenience_store',
+    'supermarket',
+    'grocery_store',
+    'gas_station',
+    'atm',
+    'bank',
+    'pharmacy',
+    'hospital',
+    'medical_clinic',
+    'doctor'
+  ];
+
+  const body={
+    includedTypes,
+    maxResultCount:20,
+    rankPreference:'DISTANCE',
+    locationRestriction:{
+      circle:{
+        center:{latitude:Number(d.lat),longitude:Number(d.lng)},
+        radius:Math.round(maxRadiusKm*1000)
+      }
+    }
+  };
+
+  const res=await fetch('https://places.googleapis.com/v1/places:searchNearby',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'X-Goog-Api-Key':apiKey,
+      'X-Goog-FieldMask':'places.id,places.displayName,places.primaryType,places.types,places.location,places.formattedAddress,places.googleMapsUri'
+    },
+    body:JSON.stringify(body)
+  });
+
+  const text=await res.text();
+  let data={};
+  try{ data=text?JSON.parse(text):{}; }catch(_){}
+
+  if(!res.ok){
+    throw new Error(data?.error?.message||`Google Places returned HTTP ${res.status}.`);
+  }
+
+  const wantedIds=new Set(cats.map(c=>c.id));
+  const places=(Array.isArray(data.places)?data.places:[])
+    .map(p=>{
+      const category=welcomeGoogleCategory(p);
+      const lat=Number(p?.location?.latitude);
+      const lng=Number(p?.location?.longitude);
+      return {
+        id:`google:${p?.id||Math.random().toString(36).slice(2)}`,
+        googlePlaceId:p?.id||'',
+        name:p?.displayName?.text||'Unnamed place',
+        category,
+        lat,
+        lng,
+        address:p?.formattedAddress||'',
+        googleMapsUri:p?.googleMapsUri||'',
+        source:'google',
+        automatic:true,
+        googlePrimaryType:p?.primaryType||'',
+        googleTypes:Array.isArray(p?.types)?p.types:[]
+      };
+    })
+    .filter(p=>p.category && wantedIds.has(p.category) && Number.isFinite(p.lat) && Number.isFinite(p.lng));
+
+  // Respect each category's configured search radius, but do not apply
+  // directional or maximum-result filtering.
+  return places
+    .map(p=>({...p,distanceKm:welcomeDistanceKm(Number(d.lat),Number(d.lng),p.lat,p.lng)}))
+    .filter(p=>{
+      const cat=cats.find(c=>c.id===p.category);
+      const radiusKm=Math.max(.5,Math.min(10,Number(cat?.radiusKm)||3));
+      return Number.isFinite(p.distanceKm)&&p.distanceKm<=radiusKm;
+    })
+    .sort((a,b)=>a.distanceKm-b.distanceKm);
+}
+
+async function refreshWelcomeNearbyPlaces(){
+  const status=document.getElementById('welcomeNearbyStatus');
+  const hasGoogle=!!getPapaGolfGooglePlacesKey();
+
+  if(hasGoogle){
+    try{
+      if(status) status.textContent='Loading nearby places from Google…';
+      const googlePlaces=await fetchGoogleAutomaticPlaces();
+      welcomeAutomaticPlaces=googlePlaces;
+      localStorage.setItem(WELCOME_AUTOMATIC_CACHE_KEY,JSON.stringify({
+        provider:'google',
+        savedAt:Date.now(),
+        places:googlePlaces
+      }));
+      if(status) status.textContent=`Google Places loaded ${googlePlaces.length} nearby utility places.`;
+      renderWelcomeNearby();
+      return;
+    }catch(err){
+      console.warn('Google Places automatic search failed; falling back to OpenStreetMap',err);
+      if(status) status.textContent='Google Places unavailable. Using OpenStreetMap fallback…';
+    }
+  }
+
+  await refreshWelcomeAutomaticPlaces();
 }
 
 function welcomeFilteredAutomaticPlaces(){

@@ -590,3 +590,14 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Fixed `Can't find variable: escapeAttr` in the Google Places test results renderer.
 - Existing saved Google Places API key remains untouched in localStorage.
 - Google Places test now proceeds to the real API response instead of failing during result rendering.
+
+
+## v0.20.11 — Google Places in Explore Nearby
+- Google Places API (New) is now the preferred automatic utility source when a local Google Places key is saved.
+- Automatic categories covered: convenience stores, supermarkets/grocery stores, petrol stations, ATMs/banks, pharmacies, hospitals/clinics/doctors.
+- Results are kept nearest-first and still respect each category's configured search radius.
+- Directional filtering and maximum-results filtering remain disabled.
+- Existing sticky map, 750 m default villa-centred view, tappable result cards, and best-fit YOU ARE HERE + selected-place behavior are preserved.
+- Google Places result cards can use Google's supplied Maps destination link.
+- If the Google call fails or no key is saved, Papa Golf falls back to the existing OpenStreetMap/Overpass automatic utility system.
+- Approved/affiliate places remain Papa Golf-controlled and are not replaced by Google.
