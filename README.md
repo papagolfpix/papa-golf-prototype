@@ -440,3 +440,10 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Covers core fields and visitor/custom fields such as Features, Cost, Rating, Best Time, Visit Time, Transport, Warnings and Website.
 - Empty parent values display `Inherited: no value set`.
 - No data schema or photo records changed.
+
+## v0.19.7 — related-photo Blob save repair
+- Materializes every related-photo Blob before rewriting an edited record in IndexedDB.
+- Prevents Safari from saving metadata changes while leaving a nested related image Blob unreadable.
+- Rebuilds the detail viewer from the freshly saved Blobs immediately after Save.
+- Aborts the save instead of writing the record if any related image bytes cannot be safely read.
+- Main image and related image metadata/schema remain unchanged.

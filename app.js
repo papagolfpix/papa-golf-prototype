@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.19.6';
+const RUNTIME_VERSION = '0.19.7';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -1232,6 +1232,35 @@ function renderSupportingPreview(items = []) {
   });
 }
 
+
+async function materializeSafeRelatedPhotos(items = []) {
+  const safe = [];
+  for (let i = 0; i < items.length; i++) {
+    const raw = items[i];
+    const photo = normalizeRelatedPhoto(raw, i);
+    const blob = relatedBlob(photo);
+    if (!(blob instanceof Blob) || !blob.size) {
+      throw new Error(`Related photo ${i + 1} has no readable image bytes. No changes were saved.`);
+    }
+
+    const fallbackType =
+      photo?.metadata?.type ||
+      photo?.mimeType ||
+      blob.type ||
+      'image/jpeg';
+
+    const safeBlob = await materializeSafeBlob(blob, fallbackType);
+
+    safe.push({
+      ...photo,
+      imageBlob: safeBlob,
+      // Avoid carrying a second stale Blob reference if an older record used `image`.
+      ...(Object.prototype.hasOwnProperty.call(photo, 'image') ? { image: undefined } : {})
+    });
+  }
+  return safe;
+}
+
 function renderDetailSupportingGallery(record) {
   if (!detailSupportingGallery || !detailImage) return;
 
@@ -1695,10 +1724,21 @@ editForm.addEventListener('submit', async event => {
       activeRecord.image,
       activeRecord.metadata?.type || 'image/jpeg'
     );
-    const updated = { ...activeRecord, image: safeImage, fields: values, supportingPhotos: pendingSupportingPhotos,
-      updatedAt: new Date().toISOString() };
+    // Safari needs the nested related-photo Blobs materialized too.
+    // Otherwise a metadata-only edit can save the text successfully while
+    // leaving a related image Blob unreadable after the IndexedDB rewrite.
+    const safeSupportingPhotos = await materializeSafeRelatedPhotos(pendingSupportingPhotos);
+
+    const updated = {
+      ...activeRecord,
+      image: safeImage,
+      fields: values,
+      supportingPhotos: safeSupportingPhotos,
+      updatedAt: new Date().toISOString()
+    };
     await putRecord(updated);
     activeRecord = updated;
+    pendingSupportingPhotos = safeSupportingPhotos;
     renderPublicationStatus(updated);
     editStatus.textContent = 'Changes saved.';
     await renderGallery();
@@ -1738,6 +1778,10 @@ editForm.addEventListener('submit', async event => {
       ['Saved to prototype', updated.savedAt ? new Date(updated.savedAt).toLocaleString() : 'Not found'],
     ];
     rows.forEach(([label, value, href]) => detailMetadata.appendChild(detailRow(label, value, { href })));
+    // Rebuild image URLs from the freshly materialized saved Blobs.
+    // This also restores whichever filmstrip images Safari may have invalidated
+    // during the IndexedDB rewrite.
+    renderDetailSupportingGallery(updated);
   } catch (error) {
     editStatus.textContent = `Could not save: ${error.message || error}`;
   }
@@ -2486,14 +2530,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0196';
+    const key = 'papaGolfSwReloaded0197';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.19.6', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.19.7', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
