@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.19.7';
+const RUNTIME_VERSION = '0.19.8';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -6,7 +6,7 @@ const FIELD_KEY = 'papaGolfCustomFields';
 
 const defaultFields = [
   { id: 'title', label: 'Title', type: 'text' },
-  { id: 'description', label: 'Description / Notes', type: 'textarea' },
+  { id: 'description', label: 'Photo Description', type: 'textarea' },
   { id: 'category', label: 'Category', type: 'text' },
   { id: 'areaName', label: 'Area / Place', type: 'text' },
   { id: 'locationName', label: 'Location name', type: 'text' },
@@ -667,6 +667,7 @@ function detailRow(label, value, options = {}) {
 }
 
 function fieldLabelFor(id) {
+  if (id === 'description') return 'Photo Description';
   return customFields.find(field => field.id === id)?.label ||
     defaultFields.find(field => field.id === id)?.label ||
     id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -1058,6 +1059,17 @@ function normalizeRelatedPhoto(item, index = 0) {
   if(item && typeof item==='object'){
     if(!item.metadata)item.metadata={};
     if(!item.placeOverrides)item.placeOverrides={};
+
+    // v0.19.8: one description per photo.
+    // Preserve any earlier photo-specific "place description override" by
+    // migrating it into the related photo's own description when needed.
+    const legacyDescription = String(item.placeOverrides?.description ?? '').trim();
+    if(!String(item.description ?? '').trim() && legacyDescription){
+      item.description = legacyDescription;
+    }
+    if(Object.prototype.hasOwnProperty.call(item.placeOverrides, 'description')){
+      delete item.placeOverrides.description;
+    }
   }
   return item;
 }
@@ -1148,18 +1160,16 @@ function renderSupportingPreview(items = []) {
       <label>Title / caption
         <input data-related-field="title" type="text" placeholder="Optional photo-specific title">
       </label>
-      <label>Photo story / notes
-        <textarea data-related-field="description" rows="2" placeholder="Optional story specific to this photo"></textarea>
+      <label>Photo Description
+        <textarea data-related-field="description" rows="3" placeholder="${escapeHtml(inheritedPlaceholderForRelated(activeRecord, 'description'))}"></textarea>
+        <span class="small muted">Leave blank to inherit the main photo description. Type here only when this photo needs a different description.</span>
       </label>
       <label>Photo tags
         <input data-related-field="tags" type="text" placeholder="e.g. pigs, beach, jetski">
       </label>
       <details class="related-inherited-editor">
         <summary>Inherited place information · edit for this photo</summary>
-        <p class="small muted">The current inherited value is shown in each field. Leave it unchanged to keep inheriting, or type a different value for this photo.</p>
-        <label>Photo-specific place description override
-          <textarea data-place-override="description" rows="3" placeholder="${escapeHtml(inheritedPlaceholderForRelated(activeRecord, 'description'))}"></textarea>
-        </label>
+        <p class="small muted">These are shared place details. The current inherited value is shown in each field; type a different value only when this photo needs an exception.</p>
         <label>Category override
           <input data-place-override="category" type="text" placeholder="${escapeHtml(inheritedPlaceholderForRelated(activeRecord, 'category'))}">
         </label>
@@ -1317,7 +1327,7 @@ function renderDetailSupportingGallery(record) {
           active.role==='context'?'Context / Filler':'Standard';
         activePhotoRole.textContent=roleLabel;
         activePhotoTitle.textContent=active.title || 'Untitled photo';
-        activePhotoDescription.textContent=active.description || '';
+        activePhotoDescription.textContent=String(active.description || '').trim() || String(record?.fields?.description || '').trim();
         const meta=[];
         if(active.captureDate)meta.push(`Date: ${active.captureDate}`);
         if(active.filename)meta.push(`File: ${active.filename}`);
@@ -2530,14 +2540,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0197';
+    const key = 'papaGolfSwReloaded0198';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.19.7', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.19.8', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })

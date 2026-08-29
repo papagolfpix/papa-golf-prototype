@@ -447,3 +447,11 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Rebuilds the detail viewer from the freshly saved Blobs immediately after Save.
 - Aborts the save instead of writing the record if any related image bytes cannot be safely read.
 - Main image and related image metadata/schema remain unchanged.
+
+## v0.19.8 — one description per photo
+- Replaces the separate Place Description override + Photo Story model with one `Photo Description`.
+- Main photo description is the inherited default for related photos.
+- A related photo with a blank description automatically uses the main photo description.
+- Typing a related-photo description makes that photo different from the main photo.
+- Legacy related `placeOverrides.description` values are migrated into the related photo description so existing edits are preserved.
+- Shared structured place fields (Category, Area, Location, Features, Cost, Rating, Best Time, Transport, Warnings, Website, etc.) continue to inherit independently.

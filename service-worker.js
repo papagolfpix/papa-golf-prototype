@@ -1,4 +1,4 @@
-const CACHE = 'papa-golf-v0197-shell';
+const CACHE = 'papa-golf-v0198-shell';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
