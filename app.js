@@ -1,4 +1,5 @@
-const RUNTIME_VERSION = '0.19.3';
+const RUNTIME_VERSION = '0.19.4';
+console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
 const FIELD_KEY = 'papaGolfCustomFields';
@@ -2435,8 +2436,25 @@ clearAllBtn.addEventListener('click', async () => {
 });
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' })
-    .then(reg => reg.update())
+  let refreshing = false;
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+
+    // Reload once when a newly deployed Papa Golf worker takes control.
+    // This affects only the app shell; IndexedDB photo records are untouched.
+    const key = 'papaGolfSwReloaded0194';
+    if (!sessionStorage.getItem(key)) {
+      sessionStorage.setItem(key, '1');
+      window.location.reload();
+    }
+  });
+
+  navigator.serviceWorker.register('./service-worker.js?v=0.19.4', { updateViaCache: 'none' })
+    .then(async reg => {
+      try { await reg.update(); } catch (_) {}
+    })
     .catch(() => {});
 }
 renderGallery().catch(error => { backupStatus.textContent = `Storage error: ${error.message || error}`; });

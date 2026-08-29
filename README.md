@@ -420,3 +420,11 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Leaving an override untouched keeps live inheritance from the main photo/place.
 - Typing a different value creates a photo-specific override.
 - No record schema changes.
+
+## v0.19.4 — deployment/cache repair
+- Corrects stale index.html version label and app/CSS query strings.
+- Removes failed service-worker precache dependency on missing manifest.webmanifest.
+- Makes same-origin app requests network-first.
+- Activates new service workers immediately and deletes only old Papa Golf shell caches.
+- Reloads once when the new worker takes control.
+- Does not clear or alter IndexedDB photo records.
