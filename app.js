@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.20.1';
+const RUNTIME_VERSION = '0.20.3';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2540,14 +2540,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0201';
+    const key = 'papaGolfSwReloaded0203';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.20.1', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.20.3', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2586,12 +2586,12 @@ const WELCOME_DEFAULT_UNIT = {
 };
 
 const WELCOME_CATEGORY_DEFS = [
-  {id:'convenience',label:'Convenience Stores',icon:'🛒',source:'automatic',enabled:true},
-  {id:'supermarket',label:'Supermarkets',icon:'🛍',source:'automatic',enabled:true},
-  {id:'petrol',label:'Petrol Stations',icon:'⛽',source:'automatic',enabled:true},
-  {id:'atm',label:'ATMs / Banks',icon:'🏧',source:'automatic',enabled:true},
-  {id:'pharmacy',label:'Pharmacies',icon:'💊',source:'automatic',enabled:true},
-  {id:'medical',label:'Hospitals / Clinics',icon:'🏥',source:'automatic',enabled:true},
+  {id:'convenience',label:'Convenience Stores',icon:'🛒',source:'automatic',enabled:true,radiusKm:2,maxResults:4,selection:'spread'},
+  {id:'supermarket',label:'Supermarkets',icon:'🛍',source:'automatic',enabled:true,radiusKm:3,maxResults:3,selection:'nearest'},
+  {id:'petrol',label:'Petrol Stations',icon:'⛽',source:'automatic',enabled:true,radiusKm:3,maxResults:3,selection:'nearest'},
+  {id:'atm',label:'ATMs / Banks',icon:'🏧',source:'automatic',enabled:true,radiusKm:2,maxResults:4,selection:'spread'},
+  {id:'pharmacy',label:'Pharmacies',icon:'💊',source:'automatic',enabled:true,radiusKm:3,maxResults:3,selection:'nearest'},
+  {id:'medical',label:'Hospitals / Clinics',icon:'🏥',source:'automatic',enabled:true,radiusKm:8,maxResults:4,selection:'nearest'},
   {id:'restaurant',label:'Restaurants',icon:'🍽',source:'approved',enabled:true},
   {id:'bar',label:'Bars',icon:'🍹',source:'approved',enabled:true},
   {id:'cafe',label:'Cafés',icon:'☕',source:'approved',enabled:true},
@@ -2603,6 +2603,12 @@ const WELCOME_CATEGORY_DEFS = [
 let welcomeNearbyMap = null;
 let welcomeNearbyLayer = null;
 let welcomeActiveFilter = 'all';
+let welcomeAutomaticPlaces = [];
+let welcomeAutomaticLoading = false;
+let welcomeAutomaticError = '';
+const WELCOME_AUTO_CACHE_KEY = 'papaGolfWelcomeAutomaticPlacesV1';
+const WELCOME_AUTO_CACHE_MS = 6 * 60 * 60 * 1000;
+const WELCOME_AUTO_MAX_QUERY_RADIUS_METERS = 10000;
 
 function readWelcomeJson(key,fallback){
   try{
@@ -2742,6 +2748,25 @@ function renderWelcomeCategoryEditor(){
         <option value="automatic" ${cat.source==='automatic'?'selected':''}>Automatic nearby search</option>
         <option value="approved" ${cat.source==='approved'?'selected':''}>Approved / affiliate only</option>
       </select>
+      ${cat.source==='automatic'?`
+        <div class="welcome-auto-rules">
+          <label>Search radius
+            <select data-role="radius">
+              ${[0.5,1,1.5,2,2.5,3,4,5,6,8,10].map(n=>`<option value="${n}" ${Number(cat.radiusKm)===n?'selected':''}>${n} km</option>`).join('')}
+            </select>
+          </label>
+          <label>Maximum results
+            <select data-role="max-results">
+              ${[1,2,3,4,5,6,8,10].map(n=>`<option value="${n}" ${Number(cat.maxResults)===n?'selected':''}>${n}</option>`).join('')}
+            </select>
+          </label>
+          <label>Selection
+            <select data-role="selection">
+              <option value="nearest" ${cat.selection==='nearest'?'selected':''}>Nearest</option>
+              <option value="spread" ${cat.selection==='spread'?'selected':''}>Nearest + directional spread</option>
+            </select>
+          </label>
+        </div>`:''}
     </div>
   `).join('');
 }
@@ -2750,9 +2775,17 @@ function saveWelcomeCategories(){
   const current=getWelcomeCategories();
   const next=current.map(cat=>{
     const row=rows.find(r=>r.dataset.categoryId===cat.id);
-    return {...cat,enabled:!!row?.querySelector('[data-role="enabled"]')?.checked,source:row?.querySelector('[data-role="source"]')?.value||cat.source};
+    return {
+      ...cat,
+      enabled:!!row?.querySelector('[data-role="enabled"]')?.checked,
+      source:row?.querySelector('[data-role="source"]')?.value||cat.source,
+      radiusKm:Number(row?.querySelector('[data-role="radius"]')?.value)||cat.radiusKm,
+      maxResults:Number(row?.querySelector('[data-role="max-results"]')?.value)||cat.maxResults,
+      selection:row?.querySelector('[data-role="selection"]')?.value||cat.selection
+    };
   });
   localStorage.setItem(WELCOME_CATEGORY_KEY,JSON.stringify(next));
+  try{localStorage.removeItem(WELCOME_AUTO_CACHE_KEY)}catch{}
 }
 function renderWelcomePartnerCategorySelect(){
   const sel=document.getElementById('welcomePartnerCategory');
@@ -2801,7 +2834,10 @@ function openGuestWelcomePanel(id){
   document.getElementById('guestWelcomeHome')?.classList.add('hidden');
   document.querySelectorAll('.guest-welcome-panel').forEach(el=>el.classList.toggle('hidden',el.id!==id));
   if(id==='guestExplorePanel'){
-    setTimeout(()=>{renderWelcomeNearbyMap();},40);
+    setTimeout(()=>{
+      renderWelcomeNearbyMap();
+      fetchWelcomeAutomaticPlaces(false);
+    },40);
   }
   if(id==='guestFoodPanel')renderGuestFoodList();
   window.scrollTo(0,0);
@@ -2832,6 +2868,196 @@ function renderGuestWelcome(){
   renderGuestFoodList();
   showGuestWelcomeHome();
 }
+
+function welcomeAutoCacheRead(){
+  try{
+    const raw=JSON.parse(localStorage.getItem(WELCOME_AUTO_CACHE_KEY)||'null');
+    if(!raw||!Array.isArray(raw.items)||!Number.isFinite(raw.savedAt))return null;
+    return raw;
+  }catch{return null}
+}
+function welcomeAutoCacheWrite(items){
+  try{
+    localStorage.setItem(WELCOME_AUTO_CACHE_KEY,JSON.stringify({savedAt:Date.now(),items}));
+  }catch{}
+}
+function welcomeAutomaticQuery(lat,lng){
+  const radii=getWelcomeCategories()
+    .filter(c=>c.enabled&&c.source==='automatic')
+    .map(c=>Math.max(.5,Math.min(10,Number(c.radiusKm)||3))*1000);
+  const r=Math.min(WELCOME_AUTO_MAX_QUERY_RADIUS_METERS,Math.max(1000,...radii));
+  // Fetch candidates once, then Papa Golf applies each category's own radius and display rules.
+  return `[out:json][timeout:20];
+(
+  nwr["shop"="convenience"](around:${r},${lat},${lng});
+  nwr["shop"="supermarket"](around:${r},${lat},${lng});
+  nwr["amenity"="fuel"](around:${r},${lat},${lng});
+  nwr["amenity"="atm"](around:${r},${lat},${lng});
+  nwr["amenity"="bank"](around:${r},${lat},${lng});
+  nwr["amenity"="pharmacy"](around:${r},${lat},${lng});
+  nwr["amenity"="hospital"](around:${r},${lat},${lng});
+  nwr["amenity"="clinic"](around:${r},${lat},${lng});
+  nwr["healthcare"="hospital"](around:${r},${lat},${lng});
+  nwr["healthcare"="clinic"](around:${r},${lat},${lng});
+);
+out center tags;`;
+}
+function welcomeAutoCategory(tags={}){
+  if(tags.shop==='convenience')return 'convenience';
+  if(tags.shop==='supermarket')return 'supermarket';
+  if(tags.amenity==='fuel')return 'petrol';
+  if(tags.amenity==='atm'||tags.amenity==='bank')return 'atm';
+  if(tags.amenity==='pharmacy')return 'pharmacy';
+  if(tags.amenity==='hospital'||tags.amenity==='clinic'||tags.healthcare==='hospital'||tags.healthcare==='clinic')return 'medical';
+  return '';
+}
+function welcomeAutoName(tags={},category=''){
+  return String(
+    tags.name ||
+    tags['name:en'] ||
+    tags.brand ||
+    tags.operator ||
+    welcomeCategoryDef(category)?.label ||
+    'Nearby place'
+  ).trim();
+}
+function welcomeAutoNormalize(elements=[]){
+  const seen=new Set();
+  const out=[];
+  for(const el of elements){
+    const tags=el.tags||{};
+    const category=welcomeAutoCategory(tags);
+    if(!category)continue;
+    const lat=Number(el.lat ?? el.center?.lat);
+    const lng=Number(el.lon ?? el.center?.lon);
+    if(!Number.isFinite(lat)||!Number.isFinite(lng))continue;
+    const key=`${category}|${lat.toFixed(5)}|${lng.toFixed(5)}|${welcomeAutoName(tags,category).toLowerCase()}`;
+    if(seen.has(key))continue;
+    seen.add(key);
+    out.push({
+      id:`osm-${el.type||'x'}-${el.id}`,
+      name:welcomeAutoName(tags,category),
+      category,
+      lat,
+      lng,
+      note:[tags.brand,tags.opening_hours].filter(Boolean).join(' · '),
+      source:'openstreetmap',
+      automatic:true,
+      tags
+    });
+  }
+  return out;
+}
+async function fetchWelcomeAutomaticPlaces(force=false){
+  if(welcomeAutomaticLoading)return;
+  const d=effectiveWelcome();
+  if(!Number.isFinite(d.lat)||!Number.isFinite(d.lng)){
+    welcomeAutomaticError='Villa coordinates are missing.';
+    renderWelcomeNearbyMap();
+    return;
+  }
+
+  const cached=welcomeAutoCacheRead();
+  if(!force && cached && Date.now()-cached.savedAt < WELCOME_AUTO_CACHE_MS){
+    welcomeAutomaticPlaces=cached.items;
+    welcomeAutomaticError='';
+    renderWelcomeNearbyMap();
+    return;
+  }
+
+  welcomeAutomaticLoading=true;
+  welcomeAutomaticError='';
+  renderWelcomeNearbyMap();
+  try{
+    const query=welcomeAutomaticQuery(d.lat,d.lng);
+    const endpoints=[
+      'https://overpass-api.de/api/interpreter',
+      'https://overpass.kumi.systems/api/interpreter'
+    ];
+    let lastErr=null,data=null;
+    for(const endpoint of endpoints){
+      try{
+        const controller=new AbortController();
+        const timer=setTimeout(()=>controller.abort(),18000);
+        const res=await fetch(endpoint,{
+          method:'POST',
+          headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+          body:'data='+encodeURIComponent(query),
+          signal:controller.signal
+        });
+        clearTimeout(timer);
+        if(!res.ok)throw new Error(`Nearby service returned ${res.status}`);
+        data=await res.json();
+        break;
+      }catch(err){lastErr=err}
+    }
+    if(!data)throw lastErr||new Error('Nearby service unavailable');
+    welcomeAutomaticPlaces=welcomeAutoNormalize(data.elements||[]);
+    welcomeAutoCacheWrite(welcomeAutomaticPlaces);
+  }catch(err){
+    welcomeAutomaticError='Live nearby search is temporarily unavailable. Curated places are still shown.';
+  }finally{
+    welcomeAutomaticLoading=false;
+    renderWelcomeNearbyMap();
+  }
+}
+function welcomeEnabledAutomaticCategories(){
+  return new Set(getWelcomeCategories().filter(c=>c.enabled&&c.source==='automatic').map(c=>c.id));
+}
+function welcomeBearingDeg(lat1,lng1,lat2,lng2){
+  const toRad=x=>x*Math.PI/180,toDeg=x=>x*180/Math.PI;
+  const a=toRad(lat1),b=toRad(lat2),dLng=toRad(lng2-lng1);
+  const y=Math.sin(dLng)*Math.cos(b);
+  const x=Math.cos(a)*Math.sin(b)-Math.sin(a)*Math.cos(b)*Math.cos(dLng);
+  return (toDeg(Math.atan2(y,x))+360)%360;
+}
+function welcomeSelectDirectionalSpread(items,maxResults,originLat,originLng){
+  if(items.length<=maxResults)return items;
+  const candidates=[...items].sort((a,b)=>a.distanceKm-b.distanceKm);
+  const selected=[candidates.shift()];
+  while(candidates.length&&selected.length<maxResults){
+    let bestIndex=0,bestScore=-Infinity;
+    candidates.forEach((candidate,index)=>{
+      const bearing=welcomeBearingDeg(originLat,originLng,candidate.lat,candidate.lng);
+      let minAngular=180;
+      selected.forEach(chosen=>{
+        const b=welcomeBearingDeg(originLat,originLng,chosen.lat,chosen.lng);
+        const raw=Math.abs(bearing-b);
+        minAngular=Math.min(minAngular,Math.min(raw,360-raw));
+      });
+      const score=minAngular*10-candidate.distanceKm*8;
+      if(score>bestScore){bestScore=score;bestIndex=index}
+    });
+    selected.push(candidates.splice(bestIndex,1)[0]);
+  }
+  return selected.sort((a,b)=>a.distanceKm-b.distanceKm);
+}
+function welcomeFilteredAutomaticPlaces(){
+  const d=effectiveWelcome();
+  const cats=getWelcomeCategories().filter(c=>c.enabled&&c.source==='automatic');
+  const wanted=welcomeActiveFilter==='all'?cats:cats.filter(c=>c.id===welcomeActiveFilter);
+  const output=[];
+  wanted.forEach(cat=>{
+    const radiusKm=Math.max(.5,Math.min(10,Number(cat.radiusKm)||3));
+    const maxResults=Math.max(1,Math.min(10,Math.round(Number(cat.maxResults)||4)));
+    let items=welcomeAutomaticPlaces
+      .filter(p=>p.category===cat.id)
+      .map(p=>({...p,distanceKm:welcomeDistanceKm(d.lat,d.lng,p.lat,p.lng)}))
+      .filter(p=>Number.isFinite(p.distanceKm)&&p.distanceKm<=radiusKm)
+      .sort((a,b)=>a.distanceKm-b.distanceKm);
+    items=cat.selection==='spread'
+      ? welcomeSelectDirectionalSpread(items,maxResults,d.lat,d.lng)
+      : items.slice(0,maxResults);
+    output.push(...items);
+  });
+  return output;
+}
+function welcomeAllVisiblePlaces(){
+  const curated=welcomeFilteredPartners().map(x=>({...x,automatic:false,source:x.source||'curated'}));
+  const automatic=welcomeFilteredAutomaticPlaces();
+  return [...curated,...automatic];
+}
+
 function renderWelcomeGuestFilters(){
   const host=document.getElementById('welcomeGuestFilters');
   if(!host)return;
@@ -2863,15 +3089,16 @@ function renderWelcomeNearbyMap(){
   welcomeNearbyLayer.clearLayers();
 
   const villa=L.marker([d.lat,d.lng]).addTo(welcomeNearbyLayer).bindPopup(`<strong>${escapeHtml(d.unitName)}</strong><br>You are here`);
-  const items=welcomeFilteredPartners();
+  const items=welcomeAllVisiblePlaces();
   const bounds=[[d.lat,d.lng]];
 
   items.forEach(item=>{
     const lat=Number(item.lat),lng=Number(item.lng);
     if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
     const cat=welcomeCategoryDef(item.category)||{};
-    const dist=welcomeDistanceKm(d.lat,d.lng,lat,lng);
-    L.marker([lat,lng]).addTo(welcomeNearbyLayer).bindPopup(`<strong>${escapeHtml(item.name)}</strong><br>${escapeHtml(cat.label||'Place')} · ${dist.toFixed(dist<1?2:1)} km${item.note?'<br>'+escapeHtml(item.note):''}`);
+    const dist=Number.isFinite(item.distanceKm)?item.distanceKm:welcomeDistanceKm(d.lat,d.lng,lat,lng);
+    const sourceLabel=item.automatic?'Nearby utility':'Papa Golf approved';
+    L.marker([lat,lng]).addTo(welcomeNearbyLayer).bindPopup(`<strong>${escapeHtml(item.name)}</strong><br>${escapeHtml(cat.label||'Place')} · ${dist.toFixed(dist<1?2:1)} km<br><small>${escapeHtml(sourceLabel)}</small>${item.note?'<br>'+escapeHtml(item.note):''}`);
     bounds.push([lat,lng]);
   });
 
@@ -2884,20 +3111,31 @@ function renderWelcomeNearbyMap(){
     : activeCat?.source==='automatic');
 
   if(status){
-    status.textContent=automaticActive
-      ? 'Curated places are live now. Automatic utility results (7-Eleven, petrol, ATM, pharmacy, etc.) will populate here when the live Places search layer is connected.'
-      : `${items.length} approved place${items.length===1?'':'s'} shown.`;
+    if(welcomeAutomaticLoading && automaticActive){
+      status.textContent='Searching live nearby places…';
+    }else if(welcomeAutomaticError && automaticActive){
+      status.textContent=welcomeAutomaticError;
+    }else{
+      const autoCount=welcomeFilteredAutomaticPlaces().length;
+      const curatedCount=welcomeFilteredPartners().length;
+      const parts=[];
+      if(automaticActive)parts.push(`${autoCount} live utility place${autoCount===1?'':'s'}`);
+      if(curatedCount)parts.push(`${curatedCount} approved place${curatedCount===1?'':'s'}`);
+      status.textContent=parts.length?parts.join(' · '):'No places found for this filter yet.';
+    }
   }
 
   if(list){
     list.innerHTML=items.length?items.map(item=>{
       const cat=welcomeCategoryDef(item.category)||{};
       const dist=welcomeDistanceKm(d.lat,d.lng,Number(item.lat),Number(item.lng));
+      const sourceLabel=item.automatic?'Nearby utility':'Papa Golf approved';
       return `<article class="welcome-place-card">
         <div class="welcome-place-icon">${cat.icon||'📍'}</div>
         <div class="welcome-place-copy">
           <strong>${escapeHtml(item.name)}</strong>
           <div class="small muted">${escapeHtml(cat.label||'Place')} · ${dist.toFixed(dist<1?2:1)} km away</div>
+          <div class="welcome-source-badge ${item.automatic?'automatic':'approved'}">${escapeHtml(sourceLabel)}</div>
           ${item.note?`<div class="welcome-place-note">${escapeHtml(item.note)}</div>`:''}
           <a class="welcome-map-link" href="${welcomeGoogleMapsUrl(item.lat,item.lng)}" target="_blank" rel="noopener">Navigate with Google Maps</a>
         </div>
@@ -2985,6 +3223,18 @@ function initWelcomeModule(){
 
   document.getElementById('saveWelcomePropertyBtn')?.addEventListener('click',()=>{saveWelcomeProperty();alert('Property information saved.')});
   document.getElementById('saveWelcomeUnitBtn')?.addEventListener('click',()=>{saveWelcomeUnit();alert('Villa information saved.')});
+  document.getElementById('welcomeCategoryEditor')?.addEventListener('change',event=>{
+    if(event.target?.dataset?.role!=='source')return;
+    const rows=[...document.querySelectorAll('#welcomeCategoryEditor .welcome-category-row')];
+    const current=getWelcomeCategories();
+    const next=current.map(cat=>{
+      const row=rows.find(r=>r.dataset.categoryId===cat.id);
+      return {...cat,enabled:!!row?.querySelector('[data-role="enabled"]')?.checked,source:row?.querySelector('[data-role="source"]')?.value||cat.source};
+    });
+    localStorage.setItem(WELCOME_CATEGORY_KEY,JSON.stringify(next));
+    renderWelcomeCategoryEditor();
+  });
+
   document.getElementById('saveWelcomeCategoriesBtn')?.addEventListener('click',()=>{saveWelcomeCategories();renderWelcomePartnerCategorySelect();alert('Explore Nearby categories saved.')});
   document.getElementById('addWelcomePartnerBtn')?.addEventListener('click',addWelcomePartner);
 
@@ -3022,6 +3272,11 @@ function initWelcomeModule(){
   document.getElementById('welcomeA5BackBtn')?.addEventListener('click',()=>welcomeShow(page));
   document.getElementById('welcomeA5PrintBtn')?.addEventListener('click',printWelcomeA5);
 
+  document.getElementById('refreshWelcomeNearbyBtn')?.addEventListener('click',()=>{
+    try{localStorage.removeItem(WELCOME_AUTO_CACHE_KEY)}catch{}
+    fetchWelcomeAutomaticPlaces(true);
+  });
+
   document.getElementById('welcomeGuestPreview')?.addEventListener('click',event=>{
     const tile=event.target.closest('[data-welcome-panel]');
     if(tile){openGuestWelcomePanel(tile.dataset.welcomePanel);return}
@@ -3031,6 +3286,8 @@ function initWelcomeModule(){
       welcomeActiveFilter=filter.dataset.welcomeFilter;
       renderWelcomeGuestFilters();
       renderWelcomeNearbyMap();
+      const cat=welcomeActiveFilter==='all'?null:welcomeCategoryDef(welcomeActiveFilter);
+      if(welcomeActiveFilter==='all'||cat?.source==='automatic')fetchWelcomeAutomaticPlaces(false);
     }
   });
 

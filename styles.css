@@ -970,3 +970,35 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .welcome-a5-stage{align-items:flex-start;justify-content:flex-start}
   .welcome-a5-card{width:148mm!important;height:210mm!important;min-height:210mm!important;border-radius:0!important;box-shadow:none!important}
 }
+
+
+/* ---- Papa Golf live Nearby utilities v0.20.2 ---- */
+.welcome-explore-tools{display:flex;gap:.6rem;align-items:flex-start;margin-bottom:.2rem}
+.welcome-explore-tools .welcome-filter-chips{flex:1;min-width:0}
+.welcome-refresh-nearby{flex:0 0 auto;min-height:40px;padding:.55rem .72rem;font-size:12px;white-space:nowrap}
+.welcome-source-badge{display:inline-block;margin-top:.38rem;padding:.22rem .45rem;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.03em}
+.welcome-source-badge.automatic{background:rgba(90,170,255,.12);border:1px solid rgba(90,170,255,.28);color:#a9d3ff}
+.welcome-source-badge.approved{background:rgba(224,188,102,.13);border:1px solid rgba(224,188,102,.32);color:#e0bc66}
+@media(max-width:520px){
+  .welcome-explore-tools{display:block}
+  .welcome-refresh-nearby{width:100%;margin-bottom:.65rem}
+}
+
+
+/* ---- Papa Golf smart Nearby rules v0.20.3 ---- */
+.welcome-auto-rules{
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:.65rem;
+  padding:.75rem;
+  margin-top:.35rem;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  background:rgba(255,255,255,.025);
+}
+.welcome-auto-rules label{font-size:12px;font-weight:700}
+.welcome-auto-rules select{width:100%;margin-top:.35rem}
+@media(max-width:650px){
+  .welcome-auto-rules{grid-template-columns:1fr}
+}

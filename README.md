@@ -488,3 +488,42 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Added Powered by PAPA GOLF PLATFORM branding and "Local knowledge. Better stays."
 - Added Print / Save as PDF action using A5 portrait print CSS.
 - A5 data is sourced from the same Welcome property/unit fields; no duplicate Wi-Fi entry.
+
+
+## v0.20.2 — Live Nearby utility discovery
+- Explore Nearby now performs live utility-place discovery around the villa using OpenStreetMap / Overpass.
+- No API key is required for this first live implementation.
+- Search radius: 5 km from the property coordinates.
+- Live automatic categories:
+  - Convenience stores
+  - Supermarkets
+  - Petrol stations
+  - ATMs / banks
+  - Pharmacies
+  - Hospitals / clinics
+- Restaurants, bars, cafés and other commercial recommendations remain Papa Golf approved/affiliate-only.
+- Live utility results and curated places are combined on the same in-app satellite map.
+- Guest filter chips reduce both the map and result list.
+- Each result shows straight-line distance from the villa and retains Google Maps navigation handoff.
+- Live results are cached locally for 6 hours to reduce repeated public-service traffic.
+- Added Refresh Nearby button for a forced live refresh.
+- Added source labels to distinguish "Nearby utility" from "Papa Golf approved".
+- Added fallback to a second Overpass endpoint if the first public endpoint is unavailable.
+
+
+## v0.20.3 — Smart Nearby result controls
+- Each automatic utility category now has its own configurable search radius.
+- Each automatic utility category now has a configurable maximum number of displayed results.
+- Each automatic category can choose:
+  - Nearest
+  - Nearest + directional spread
+- Directional spread always keeps the nearest result, then favors candidates in different directions so dense categories such as convenience stores do not fill the map with many nearly identical nearby pins.
+- Defaults:
+  - Convenience: 2 km / max 4 / directional spread
+  - Supermarket: 3 km / max 3 / nearest
+  - Petrol: 3 km / max 3 / nearest
+  - ATM: 2 km / max 4 / directional spread
+  - Pharmacy: 3 km / max 3 / nearest
+  - Medical: 8 km / max 4 / nearest
+- Candidate fetching automatically expands only as far as the largest enabled automatic-category radius, capped at 10 km.
+- Approved/affiliate commercial categories remain manually controlled.
