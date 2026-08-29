@@ -601,3 +601,13 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Google Places result cards can use Google's supplied Maps destination link.
 - If the Google call fails or no key is saved, Papa Golf falls back to the existing OpenStreetMap/Overpass automatic utility system.
 - Approved/affiliate places remain Papa Golf-controlled and are not replaced by Google.
+
+
+## v0.20.12 — Google-first Explore Nearby fix
+- Corrected two broken function references in the v0.20.11 Google handoff.
+- Google success now renders the actual Explore Nearby map/list.
+- Explore Nearby open/filter/refresh actions now use Google-first loading.
+- OpenStreetMap/Overpass runs only as fallback.
+- Manual Refresh Nearby clears stale automatic results first.
+- Guest UI explicitly labels Google results as `Google nearby` and status as `Google utility places`.
+- Sticky map, 750 m starting view, and YOU ARE HERE + selected-place best-fit are preserved.

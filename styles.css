@@ -1140,3 +1140,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .welcome-google-test-rank{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;background:rgba(224,188,102,.12)}
 .welcome-google-test-main{min-width:0}
 @media(max-width:650px){.welcome-google-test-card{grid-template-columns:32px 1fr}.welcome-google-test-card>a{grid-column:2}}
+
+
+/* Google Places provider marker v0.20.12 */
+.welcome-source-badge.google{
+  border-color:rgba(66,133,244,.55);
+}

@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.20.11';
+const RUNTIME_VERSION = '0.20.12';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2540,14 +2540,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0211';
+    const key = 'papaGolfSwReloaded0212';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.20.11', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.20.12', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2834,7 +2834,7 @@ function openGuestWelcomePanel(id){
   if(id==='guestExplorePanel'){
     setTimeout(()=>{
       renderWelcomeNearbyMap();
-      fetchWelcomeAutomaticPlaces(false);
+      refreshWelcomeNearbyPlaces();
     },40);
   }
   if(id==='guestFoodPanel')renderGuestFoodList();
@@ -3207,7 +3207,7 @@ async function refreshWelcomeNearbyPlaces(){
         places:googlePlaces
       }));
       if(status) status.textContent=`Google Places loaded ${googlePlaces.length} nearby utility places.`;
-      renderWelcomeNearby();
+      renderWelcomeNearbyMap();
       return;
     }catch(err){
       console.warn('Google Places automatic search failed; falling back to OpenStreetMap',err);
@@ -3215,7 +3215,7 @@ async function refreshWelcomeNearbyPlaces(){
     }
   }
 
-  await refreshWelcomeAutomaticPlaces();
+  await fetchWelcomeAutomaticPlaces(true);
 }
 
 function welcomeFilteredAutomaticPlaces(){
@@ -3323,7 +3323,7 @@ function renderWelcomeNearbyMap(){
     if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
     const cat=welcomeCategoryDef(item.category)||{};
     const dist=Number.isFinite(item.distanceKm)?item.distanceKm:welcomeDistanceKm(d.lat,d.lng,lat,lng);
-    const sourceLabel=item.automatic?'Nearby utility':'Papa Golf approved';
+    const sourceLabel=item.source==='google'?'Google nearby':(item.automatic?'Nearby utility':'Papa Golf approved');
     const placeId=String(item.id||`${item.category}-${lat}-${lng}`);
     const placeMarker=L.marker([lat,lng],{icon:welcomeLeafletIcon(item.category,false)})
       .addTo(welcomeNearbyLayer)
@@ -3354,7 +3354,10 @@ function renderWelcomeNearbyMap(){
       const autoCount=welcomeFilteredAutomaticPlaces().length;
       const curatedCount=welcomeFilteredPartners().length;
       const parts=[];
-      if(automaticActive)parts.push(`${autoCount} live utility place${autoCount===1?'':'s'}`);
+      if(automaticActive){
+        const provider=welcomeAutomaticPlaces.some(p=>p.source==='google')?'Google':'OpenStreetMap';
+        parts.push(`${autoCount} ${provider} utility place${autoCount===1?'':'s'}`);
+      }
       if(curatedCount)parts.push(`${curatedCount} approved place${curatedCount===1?'':'s'}`);
       status.textContent=parts.length?parts.join(' · '):'No places found for this filter yet.';
     }
@@ -3364,16 +3367,16 @@ function renderWelcomeNearbyMap(){
     list.innerHTML=items.length?items.map(item=>{
       const cat=welcomeCategoryDef(item.category)||{};
       const dist=welcomeDistanceKm(d.lat,d.lng,Number(item.lat),Number(item.lng));
-      const sourceLabel=item.automatic?'Nearby utility':'Papa Golf approved';
+      const sourceLabel=item.source==='google'?'Google nearby':(item.automatic?'Nearby utility':'Papa Golf approved');
       const placeId=String(item.id||`${item.category}-${item.lat}-${item.lng}`);
       return `<article class="welcome-place-card welcome-place-card-interactive" data-welcome-place-id="${escapeHtml(placeId)}" tabindex="0" role="button" aria-label="Show ${escapeHtml(item.name)} on map">
         <div class="welcome-place-icon">${cat.icon||'📍'}</div>
         <div class="welcome-place-copy">
           <strong>${escapeHtml(item.name)}</strong>
           <div class="small muted">${escapeHtml(cat.label||'Place')} · ${dist.toFixed(dist<1?2:1)} km away</div>
-          <div class="welcome-source-badge ${item.automatic?'automatic':'approved'}">${escapeHtml(sourceLabel)}</div>
+          <div class="welcome-source-badge ${item.source==='google'?'google':(item.automatic?'automatic':'approved')}">${escapeHtml(sourceLabel)}</div>
           ${item.note?`<div class="welcome-place-note">${escapeHtml(item.note)}</div>`:''}
-          <a class="welcome-map-link" href="${welcomeGoogleMapsUrl(item.lat,item.lng)}" target="_blank" rel="noopener">Navigate with Google Maps</a>
+          <a class="welcome-map-link" href="${item.googleMapsUri||welcomeGoogleMapsUrl(item.lat,item.lng)}" target="_blank" rel="noopener">Navigate with Google Maps</a>
         </div>
       </article>`;
     }).join(''):'<div class="guest-info-card"><p class="muted">No approved places have been added for this filter yet.</p></div>';
@@ -3393,7 +3396,7 @@ function renderGuestFoodList(){
       <div class="welcome-place-copy"><strong>${escapeHtml(item.name)}</strong>
       <div class="small muted">${escapeHtml(cat.label||'Food & Drink')} · ${dist.toFixed(dist<1?2:1)} km away</div>
       ${item.note?`<div class="welcome-place-note">${escapeHtml(item.note)}</div>`:''}
-      <a class="welcome-map-link" href="${welcomeGoogleMapsUrl(item.lat,item.lng)}" target="_blank" rel="noopener">Navigate with Google Maps</a></div>
+      <a class="welcome-map-link" href="${item.googleMapsUri||welcomeGoogleMapsUrl(item.lat,item.lng)}" target="_blank" rel="noopener">Navigate with Google Maps</a></div>
     </article>`;
   }).join(''):'<div class="guest-info-card"><p class="muted">No approved restaurants or bars have been added yet.</p></div>';
 }
@@ -3570,9 +3573,10 @@ function initWelcomeModule(){
     focusWelcomeNearbyPlace(card.dataset.welcomePlaceId);
   });
 
-  document.getElementById('refreshWelcomeNearbyBtn')?.addEventListener('click',()=>{
+  document.getElementById('refreshWelcomeNearbyBtn')?.addEventListener('click',async()=>{
     try{localStorage.removeItem(WELCOME_AUTO_CACHE_KEY)}catch{}
-    fetchWelcomeAutomaticPlaces(true);
+    welcomeAutomaticPlaces=[];
+    await refreshWelcomeNearbyPlaces();
   });
 
   document.getElementById('welcomeGuestPreview')?.addEventListener('click',event=>{
@@ -3585,7 +3589,7 @@ function initWelcomeModule(){
       renderWelcomeGuestFilters();
       renderWelcomeNearbyMap();
       const cat=welcomeActiveFilter==='all'?null:welcomeCategoryDef(welcomeActiveFilter);
-      if(welcomeActiveFilter==='all'||cat?.source==='automatic')fetchWelcomeAutomaticPlaces(false);
+      if(welcomeActiveFilter==='all'||cat?.source==='automatic')refreshWelcomeNearbyPlaces();
     }
   });
 
