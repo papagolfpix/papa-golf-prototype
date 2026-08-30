@@ -660,3 +660,17 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Corrected the responsive image rule introduced in v0.21.0 so it does not apply to Leaflet raster tiles or marker images.
 - Added explicit Leaflet tile max-width/max-height protection for Safari.
 - Retains sticky filters + map and v0.21.1 viewport settling logic.
+
+
+## v0.22.0 — Unification foundation
+- Added shared Papa Golf Places registry used by Photos and Welcome without rewriting photo Blobs.
+- Existing curated Welcome places receive stable shared place IDs.
+- Photo location/category/GPS metadata contributes to shared Place records.
+- Google discovery stores stable Place IDs as external references.
+- Added shared Place status in Welcome admin.
+- Explore Nearby now opens as a focused screen with compact villa logo, Main Menu and language selector.
+- Added Auto/device language, English, French and Thai.
+- Google Places requests use the resolved guest language.
+- Nearby category labels, source labels, navigation action and YOU ARE HERE localize.
+- Fixed stale Google cache constant and added language/provider cache metadata.
+- Backup format v3 includes shared Places and language preference; v1/v2 restore compatibility remains.

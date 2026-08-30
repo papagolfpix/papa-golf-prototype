@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.21.2" />
+<link rel="stylesheet" href="styles.css?v=0.22.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.21.2</div>
+      <div class="eyebrow">PAPA GOLF · V0.22.0</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -177,6 +177,10 @@
     </article>
 
     <article class="panel welcome-partners-panel">
+      <div class="shared-place-status-wrap">
+        <div class="eyebrow">SHARED PAPA GOLF PLACES</div>
+        <div id="papaGolfPlaceStatus" class="small shared-place-status">Building shared place index…</div>
+      </div>
       <h3>Curated / affiliate places</h3>
       <p class="muted">Add businesses or places that you specifically want guests to see. These already work on the guest map in this prototype.</p>
       <div class="welcome-partner-form">
@@ -279,10 +283,16 @@
       <div id="guestBluetoothInfo" class="guest-info-card"></div>
     </section>
 
-    <section id="guestExplorePanel" class="guest-welcome-panel hidden">
-      <button class="guest-panel-back" type="button">← Welcome menu</button>
-      <div class="guest-panel-heading">
-        <div><h2>🗺 Explore Nearby</h2><p class="muted">Choose only what you want to see.</p></div>
+    <section id="guestExplorePanel" class="guest-welcome-panel guest-explore-focused hidden">
+      <div class="guest-explore-compact-header">
+        <button id="guestExploreBackBtn" class="guest-explore-back guest-panel-back" type="button">← Main menu</button>
+        <img id="guestExploreLogo" src="magic-dragon-villa-logo.png" alt="Villa logo">
+        <select id="welcomeLanguageSelect" class="welcome-language-select" aria-label="Language">
+          <option value="auto">🌐 Auto</option>
+          <option value="en">🇬🇧 English</option>
+          <option value="fr">🇫🇷 Français</option>
+          <option value="th">🇹🇭 ไทย</option>
+        </select>
       </div>
       <div class="welcome-nearby-sticky-shell">
         <div class="welcome-explore-tools">
@@ -291,7 +301,6 @@
         </div>
         <div id="welcomeNearbyMap" class="welcome-nearby-map"></div>
         <div id="welcomeNearbyStatus" class="small muted"></div>
-        <div id="welcomeMapHint" class="small muted welcome-map-hint">Filters and map stay available while you browse. Tap any result to show it together with your YOU ARE HERE pin.</div>
       </div>
       <div id="welcomeNearbyList" class="welcome-nearby-list"></div>
     </section>
@@ -497,6 +506,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.21.2" defer></script>
+  <script src="app.js?v=0.22.0" defer></script>
 </body>
 </html>

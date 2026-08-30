@@ -1250,3 +1250,33 @@ dialog{
 .leaflet-container .leaflet-tile-pane img{
   max-width:none !important;
 }
+
+
+/* ============================================================
+   Papa Golf v0.22.0 — shared Places + focused Explore
+   ============================================================ */
+.guest-welcome-shell.explore-focused{padding-top:0}
+.guest-welcome-shell.explore-focused>.guest-property-brand,
+.guest-welcome-shell.explore-focused>.guest-welcome-intro,
+.guest-welcome-shell.explore-focused>.guest-welcome-footer{display:none!important}
+.guest-explore-focused{margin-top:0!important;padding-top:0!important}
+.guest-explore-compact-header{
+  display:grid;grid-template-columns:auto minmax(70px,1fr) auto;align-items:center;
+  gap:.65rem;position:relative;z-index:1200;padding:.5rem .1rem .4rem;background:#0b0b0b
+}
+.guest-explore-compact-header img{justify-self:center;width:auto;height:38px;max-width:150px;object-fit:contain}
+.guest-explore-back{min-height:38px;margin:0;padding:.45rem .7rem;white-space:nowrap}
+.welcome-language-select{
+  width:auto;max-width:120px;min-height:38px;border:1px solid #454545;border-radius:999px;
+  padding:.38rem .6rem;background:#171717;color:#f7f7f7;font-size:12px
+}
+.guest-explore-focused .welcome-nearby-sticky-shell{top:max(0px,env(safe-area-inset-top));padding-top:.1rem}
+.guest-explore-focused .welcome-explore-tools{margin-top:0}
+.shared-place-status-wrap{border:1px solid #3a3325;background:#15130f;border-radius:14px;padding:.75rem;margin-bottom:1rem}
+.shared-place-status{color:#dcc278;margin-top:.2rem}
+@media(max-width:390px){
+  .guest-explore-compact-header{gap:.35rem}
+  .guest-explore-compact-header img{height:30px;max-width:95px}
+  .guest-explore-back{font-size:11px;padding:.4rem .5rem}
+  .welcome-language-select{max-width:92px;font-size:11px;padding:.35rem .4rem}
+}

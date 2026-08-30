@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.21.2';
+const RUNTIME_VERSION = '0.22.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -249,7 +249,9 @@ function welcomeBackupSnapshot() {
     property: readWelcomeJson(WELCOME_PROPERTY_KEY, null),
     unit: readWelcomeJson(WELCOME_UNIT_KEY, null),
     categories: readWelcomeJson(WELCOME_CATEGORY_KEY, null),
-    partners: readWelcomeJson(WELCOME_PARTNER_KEY, null)
+    partners: readWelcomeJson(WELCOME_PARTNER_KEY, null),
+    sharedPlaces: readWelcomeJson(PAPA_GOLF_PLACES_KEY, []),
+    language: localStorage.getItem(WELCOME_LANGUAGE_KEY)||'auto'
   };
 }
 
@@ -282,7 +284,7 @@ async function exportBackup() {
 
   const payload = {
     format: 'papa-golf-backup',
-    version: 2,
+    version: 3,
     exportedAt: new Date().toISOString(),
     appVersion: RUNTIME_VERSION,
     customFields,
@@ -307,7 +309,7 @@ async function exportBackup() {
   const relatedCount = records.reduce((sum, rec) => sum + (Array.isArray(rec.supportingPhotos) ? rec.supportingPhotos.length : 0), 0);
   backupStatus.textContent =
     `Backup ready: ${records.length} main photo${records.length === 1 ? '' : 's'} + ` +
-    `${relatedCount} related photo${relatedCount === 1 ? '' : 's'}, plus Welcome/property data.`;
+    `${relatedCount} related photo${relatedCount === 1 ? '' : 's'}, plus Welcome/property data and the shared Places index.`;
 }
 
 
@@ -359,7 +361,8 @@ function restoreWelcomeBackup(welcome) {
     [WELCOME_PROPERTY_KEY, welcome.property],
     [WELCOME_UNIT_KEY, welcome.unit],
     [WELCOME_CATEGORY_KEY, welcome.categories],
-    [WELCOME_PARTNER_KEY, welcome.partners]
+    [WELCOME_PARTNER_KEY, welcome.partners],
+    [PAPA_GOLF_PLACES_KEY, welcome.sharedPlaces]
   ];
   let restored = false;
   entries.forEach(([key, value]) => {
@@ -368,6 +371,10 @@ function restoreWelcomeBackup(welcome) {
       restored = true;
     }
   });
+  if(welcome.language){
+    localStorage.setItem(WELCOME_LANGUAGE_KEY,welcome.language);
+    restored=true;
+  }
   return restored;
 }
 
@@ -377,7 +384,7 @@ async function importBackupFile(file) {
   try { payload = JSON.parse(text); }
   catch { throw new Error('That file is not valid JSON.'); }
 
-  if (payload?.format !== 'papa-golf-backup' || ![1,2].includes(payload?.version) || !Array.isArray(payload.records)) {
+  if (payload?.format !== 'papa-golf-backup' || ![1,2,3].includes(payload?.version) || !Array.isArray(payload.records)) {
     throw new Error('That is not a compatible Papa Golf backup file.');
   }
 
@@ -2665,14 +2672,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0212';
+    const key = 'papaGolfSwReloaded0220';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.21.2', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.22.0', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2686,6 +2693,132 @@ const WELCOME_PROPERTY_KEY = 'papaGolfWelcomeProperty';
 const WELCOME_UNIT_KEY = 'papaGolfWelcomeUnit';
 const WELCOME_CATEGORY_KEY = 'papaGolfWelcomeCategories';
 const WELCOME_PARTNER_KEY = 'papaGolfWelcomePartners';
+
+const PAPA_GOLF_PLACES_KEY = 'papaGolfPlacesV1';
+const WELCOME_LANGUAGE_KEY = 'papaGolfWelcomeLanguage';
+
+function papaGolfSlug(value){
+  return String(value||'').normalize('NFKD').toLowerCase()
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9\u0E00-\u0E7F]+/g,'-')
+    .replace(/^-+|-+$/g,'').slice(0,80);
+}
+function papaGolfPlaceIdentity(input={}){
+  if(input.googlePlaceId) return `google:${input.googlePlaceId}`;
+  const lat=Number(input.lat),lng=Number(input.lng);
+  const coord=(Number.isFinite(lat)&&Number.isFinite(lng))?`${lat.toFixed(5)},${lng.toFixed(5)}`:'';
+  const name=papaGolfSlug(input.name||input.locationName||input.areaName||'place');
+  return `papa:${name}:${coord}`;
+}
+function getPapaGolfPlaces(){
+  const saved=readWelcomeJson(PAPA_GOLF_PLACES_KEY,[]);
+  return Array.isArray(saved)?saved:[];
+}
+function savePapaGolfPlaces(items){
+  localStorage.setItem(PAPA_GOLF_PLACES_KEY,JSON.stringify(items));
+  renderPapaGolfPlaceStatus();
+}
+function mergePapaGolfPlace(existing={},incoming={}){
+  const sources=new Set([...(existing.sources||[]),...(incoming.sources||[])].filter(Boolean));
+  const photos=new Set([...(existing.photoRecordIds||[]),...(incoming.photoRecordIds||[])].filter(Boolean));
+  return {
+    ...existing,...incoming,
+    id:existing.id||incoming.id||papaGolfPlaceIdentity(incoming),
+    name:incoming.name||existing.name||'Unnamed place',
+    areaName:incoming.areaName||existing.areaName||'',
+    locationName:incoming.locationName||existing.locationName||'',
+    category:incoming.category||existing.category||'',
+    lat:Number.isFinite(Number(incoming.lat))?Number(incoming.lat):existing.lat,
+    lng:Number.isFinite(Number(incoming.lng))?Number(incoming.lng):existing.lng,
+    googlePlaceId:incoming.googlePlaceId||existing.googlePlaceId||'',
+    googleMapsUri:incoming.googleMapsUri||existing.googleMapsUri||'',
+    note:incoming.note||existing.note||'',
+    approved:incoming.approved===true||existing.approved===true,
+    affiliate:incoming.affiliate===true||existing.affiliate===true,
+    sources:[...sources],
+    photoRecordIds:[...photos],
+    updatedAt:new Date().toISOString(),
+    createdAt:existing.createdAt||incoming.createdAt||new Date().toISOString()
+  };
+}
+function upsertPapaGolfPlace(input){
+  const items=getPapaGolfPlaces();
+  const identity=input.id||papaGolfPlaceIdentity(input);
+  const idx=items.findIndex(p=>p.id===identity||(input.googlePlaceId&&p.googlePlaceId===input.googlePlaceId));
+  const merged=mergePapaGolfPlace(idx>=0?items[idx]:{}, {...input,id:idx>=0?items[idx].id:identity});
+  if(idx>=0) items[idx]=merged; else items.push(merged);
+  savePapaGolfPlaces(items);
+  return merged;
+}
+async function syncPapaGolfPlaces(){
+  let places=getPapaGolfPlaces();
+  let changed=false;
+
+  const partners=getWelcomePartners();
+  const nextPartners=partners.map(partner=>{
+    const identity=partner.placeId||papaGolfPlaceIdentity(partner);
+    const incoming={
+      id:identity,name:partner.name,category:partner.category,
+      lat:partner.lat,lng:partner.lng,note:partner.note||'',
+      approved:true,affiliate:!!partner.affiliate,
+      googlePlaceId:partner.googlePlaceId||'',
+      googleMapsUri:partner.googleMapsUri||'',
+      sources:['welcome']
+    };
+    const idx=places.findIndex(p=>p.id===identity);
+    if(idx<0){places.push(mergePapaGolfPlace({},incoming));changed=true}
+    else{
+      const before=JSON.stringify(places[idx]);
+      places[idx]=mergePapaGolfPlace(places[idx],incoming);
+      if(JSON.stringify(places[idx])!==before)changed=true;
+    }
+    return partner.placeId===identity?partner:{...partner,placeId:identity};
+  });
+  if(JSON.stringify(nextPartners)!==JSON.stringify(partners)){
+    localStorage.setItem(WELCOME_PARTNER_KEY,JSON.stringify(nextPartners));
+    changed=true;
+  }
+
+  try{
+    const records=await getRecords();
+    for(const record of records){
+      const f=record.fields||{};
+      const locationName=String(f.locationName||record.locationName||'').trim();
+      const areaName=String(f.areaName||record.areaName||'').trim();
+      const lat=Number(record.metadata?.latitude ?? record.metadata?.lat);
+      const lng=Number(record.metadata?.longitude ?? record.metadata?.lng ?? record.metadata?.lon);
+      if(!locationName&&!areaName&&!(Number.isFinite(lat)&&Number.isFinite(lng)))continue;
+      const incoming={
+        name:locationName||areaName||f.title||'Photo location',
+        locationName,areaName,
+        category:String(f.category||record.category||'').trim(),
+        lat:Number.isFinite(lat)?lat:null,lng:Number.isFinite(lng)?lng:null,
+        sources:['photos'],photoRecordIds:[record.id]
+      };
+      const identity=papaGolfPlaceIdentity(incoming);
+      const pi=places.findIndex(p=>p.id===identity);
+      if(pi<0){places.push(mergePapaGolfPlace({}, {...incoming,id:identity}));changed=true}
+      else{
+        const before=JSON.stringify(places[pi]);
+        places[pi]=mergePapaGolfPlace(places[pi],incoming);
+        if(JSON.stringify(places[pi])!==before)changed=true;
+      }
+    }
+  }catch(err){console.warn('Shared place photo sync skipped',err)}
+
+  if(changed)localStorage.setItem(PAPA_GOLF_PLACES_KEY,JSON.stringify(places));
+  renderPapaGolfPlaceStatus();
+  return places;
+}
+function renderPapaGolfPlaceStatus(){
+  const host=document.getElementById('papaGolfPlaceStatus');
+  if(!host)return;
+  const items=getPapaGolfPlaces();
+  const photos=items.filter(p=>(p.sources||[]).includes('photos')).length;
+  const welcome=items.filter(p=>(p.sources||[]).includes('welcome')).length;
+  host.textContent=`${items.length} shared place${items.length===1?'':'s'} · ${photos} from Photos · ${welcome} from Welcome`;
+}
+
 
 const WELCOME_DEFAULT_PROPERTY = {
   name:'Magic Dragon Villa',
@@ -2709,6 +2842,41 @@ const WELCOME_DEFAULT_UNIT = {
   overrideEmergency:false,
   emergency:''
 };
+
+
+const WELCOME_I18N={
+  en:{all:'All',back:'Main menu',refresh:'Refresh Nearby',convenience:'Convenience Stores',supermarket:'Supermarkets',petrol:'Petrol Stations',atm:'ATMs / Banks',pharmacy:'Pharmacies',medical:'Hospitals / Clinics',restaurant:'Restaurants',bar:'Bars',cafe:'Cafés',activity:'Things To Do',transport:'Transport / Rental',spa:'Massage / Spa',away:'km away',navigate:'Navigate with Google Maps',googleNearby:'Google nearby',nearbyUtility:'Nearby utility',approved:'Papa Golf approved',searching:'Searching nearby places…',none:'No places found for this filter yet.',youAreHere:'YOU ARE HERE'},
+  fr:{all:'Tous',back:'Menu principal',refresh:'Actualiser à proximité',convenience:'Supérettes',supermarket:'Supermarchés',petrol:'Stations-service',atm:'Distributeurs / Banques',pharmacy:'Pharmacies',medical:'Hôpitaux / Cliniques',restaurant:'Restaurants',bar:'Bars',cafe:'Cafés',activity:'À faire',transport:'Transport / Location',spa:'Massage / Spa',away:'km',navigate:'Itinéraire avec Google Maps',googleNearby:'Google à proximité',nearbyUtility:'Service à proximité',approved:'Recommandé par Papa Golf',searching:'Recherche de lieux à proximité…',none:'Aucun lieu trouvé pour ce filtre.',youAreHere:'VOUS ÊTES ICI'},
+  th:{all:'ทั้งหมด',back:'เมนูหลัก',refresh:'ค้นหาใกล้เคียงอีกครั้ง',convenience:'ร้านสะดวกซื้อ',supermarket:'ซูเปอร์มาร์เก็ต',petrol:'ปั๊มน้ำมัน',atm:'ATM / ธนาคาร',pharmacy:'ร้านขายยา',medical:'โรงพยาบาล / คลินิก',restaurant:'ร้านอาหาร',bar:'บาร์',cafe:'คาเฟ่',activity:'กิจกรรมน่าสนใจ',transport:'การเดินทาง / รถเช่า',spa:'นวด / สปา',away:'กม.',navigate:'นำทางด้วย Google Maps',googleNearby:'Google ใกล้เคียง',nearbyUtility:'บริการใกล้เคียง',approved:'Papa Golf แนะนำ',searching:'กำลังค้นหาสถานที่ใกล้เคียง…',none:'ไม่พบสถานที่สำหรับตัวกรองนี้',youAreHere:'คุณอยู่ที่นี่'}
+};
+function welcomeStoredLanguage(){return localStorage.getItem(WELCOME_LANGUAGE_KEY)||'auto'}
+function welcomeDeviceLanguage(){
+  const list=Array.isArray(navigator.languages)&&navigator.languages.length?navigator.languages:[navigator.language||'en'];
+  for(const raw of list){
+    const code=String(raw||'').toLowerCase().split('-')[0];
+    if(['en','fr','th'].includes(code))return code;
+  }
+  return 'en';
+}
+function welcomeResolvedLanguage(){
+  const stored=welcomeStoredLanguage();
+  return stored==='auto'?welcomeDeviceLanguage():(['en','fr','th'].includes(stored)?stored:'en');
+}
+function welcomeT(key){
+  const lang=welcomeResolvedLanguage();
+  return WELCOME_I18N[lang]?.[key]??WELCOME_I18N.en[key]??key;
+}
+function welcomeCategoryLabel(cat){return welcomeT(cat?.id)||cat?.label||'Place'}
+function applyWelcomeLanguage(){
+  const select=document.getElementById('welcomeLanguageSelect');
+  if(select)select.value=welcomeStoredLanguage();
+  const back=document.getElementById('guestExploreBackBtn');
+  if(back)back.textContent=`← ${welcomeT('back')}`;
+  const refresh=document.getElementById('refreshWelcomeNearbyBtn');
+  if(refresh)refresh.textContent=`↻ ${welcomeT('refresh')}`;
+  renderWelcomeGuestFilters();
+  if(!document.getElementById('guestExplorePanel')?.classList.contains('hidden'))renderWelcomeNearbyMap();
+}
 
 const WELCOME_CATEGORY_DEFS = [
   {id:'convenience',label:'Convenience Stores',icon:'🛒',source:'automatic',enabled:true,radiusKm:2},
@@ -2820,6 +2988,7 @@ function loadWelcomeEditor(){
   welcomeToggle('overrideWelcomeEmergency','welcomeUnitEmergency');
   renderWelcomeCategoryEditor();
   renderWelcomePartnerEditor();
+  renderPapaGolfPlaceStatus();
 }
 function effectiveWelcome(){
   const p=getWelcomeProperty(),u=getWelcomeUnit();
@@ -2945,22 +3114,27 @@ function addWelcomePartner(){
   const items=getWelcomePartners();
   items.push({id:'wp-'+Date.now(),name,category,lat,lng,note,approved:true,createdAt:new Date().toISOString()});
   saveWelcomePartners(items);
+  syncPapaGolfPlaces().catch(console.warn);
   ['welcomePartnerName','welcomePartnerLat','welcomePartnerLng','welcomePartnerNote'].forEach(id=>welcomeSet(id,''));
   renderWelcomePartnerEditor();
 }
 function showGuestWelcomeHome(){
+  document.querySelector('#welcomeGuestPreview .guest-welcome-shell')?.classList.remove('explore-focused');
   document.getElementById('guestWelcomeHome')?.classList.remove('hidden');
   document.querySelectorAll('.guest-welcome-panel').forEach(el=>el.classList.add('hidden'));
   window.scrollTo(0,0);
 }
 function openGuestWelcomePanel(id){
+  const shell=document.querySelector('#welcomeGuestPreview .guest-welcome-shell');
   document.getElementById('guestWelcomeHome')?.classList.add('hidden');
   document.querySelectorAll('.guest-welcome-panel').forEach(el=>el.classList.toggle('hidden',el.id!==id));
+  shell?.classList.toggle('explore-focused',id==='guestExplorePanel');
   if(id==='guestExplorePanel'){
-    setTimeout(()=>{
-      renderWelcomeNearbyMap();
-      refreshWelcomeNearbyPlaces();
-    },40);
+    const d=effectiveWelcome();
+    const logo=document.getElementById('guestExploreLogo');
+    if(logo)logo.src=d.logo;
+    applyWelcomeLanguage();
+    setTimeout(()=>{renderWelcomeNearbyMap();refreshWelcomeNearbyPlaces()},40);
   }
   if(id==='guestFoodPanel')renderGuestFoodList();
   window.scrollTo(0,0);
@@ -3234,6 +3408,7 @@ async function fetchGoogleAutomaticPlaces(){
     includedTypes,
     maxResultCount:20,
     rankPreference:'DISTANCE',
+    languageCode:welcomeResolvedLanguage(),
     locationRestriction:{
       circle:{
         center:{latitude:Number(d.lat),longitude:Number(d.lng)},
@@ -3285,7 +3460,7 @@ async function fetchGoogleAutomaticPlaces(){
 
   // Respect each category's configured search radius, but do not apply
   // directional or maximum-result filtering.
-  return places
+  const filtered=places
     .map(p=>({...p,distanceKm:welcomeDistanceKm(Number(d.lat),Number(d.lng),p.lat,p.lng)}))
     .filter(p=>{
       const cat=cats.find(c=>c.id===p.category);
@@ -3293,6 +3468,17 @@ async function fetchGoogleAutomaticPlaces(){
       return Number.isFinite(p.distanceKm)&&p.distanceKm<=radiusKm;
     })
     .sort((a,b)=>a.distanceKm-b.distanceKm);
+
+  // Google remains a discovery/reference source. We store its stable Place ID,
+  // while Papa Golf-owned notes/approval live in our shared Place record.
+  filtered.forEach(place=>{
+    const id=place.googlePlaceId?`google:${place.googlePlaceId}`:papaGolfPlaceIdentity(place);
+    const existing=getPapaGolfPlaces();
+    if(!existing.some(p=>p.id===id)){
+      upsertPapaGolfPlace({...place,id,sources:['google-discovery']});
+    }
+  });
+  return filtered;
 }
 
 async function refreshWelcomeNearbyPlaces(){
@@ -3317,8 +3503,9 @@ async function refreshWelcomeNearbyPlaces(){
       welcomeNearbyProvider='google';
       welcomeAutomaticPlaces=googlePlaces;
       try{
-        localStorage.setItem(WELCOME_AUTOMATIC_CACHE_KEY,JSON.stringify({
+        localStorage.setItem(WELCOME_AUTO_CACHE_KEY,JSON.stringify({
           provider:'google',
+          language:welcomeResolvedLanguage(),
           savedAt:Date.now(),
           places:googlePlaces
         }));
@@ -3381,8 +3568,8 @@ function renderWelcomeGuestFilters(){
   const host=document.getElementById('welcomeGuestFilters');
   if(!host)return;
   const cats=getWelcomeCategories().filter(c=>c.enabled);
-  host.innerHTML=`<button type="button" class="welcome-filter-chip ${welcomeActiveFilter==='all'?'active':''}" data-welcome-filter="all">All</button>`+
-    cats.map(c=>`<button type="button" class="welcome-filter-chip ${welcomeActiveFilter===c.id?'active':''}" data-welcome-filter="${escapeHtml(c.id)}">${c.icon} ${escapeHtml(c.label)}</button>`).join('');
+  host.innerHTML=`<button type="button" class="welcome-filter-chip ${welcomeActiveFilter==='all'?'active':''}" data-welcome-filter="all">${escapeHtml(welcomeT('all'))}</button>`+
+    cats.map(c=>`<button type="button" class="welcome-filter-chip ${welcomeActiveFilter===c.id?'active':''}" data-welcome-filter="${escapeHtml(c.id)}">${c.icon} ${escapeHtml(welcomeCategoryLabel(c))}</button>`).join('');
 }
 function welcomeFilteredPartners(){
   const cats=getWelcomeCategories().filter(c=>c.enabled);
@@ -3396,7 +3583,7 @@ function welcomeLeafletIcon(categoryId,isVilla=false){
       className:'welcome-leaflet-div-icon',
       html:`<div class="welcome-villa-marker">
         <div class="welcome-villa-pin"></div>
-        <div class="welcome-villa-label">YOU ARE HERE</div>
+        <div class="welcome-villa-label">${escapeHtml(welcomeT('youAreHere'))}</div>
       </div>`,
       iconSize:[110,54],
       iconAnchor:[55,50],
@@ -3406,7 +3593,7 @@ function welcomeLeafletIcon(categoryId,isVilla=false){
   const cat=welcomeCategoryDef(categoryId)||{};
   return L.divIcon({
     className:'welcome-leaflet-div-icon',
-    html:`<div class="welcome-category-marker" title="${escapeHtml(cat.label||'Place')}">${cat.icon||'📍'}</div>`,
+    html:`<div class="welcome-category-marker" title="${escapeHtml(welcomeCategoryLabel(cat))}">${cat.icon||'📍'}</div>`,
     iconSize:[38,38],
     iconAnchor:[19,19],
     popupAnchor:[0,-20]
@@ -3481,11 +3668,11 @@ function renderWelcomeNearbyMap(){
     if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
     const cat=welcomeCategoryDef(item.category)||{};
     const dist=Number.isFinite(item.distanceKm)?item.distanceKm:welcomeDistanceKm(d.lat,d.lng,lat,lng);
-    const sourceLabel=item.source==='google'?'Google nearby':(item.automatic?'Nearby utility':'Papa Golf approved');
+    const sourceLabel=item.source==='google'?welcomeT('googleNearby'):(item.automatic?welcomeT('nearbyUtility'):welcomeT('approved'));
     const placeId=String(item.id||`${item.category}-${lat}-${lng}`);
     const placeMarker=L.marker([lat,lng],{icon:welcomeLeafletIcon(item.category,false)})
       .addTo(welcomeNearbyLayer)
-      .bindPopup(`<strong>${escapeHtml(item.name)}</strong><br>${escapeHtml(cat.label||'Place')} · ${dist.toFixed(dist<1?2:1)} km<br><small>${escapeHtml(sourceLabel)}</small>${item.note?'<br>'+escapeHtml(item.note):''}`);
+      .bindPopup(`<strong>${escapeHtml(item.name)}</strong><br>${escapeHtml(welcomeCategoryLabel(cat))} · ${dist.toFixed(dist<1?2:1)} ${welcomeResolvedLanguage()==='th'?'กม.':'km'}<br><small>${escapeHtml(sourceLabel)}</small>${item.note?'<br>'+escapeHtml(item.note):''}`);
     welcomeNearbyMarkers.set(placeId,placeMarker);
     bounds.push([lat,lng]);
   });
@@ -3505,7 +3692,7 @@ function renderWelcomeNearbyMap(){
 
   if(status){
     if(welcomeAutomaticLoading && automaticActive){
-      status.textContent='Searching live nearby places…';
+      status.textContent=welcomeT('searching');
     }else if(welcomeAutomaticError && automaticActive){
       status.textContent=welcomeAutomaticError;
     }else{
@@ -3517,7 +3704,7 @@ function renderWelcomeNearbyMap(){
         parts.push(`${autoCount} ${provider} utility place${autoCount===1?'':'s'}`);
       }
       if(curatedCount)parts.push(`${curatedCount} approved place${curatedCount===1?'':'s'}`);
-      status.textContent=parts.length?parts.join(' · '):'No places found for this filter yet.';
+      status.textContent=parts.length?parts.join(' · '):welcomeT('none');
     }
   }
 
@@ -3525,16 +3712,16 @@ function renderWelcomeNearbyMap(){
     list.innerHTML=items.length?items.map(item=>{
       const cat=welcomeCategoryDef(item.category)||{};
       const dist=welcomeDistanceKm(d.lat,d.lng,Number(item.lat),Number(item.lng));
-      const sourceLabel=item.source==='google'?'Google nearby':(item.automatic?'Nearby utility':'Papa Golf approved');
+      const sourceLabel=item.source==='google'?welcomeT('googleNearby'):(item.automatic?welcomeT('nearbyUtility'):welcomeT('approved'));
       const placeId=String(item.id||`${item.category}-${item.lat}-${item.lng}`);
       return `<article class="welcome-place-card welcome-place-card-interactive" data-welcome-place-id="${escapeHtml(placeId)}" tabindex="0" role="button" aria-label="Show ${escapeHtml(item.name)} on map">
         <div class="welcome-place-icon">${cat.icon||'📍'}</div>
         <div class="welcome-place-copy">
           <strong>${escapeHtml(item.name)}</strong>
-          <div class="small muted">${escapeHtml(cat.label||'Place')} · ${dist.toFixed(dist<1?2:1)} km away</div>
+          <div class="small muted">${escapeHtml(welcomeCategoryLabel(cat))} · ${dist.toFixed(dist<1?2:1)} ${escapeHtml(welcomeT('away'))}</div>
           <div class="welcome-source-badge ${item.source==='google'?'google':(item.automatic?'automatic':'approved')}">${escapeHtml(sourceLabel)}</div>
           ${item.note?`<div class="welcome-place-note">${escapeHtml(item.note)}</div>`:''}
-          <a class="welcome-map-link" href="${item.googleMapsUri||welcomeGoogleMapsUrl(item.lat,item.lng)}" target="_blank" rel="noopener">Navigate with Google Maps</a>
+          <a class="welcome-map-link" href="${item.googleMapsUri||welcomeGoogleMapsUrl(item.lat,item.lng)}" target="_blank" rel="noopener">${escapeHtml(welcomeT('navigate'))}</a>
         </div>
       </article>`;
     }).join(''):'<div class="guest-info-card"><p class="muted">No approved places have been added for this filter yet.</p></div>';
@@ -3556,7 +3743,7 @@ function renderGuestFoodList(){
       <div class="welcome-place-copy"><strong>${escapeHtml(item.name)}</strong>
       <div class="small muted">${escapeHtml(cat.label||'Food & Drink')} · ${dist.toFixed(dist<1?2:1)} km away</div>
       ${item.note?`<div class="welcome-place-note">${escapeHtml(item.note)}</div>`:''}
-      <a class="welcome-map-link" href="${item.googleMapsUri||welcomeGoogleMapsUrl(item.lat,item.lng)}" target="_blank" rel="noopener">Navigate with Google Maps</a></div>
+      <a class="welcome-map-link" href="${item.googleMapsUri||welcomeGoogleMapsUrl(item.lat,item.lng)}" target="_blank" rel="noopener">${escapeHtml(welcomeT('navigate'))}</a></div>
     </article>`;
   }).join(''):'<div class="guest-info-card"><p class="muted">No approved restaurants or bars have been added yet.</p></div>';
 }
@@ -3631,6 +3818,7 @@ function printWelcomeA5(){
 }
 
 function initWelcomeModule(){
+  syncPapaGolfPlaces().catch(console.warn);
   // Seed the first real-world property only when Welcome has never been configured.
   if(!localStorage.getItem(WELCOME_PROPERTY_KEY))localStorage.setItem(WELCOME_PROPERTY_KEY,JSON.stringify(WELCOME_DEFAULT_PROPERTY));
   if(!localStorage.getItem(WELCOME_UNIT_KEY)){
@@ -3693,6 +3881,7 @@ function initWelcomeModule(){
     const items=getWelcomePartners();
     items.splice(index,1);
     saveWelcomePartners(items);
+    syncPapaGolfPlaces().catch(console.warn);
     renderWelcomePartnerEditor();
   });
 
@@ -3735,6 +3924,15 @@ function initWelcomeModule(){
 
   document.getElementById('refreshWelcomeNearbyBtn')?.addEventListener('click',async()=>{
     try{localStorage.removeItem(WELCOME_AUTO_CACHE_KEY)}catch{}
+    await refreshWelcomeNearbyPlaces();
+  });
+
+  document.getElementById('welcomeLanguageSelect')?.addEventListener('change',async event=>{
+    localStorage.setItem(WELCOME_LANGUAGE_KEY,event.target.value||'auto');
+    welcomeAutomaticPlaces=[];
+    welcomeNearbyProvider='';
+    try{localStorage.removeItem(WELCOME_AUTO_CACHE_KEY)}catch{}
+    applyWelcomeLanguage();
     await refreshWelcomeNearbyPlaces();
   });
 
