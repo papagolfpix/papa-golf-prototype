@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.20.13';
+const RUNTIME_VERSION = '0.21.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -219,31 +219,81 @@ function backupFileName() {
   return `papa-golf-backup-${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.json`;
 }
 
+async function serializeRelatedPhotosForBackup(items = []) {
+  const output = [];
+  for (let i = 0; i < items.length; i++) {
+    const photo = normalizeRelatedPhoto(items[i], i);
+    const blob = relatedBlob(photo);
+    if (!(blob instanceof Blob) || !blob.size) {
+      throw new Error(`Related photo ${i + 1} has no readable image bytes. Backup stopped rather than creating an incomplete file.`);
+    }
+    const safeBlob = await materializeSafeBlob(
+      blob,
+      photo?.metadata?.type || photo?.mimeType || blob.type || 'image/jpeg'
+    );
+    output.push({
+      ...photo,
+      imageBlob: {
+        dataUrl: await blobToDataUrl(safeBlob),
+        name: photo?.metadata?.filename || photo?.filename || `related-photo-${i+1}.jpg`,
+        type: photo?.metadata?.type || photo?.mimeType || safeBlob.type || 'image/jpeg'
+      },
+      image: undefined
+    });
+  }
+  return output;
+}
+
+function welcomeBackupSnapshot() {
+  return {
+    property: readWelcomeJson(WELCOME_PROPERTY_KEY, null),
+    unit: readWelcomeJson(WELCOME_UNIT_KEY, null),
+    categories: readWelcomeJson(WELCOME_CATEGORY_KEY, null),
+    partners: readWelcomeJson(WELCOME_PARTNER_KEY, null)
+  };
+}
+
 async function exportBackup() {
   const records = await getRecords();
-  if (!records.length) throw new Error('There are no saved photos to back up yet.');
   const serialized = [];
+
   for (let i = 0; i < records.length; i++) {
-    backupStatus.textContent = `Preparing backup ${i + 1} of ${records.length}…`;
+    backupStatus.textContent = `Preparing photo ${i + 1} of ${records.length}…`;
     const record = records[i];
-    const imageDataUrl = await blobToDataUrl(record.image);
+
+    const safeMain = await materializeSafeBlob(
+      record.image,
+      record.metadata?.type || record.image?.type || 'image/jpeg'
+    );
+
+    const related = await serializeRelatedPhotosForBackup(record.supportingPhotos || []);
+
     serialized.push({
       ...record,
       image: {
-        dataUrl: imageDataUrl,
+        dataUrl: await blobToDataUrl(safeMain),
         name: record.metadata?.filename || 'photo.jpg',
-        type: record.metadata?.type || record.image?.type || 'image/jpeg',
-        lastModified: record.metadata?.lastModified || Date.now(),
+        type: record.metadata?.type || safeMain.type || 'image/jpeg',
+        lastModified: record.metadata?.lastModified || Date.now()
       },
+      supportingPhotos: related
     });
   }
+
   const payload = {
     format: 'papa-golf-backup',
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
+    appVersion: RUNTIME_VERSION,
     customFields,
-    records: serialized,
+    welcome: welcomeBackupSnapshot(),
+    records: serialized
+    // Deliberately excluded:
+    // - Google Places API key
+    // - temporary Nearby provider caches
+    // - service-worker/browser caches
   };
+
   const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -253,8 +303,13 @@ async function exportBackup() {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 30000);
-  backupStatus.textContent = `Backup ready: ${records.length} photo${records.length === 1 ? '' : 's'}. Save the downloaded file in iPhone Files.`;
+
+  const relatedCount = records.reduce((sum, rec) => sum + (Array.isArray(rec.supportingPhotos) ? rec.supportingPhotos.length : 0), 0);
+  backupStatus.textContent =
+    `Backup ready: ${records.length} main photo${records.length === 1 ? '' : 's'} + ` +
+    `${relatedCount} related photo${relatedCount === 1 ? '' : 's'}, plus Welcome/property data.`;
 }
+
 
 function mergeCustomFields(importedFields) {
   if (!Array.isArray(importedFields)) return;
@@ -270,31 +325,101 @@ function mergeCustomFields(importedFields) {
   localStorage.setItem(FIELD_KEY, JSON.stringify(customFields));
 }
 
+async function restoreRelatedPhotosFromBackup(items = []) {
+  const restored = [];
+  for (let i = 0; i < items.length; i++) {
+    const raw = items[i] || {};
+    const packed = raw.imageBlob;
+
+    // v2 format
+    if (packed?.dataUrl) {
+      restored.push(normalizeRelatedPhoto({
+        ...raw,
+        imageBlob: dataUrlToBlob(packed.dataUrl),
+        image: undefined
+      }, i));
+      continue;
+    }
+
+    // Defensive compatibility if a future/hand-edited backup stores image.dataUrl.
+    if (raw.image?.dataUrl) {
+      restored.push(normalizeRelatedPhoto({
+        ...raw,
+        imageBlob: dataUrlToBlob(raw.image.dataUrl),
+        image: undefined
+      }, i));
+    }
+  }
+  return restored;
+}
+
+function restoreWelcomeBackup(welcome) {
+  if (!welcome || typeof welcome !== 'object') return false;
+  const entries = [
+    [WELCOME_PROPERTY_KEY, welcome.property],
+    [WELCOME_UNIT_KEY, welcome.unit],
+    [WELCOME_CATEGORY_KEY, welcome.categories],
+    [WELCOME_PARTNER_KEY, welcome.partners]
+  ];
+  let restored = false;
+  entries.forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      localStorage.setItem(key, JSON.stringify(value));
+      restored = true;
+    }
+  });
+  return restored;
+}
+
 async function importBackupFile(file) {
   const text = await file.text();
   let payload;
-  try { payload = JSON.parse(text); } catch { throw new Error('That file is not valid JSON.'); }
-  if (payload?.format !== 'papa-golf-backup' || payload?.version !== 1 || !Array.isArray(payload.records)) {
+  try { payload = JSON.parse(text); }
+  catch { throw new Error('That file is not valid JSON.'); }
+
+  if (payload?.format !== 'papa-golf-backup' || ![1,2].includes(payload?.version) || !Array.isArray(payload.records)) {
     throw new Error('That is not a compatible Papa Golf backup file.');
   }
+
   mergeCustomFields(payload.customFields);
+
   let restored = 0;
+  let relatedRestored = 0;
+
   for (let i = 0; i < payload.records.length; i++) {
-    backupStatus.textContent = `Restoring ${i + 1} of ${payload.records.length}…`;
+    backupStatus.textContent = `Restoring photo ${i + 1} of ${payload.records.length}…`;
     const saved = payload.records[i];
     if (!saved?.id || !saved?.image?.dataUrl) continue;
+
     const blob = dataUrlToBlob(saved.image.dataUrl);
+    let supportingPhotos = [];
+
+    if (payload.version >= 2 && Array.isArray(saved.supportingPhotos)) {
+      supportingPhotos = await restoreRelatedPhotosFromBackup(saved.supportingPhotos);
+      relatedRestored += supportingPhotos.length;
+    }
+
     const restoredRecord = {
       ...saved,
       image: blob,
-      restoredAt: new Date().toISOString(),
+      supportingPhotos,
+      restoredAt: new Date().toISOString()
     };
+
     await putRecord(restoredRecord);
     restored++;
   }
+
+  const welcomeRestored = payload.version >= 2 ? restoreWelcomeBackup(payload.welcome) : false;
+
   await renderGallery();
-  backupStatus.textContent = `Restore complete: ${restored} photo${restored === 1 ? '' : 's'} added or updated. Existing photos were not deleted.`;
+
+  backupStatus.textContent =
+    `Restore complete: ${restored} main photo${restored === 1 ? '' : 's'}` +
+    `${payload.version >= 2 ? ` + ${relatedRestored} related photo${relatedRestored === 1 ? '' : 's'}` : ''}` +
+    `${welcomeRestored ? ' + Welcome/property data' : ''}. Existing records were not bulk-deleted.`;
 }
+
 
 async function deleteRecord(id) {
   const db = await openDb();
@@ -2540,14 +2665,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0213';
+    const key = 'papaGolfSwReloaded0210foundation';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.20.13', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.21.0', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2586,12 +2711,12 @@ const WELCOME_DEFAULT_UNIT = {
 };
 
 const WELCOME_CATEGORY_DEFS = [
-  {id:'convenience',label:'Convenience Stores',icon:'🛒',source:'automatic',enabled:true,radiusKm:2,maxResults:4,selection:'spread'},
-  {id:'supermarket',label:'Supermarkets',icon:'🛍',source:'automatic',enabled:true,radiusKm:3,maxResults:3,selection:'nearest'},
-  {id:'petrol',label:'Petrol Stations',icon:'⛽',source:'automatic',enabled:true,radiusKm:3,maxResults:3,selection:'nearest'},
-  {id:'atm',label:'ATMs / Banks',icon:'🏧',source:'automatic',enabled:true,radiusKm:2,maxResults:4,selection:'spread'},
-  {id:'pharmacy',label:'Pharmacies',icon:'💊',source:'automatic',enabled:true,radiusKm:3,maxResults:3,selection:'nearest'},
-  {id:'medical',label:'Hospitals / Clinics',icon:'🏥',source:'automatic',enabled:true,radiusKm:8,maxResults:4,selection:'nearest'},
+  {id:'convenience',label:'Convenience Stores',icon:'🛒',source:'automatic',enabled:true,radiusKm:2},
+  {id:'supermarket',label:'Supermarkets',icon:'🛍',source:'automatic',enabled:true,radiusKm:3},
+  {id:'petrol',label:'Petrol Stations',icon:'⛽',source:'automatic',enabled:true,radiusKm:3},
+  {id:'atm',label:'ATMs / Banks',icon:'🏧',source:'automatic',enabled:true,radiusKm:2},
+  {id:'pharmacy',label:'Pharmacies',icon:'💊',source:'automatic',enabled:true,radiusKm:3},
+  {id:'medical',label:'Hospitals / Clinics',icon:'🏥',source:'automatic',enabled:true,radiusKm:8},
   {id:'restaurant',label:'Restaurants',icon:'🍽',source:'approved',enabled:true},
   {id:'bar',label:'Bars',icon:'🍹',source:'approved',enabled:true},
   {id:'cafe',label:'Cafés',icon:'☕',source:'approved',enabled:true},
@@ -2780,8 +2905,6 @@ function saveWelcomeCategories(){
       enabled:!!row?.querySelector('[data-role="enabled"]')?.checked,
       source:row?.querySelector('[data-role="source"]')?.value||cat.source,
       radiusKm:Number(row?.querySelector('[data-role="radius"]')?.value)||cat.radiusKm,
-      maxResults:Number(row?.querySelector('[data-role="max-results"]')?.value)||cat.maxResults,
-      selection:row?.querySelector('[data-role="selection"]')?.value||cat.selection
     };
   });
   localStorage.setItem(WELCOME_CATEGORY_KEY,JSON.stringify(next));
@@ -3016,28 +3139,6 @@ function welcomeBearingDeg(lat1,lng1,lat2,lng2){
   const y=Math.sin(dLng)*Math.cos(b);
   const x=Math.cos(a)*Math.sin(b)-Math.sin(a)*Math.cos(b)*Math.cos(dLng);
   return (toDeg(Math.atan2(y,x))+360)%360;
-}
-function welcomeSelectDirectionalSpread(items,maxResults,originLat,originLng){
-  if(items.length<=maxResults)return items;
-  const candidates=[...items].sort((a,b)=>a.distanceKm-b.distanceKm);
-  const guaranteedNearest=Math.min(2,maxResults,candidates.length);
-  const selected=candidates.splice(0,guaranteedNearest);
-  while(candidates.length&&selected.length<maxResults){
-    let bestIndex=0,bestScore=-Infinity;
-    candidates.forEach((candidate,index)=>{
-      const bearing=welcomeBearingDeg(originLat,originLng,candidate.lat,candidate.lng);
-      let minAngular=180;
-      selected.forEach(chosen=>{
-        const b=welcomeBearingDeg(originLat,originLng,chosen.lat,chosen.lng);
-        const raw=Math.abs(bearing-b);
-        minAngular=Math.min(minAngular,Math.min(raw,360-raw));
-      });
-      const score=minAngular*7-candidate.distanceKm*18;
-      if(score>bestScore){bestScore=score;bestIndex=index}
-    });
-    selected.push(candidates.splice(bestIndex,1)[0]);
-  }
-  return selected.sort((a,b)=>a.distanceKm-b.distanceKm);
 }
 
 function getPapaGolfGooglePlacesKey(){

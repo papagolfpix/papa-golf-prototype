@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.20.13" />
+<link rel="stylesheet" href="styles.css?v=0.21.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.20.13</div>
+      <div class="eyebrow">PAPA GOLF · V0.21.0</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -57,7 +57,7 @@
       <div class="backup-panel">
         <div class="backup-copy">
           <strong>Safety backup</strong>
-          <span>Export a backup file to iPhone Files before major updates.</span>
+          <span>Back up main photos, related photos, metadata and Welcome/property setup before major updates.</span>
         </div>
         <div class="backup-actions">
           <button id="exportBackupBtn" class="secondary-button" type="button">Export backup</button>
@@ -284,14 +284,14 @@
       <div class="guest-panel-heading">
         <div><h2>🗺 Explore Nearby</h2><p class="muted">Choose only what you want to see.</p></div>
       </div>
-      <div class="welcome-explore-tools">
-        <div id="welcomeGuestFilters" class="welcome-filter-chips"></div>
-        <button id="refreshWelcomeNearbyBtn" class="secondary-btn welcome-refresh-nearby" type="button">↻ Refresh Nearby</button>
-      </div>
       <div class="welcome-nearby-sticky-shell">
+        <div class="welcome-explore-tools">
+          <div id="welcomeGuestFilters" class="welcome-filter-chips"></div>
+          <button id="refreshWelcomeNearbyBtn" class="secondary-btn welcome-refresh-nearby" type="button">↻ Refresh Nearby</button>
+        </div>
         <div id="welcomeNearbyMap" class="welcome-nearby-map"></div>
         <div id="welcomeNearbyStatus" class="small muted"></div>
-        <div id="welcomeMapHint" class="small muted welcome-map-hint">Map stays visible while you browse results. Tap any result below to show it together with your YOU ARE HERE pin.</div>
+        <div id="welcomeMapHint" class="small muted welcome-map-hint">Filters and map stay available while you browse. Tap any result to show it together with your YOU ARE HERE pin.</div>
       </div>
       <div id="welcomeNearbyList" class="welcome-nearby-list"></div>
     </section>
@@ -497,6 +497,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.20.13" defer></script>
+  <script src="app.js?v=0.21.0" defer></script>
 </body>
 </html>

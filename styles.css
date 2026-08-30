@@ -1146,3 +1146,75 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .welcome-source-badge.google{
   border-color:rgba(66,133,244,.55);
 }
+
+
+/* ============================================================
+   Papa Golf v0.21.0 — responsive + safety foundation
+   ============================================================ */
+
+*,*::before,*::after{box-sizing:border-box}
+img,video,canvas,svg{max-width:100%}
+button,input,select,textarea{max-width:100%}
+button,a,input,select,textarea{touch-action:manipulation}
+.detail-value,.welcome-place-copy,.guest-info-card,.publish-url{min-width:0;overflow-wrap:anywhere}
+
+/* Keep category controls and map together while scrolling results. */
+.welcome-nearby-sticky-shell{
+  top:max(4px,env(safe-area-inset-top));
+  padding:.35rem 0 .5rem;
+}
+.welcome-nearby-sticky-shell .welcome-explore-tools{
+  margin:0 0 .35rem;
+  padding:.1rem 0 .15rem;
+  background:#0b0b0b;
+}
+.welcome-nearby-sticky-shell .welcome-filter-chips{
+  padding-bottom:.45rem;
+}
+.welcome-nearby-map{
+  height:clamp(245px,40vh,380px);
+}
+
+/* Phone landscape / very short screens: leave enough room for results. */
+@media (max-height:620px){
+  .welcome-nearby-map{height:230px}
+  .welcome-map-hint{display:none}
+}
+
+/* Small phones. */
+@media (max-width:390px){
+  main{padding-left:10px;padding-right:10px}
+  .welcome-nearby-map{height:clamp(230px,37vh,300px)}
+  .welcome-filter-chip{padding:.56rem .7rem;font-size:11px}
+  .welcome-refresh-nearby{min-height:38px}
+}
+
+/* Tablet. */
+@media (min-width:700px){
+  main{width:min(920px,100%)}
+  .guest-menu-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .welcome-nearby-map{height:400px}
+  .welcome-place-card{padding:1rem}
+}
+
+/* Desktop / large tablet. */
+@media (min-width:1050px){
+  main{width:min(1120px,100%);padding-left:24px;padding-right:24px}
+  .guest-menu-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .guest-welcome-panel{max-width:980px;margin:0 auto}
+  .welcome-nearby-map{height:440px}
+  .welcome-nearby-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .welcome-place-card{height:100%}
+}
+
+/* Dialogs should remain usable on every viewport and around iOS safe areas. */
+dialog{
+  max-width:min(96vw,900px);
+  max-height:calc(100dvh - 20px);
+}
+@supports(padding:max(0px)){
+  dialog{
+    margin-top:max(10px,env(safe-area-inset-top));
+    margin-bottom:max(10px,env(safe-area-inset-bottom));
+  }
+}

@@ -620,3 +620,31 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - OpenStreetMap is only used when Google genuinely fails or no Google key is available.
 - Starting a new refresh invalidates any previous in-flight Nearby request.
 - Existing sticky map, nearest-first list, 750 m start view, and YOU ARE HERE + destination best-fit remain unchanged.
+
+
+## v0.21.0 — Foundation hardening
+### Backup / restore v2
+- Backup now includes the main image and every nested related-photo image Blob.
+- Backup includes photo metadata, custom fields, Welcome property/unit/category configuration, and approved/affiliate place records.
+- Google Places API key is deliberately excluded from backup.
+- Temporary Google/OpenStreetMap caches are deliberately excluded.
+- Restore accepts both legacy v1 backups and new v2 backups.
+- v2 restore rebuilds related-photo Blobs and Welcome/property configuration.
+
+### Explore Nearby
+- Category/filter controls and Refresh Nearby now stick together with the map.
+- Results continue scrolling underneath.
+- Existing Google-first / OpenStreetMap-fallback provider behavior remains.
+- Existing 750 m initial map view and YOU ARE HERE + destination best-fit behavior remain.
+
+### Cleanup
+- Removed the obsolete directional-spread selection algorithm.
+- Removed obsolete maximum-result / selection settings from the automatic category model.
+- Radius remains the active per-category automatic search control.
+
+### Responsive baseline
+- Added phone, short-screen/landscape, tablet and desktop layout behavior.
+- Maps use viewport-aware height.
+- Guest menu expands from 1–2 columns to 3–4 columns where screen space allows.
+- Large-screen result lists can use two columns.
+- Added overflow protection, safe-area handling and viewport-safe dialogs.
