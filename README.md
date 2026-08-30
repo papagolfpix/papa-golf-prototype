@@ -708,3 +708,13 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 
 ## v0.24.1
 - Fixes missing Edit Place and Add to Welcome controls on Shared Place cards, especially Photo Places on iPhone.
+
+## v0.25.0 — Rich authoritative Place integration
+- Shared Place editor now includes visitor-facing fields: cost, access difficulty, suggested visit time, rating, features, best time, transport/access and warnings.
+- Coordinates display at 6 decimals while internal values remain numeric.
+- Shared Place remains the Papa Golf master record; curated Welcome references resolve through it.
+- Promoting a Photo or Google-discovered Place into Welcome carries richer Papa Golf metadata.
+- Shared Place library surfaces visitor summary data.
+- Guest curated results can display concise visitor metadata.
+- Removed sticky admin role-switcher behavior that could cover content on iPhone.
+- Backup v6; v1-v5 restore compatibility preserved.

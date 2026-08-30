@@ -1395,3 +1395,15 @@ body.guest-explore-mode #guestExplorePanel{
 .shared-place-actions-visible button{display:inline-flex!important;visibility:visible!important;opacity:1!important;min-height:42px;align-items:center;justify-content:center}
 .shared-place-curated-label{display:inline-flex;align-items:center;padding:.45rem .7rem;min-height:38px;border:1px solid #5d5030;border-radius:999px;color:#dfc16e;font-size:13px}
 @media(max-width:600px){.shared-place-actions-visible{display:flex!important}.shared-place-actions-visible button{flex:1 1 145px}}
+
+/* v0.25.0 — richer shared Place integration */
+.shared-place-visitor-summary{margin-top:.25rem;color:#d4b75e}
+.welcome-place-extra{margin-top:.2rem}
+.shared-place-edit-grid input[type="number"]{font-variant-numeric:tabular-nums}
+.role-switcher,.access-mode-switcher{
+  position:relative!important;
+  top:auto!important;
+  z-index:auto!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}

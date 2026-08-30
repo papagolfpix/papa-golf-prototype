@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.24.1" />
+<link rel="stylesheet" href="styles.css?v=0.25.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.24.1</div>
+      <div class="eyebrow">PAPA GOLF · V0.25.0</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -207,6 +207,14 @@
           <label class="wide">Guest note<textarea id="sharedPlaceEditNote" rows="3"></textarea></label>
           <label>Website<input id="sharedPlaceEditWebsite" type="url" placeholder="https://..."></label>
           <label>Phone<input id="sharedPlaceEditPhone" type="text"></label>
+          <label>Cost<input id="sharedPlaceEditCost" type="text" placeholder="Free / ฿300 / etc."></label>
+          <label>Access difficulty<input id="sharedPlaceEditAccessDifficulty" type="text" placeholder="Very easy / Moderate"></label>
+          <label>Suggested visit time<input id="sharedPlaceEditSuggestedVisit" type="text" placeholder="30–60 minutes"></label>
+          <label>Rating<input id="sharedPlaceEditRating" type="number" min="0" max="5" step="0.5"></label>
+          <label class="wide">Features<input id="sharedPlaceEditFeatures" type="text" placeholder="Swimming, Snorkelling, Food, Toilets"></label>
+          <label class="wide">Best time to visit<input id="sharedPlaceEditBestTime" type="text" placeholder="Sunrise, Morning, Dry weather"></label>
+          <label class="wide">Transport / access<input id="sharedPlaceEditTransport" type="text" placeholder="Boat, Private tour, Guided tour"></label>
+          <label class="wide">Warnings / considerations<textarea id="sharedPlaceEditWarnings" rows="2"></textarea></label>
           <label class="wide">Tags<input id="sharedPlaceEditTags" type="text" placeholder="beach, sunset, family"></label>
         </div>
         <div class="shared-place-edit-flags">
@@ -548,6 +556,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.24.1" defer></script>
+  <script src="app.js?v=0.25.0" defer></script>
 </body>
 </html>
