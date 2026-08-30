@@ -735,3 +735,11 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Adds `gateway-demo.html`, a public cross-device Magic Dragon Villa Gateway demonstration that does not depend on IndexedDB/localStorage from the admin phone.
 - A5/QR public URL target is centralized on `gateway-demo.html` for this prototype stage.
 - No photo records, IndexedDB data, Welcome localStorage, Google key, or backup data are deleted or reset.
+
+
+## v0.27.1 — Quiet-entry navigation polish
+- Welcome / Gateways now enters with every major section collapsed.
+- Replaced ambiguous plus/minus expansion marks with chevrons.
+- Public Gateway demo follows the same closed-first navigation rule.
+- Preserves explicit programmatic opening of a section when an editor/action needs it.
+- No IndexedDB or Papa Golf saved-photo data migrations in this release.

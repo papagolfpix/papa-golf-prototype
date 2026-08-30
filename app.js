@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.27.0';
+const RUNTIME_VERSION = '0.27.1';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2687,7 +2687,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.27.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.27.1', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -4104,15 +4104,16 @@ function setupPapaGolfProgressiveSections(){
   if(!root)return;
   const sections=[...root.querySelectorAll('.pg-nav-section[data-pg-section]')];
   if(!sections.length)return;
+  // Fresh entry starts intentionally quiet: every major section is collapsed.
+  // The last section is still recorded for future contextual use, but is not auto-opened.
   const stored=(()=>{try{return localStorage.getItem(PAPA_GOLF_NAV_SECTION_KEY)||''}catch{return ''}})();
-  const defaultId=sections.some(x=>x.dataset.pgSection===stored)?stored:(sections[0]?.dataset.pgSection||'');
   const setOpen=(id,{scroll=false}={})=>{
     sections.forEach(section=>{
       const open=section.dataset.pgSection===id;
       section.classList.toggle('pg-section-open',open);
       section.classList.toggle('pg-section-collapsed',!open);
       const toggle=section.querySelector(':scope > .pg-section-toggle');
-      if(toggle){toggle.setAttribute('aria-expanded',open?'true':'false');toggle.querySelector('.pg-section-chevron').textContent=open?'−':'+';}
+      if(toggle){toggle.setAttribute('aria-expanded',open?'true':'false');toggle.querySelector('.pg-section-chevron').textContent=open?'⌄':'›';}
     });
     try{localStorage.setItem(PAPA_GOLF_NAV_SECTION_KEY,id)}catch{}
     if(scroll){
@@ -4127,15 +4128,20 @@ function setupPapaGolfProgressiveSections(){
     btn.type='button';
     btn.className='pg-section-toggle';
     btn.setAttribute('aria-expanded','false');
-    btn.innerHTML=`<span class="pg-section-toggle-copy"><strong>${escapeHtml(section.dataset.pgLabel||'Section')}</strong><span>${escapeHtml(section.dataset.pgSummary||'')}</span></span><span class="pg-section-chevron" aria-hidden="true">+</span>`;
+    btn.innerHTML=`<span class="pg-section-toggle-copy"><strong>${escapeHtml(section.dataset.pgLabel||'Section')}</strong><span>${escapeHtml(section.dataset.pgSummary||'')}</span></span><span class="pg-section-chevron" aria-hidden="true">›</span>`;
     btn.addEventListener('click',()=>{
       const isOpen=section.classList.contains('pg-section-open');
-      if(isOpen){section.classList.remove('pg-section-open');section.classList.add('pg-section-collapsed');btn.setAttribute('aria-expanded','false');btn.querySelector('.pg-section-chevron').textContent='+';return;}
+      if(isOpen){section.classList.remove('pg-section-open');section.classList.add('pg-section-collapsed');btn.setAttribute('aria-expanded','false');btn.querySelector('.pg-section-chevron').textContent='›';return;}
       setOpen(section.dataset.pgSection,{scroll:true});
     });
     section.prepend(btn);
   });
-  setOpen(defaultId);
+  sections.forEach(section=>{
+    section.classList.remove('pg-section-open');
+    section.classList.add('pg-section-collapsed');
+    const toggle=section.querySelector(':scope > .pg-section-toggle');
+    if(toggle){toggle.setAttribute('aria-expanded','false');toggle.querySelector('.pg-section-chevron').textContent='›';}
+  });
   window.papaGolfOpenAdminSection=(id,options={})=>setOpen(id,options);
 }
 
