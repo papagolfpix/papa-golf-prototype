@@ -681,3 +681,9 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Explore begins at compact Main Menu + villa logo + language control, followed immediately by filters, Refresh, sticky map and results.
 - Returning to the Welcome main menu restores the normal admin/preview shell.
 - Shared Places status now separates Papa Golf photo places, curated places and Google discoveries.
+
+## v0.22.2 — Guest Explore isolation
+- In focused Guest Explore mode, all main-app/admin content is now hidden except the Welcome guest preview.
+- Inside the guest preview, all editor/preview controls are hidden except the actual guest shell.
+- This removes Photos/Map/Areas/Welcome navigation and Edit Welcome from above Explore.
+- Compact Main Menu + villa logo + language selector remain as the only header.

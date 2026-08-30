@@ -1326,3 +1326,25 @@ body.guest-explore-mode .guest-explore-compact-header{
     min-height:46px;
   }
 }
+
+
+/* v0.22.2 — isolate the guest Explore screen from all admin chrome. */
+body.guest-explore-mode main > *:not(#welcomeGuestPreview){
+  display:none !important;
+}
+body.guest-explore-mode #welcomeGuestPreview > *:not(.guest-welcome-shell){
+  display:none !important;
+}
+body.guest-explore-mode #welcomeGuestPreview,
+body.guest-explore-mode #welcomeGuestPreview .guest-welcome-shell,
+body.guest-explore-mode #guestExplorePanel{
+  display:block !important;
+  width:100% !important;
+  max-width:none !important;
+  margin:0 !important;
+}
+body.guest-explore-mode #guestExplorePanel{
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+}
