@@ -1153,7 +1153,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
    ============================================================ */
 
 *,*::before,*::after{box-sizing:border-box}
-img,video,canvas,svg{max-width:100%}
+img:not(.leaflet-tile):not(.leaflet-marker-icon):not(.leaflet-marker-shadow),video,canvas,svg{max-width:100%}
 button,input,select,textarea{max-width:100%}
 button,a,input,select,textarea{touch-action:manipulation}
 .detail-value,.welcome-place-copy,.guest-info-card,.publish-url{min-width:0;overflow-wrap:anywhere}
@@ -1235,4 +1235,18 @@ dialog{
 .welcome-nearby-map .leaflet-tile-pane,
 .welcome-nearby-map .leaflet-map-pane{
   will-change:transform;
+}
+
+
+/* v0.21.2 — Leaflet raster tiles must never inherit responsive-image sizing. */
+.leaflet-container img.leaflet-tile,
+.welcome-nearby-map img.leaflet-tile,
+.photo-map img.leaflet-tile{
+  max-width:none !important;
+  max-height:none !important;
+  min-width:0 !important;
+  min-height:0 !important;
+}
+.leaflet-container .leaflet-tile-pane img{
+  max-width:none !important;
 }

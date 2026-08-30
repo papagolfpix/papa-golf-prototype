@@ -655,3 +655,8 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Recalculates after viewport resize/orientation changes.
 - Preserves sticky category filters + Refresh Nearby + map behavior.
 - No data model or backup changes from v0.21.0.
+
+## v0.21.2 — Leaflet base-map tile fix
+- Corrected the responsive image rule introduced in v0.21.0 so it does not apply to Leaflet raster tiles or marker images.
+- Added explicit Leaflet tile max-width/max-height protection for Safari.
+- Retains sticky filters + map and v0.21.1 viewport settling logic.
