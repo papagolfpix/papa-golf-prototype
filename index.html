@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.25.0" />
+<link rel="stylesheet" href="styles.css?v=0.26.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.25.0</div>
+      <div class="eyebrow">PAPA GOLF · V0.26.0</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -248,6 +248,18 @@
   </div>
 
   <article class="panel welcome-a5-panel">
+    <section class="gateway-manager">
+      <div class="eyebrow">PAPA GOLF GATEWAYS</div><h3>QR / A5 entry points</h3>
+      <p class="muted">A Gateway starts the Papa Golf experience from a villa, restaurant, bar, café, tour operator or attraction.</p>
+      <div id="gatewayManagerList" class="gateway-manager-list"></div>
+      <div id="gatewayEditPanel" class="gateway-edit-panel hidden">
+        <div class="shared-place-edit-head"><h3>Edit Gateway</h3><button id="gatewayEditCloseBtn" type="button" class="secondary-btn">Close</button></div>
+        <label>Gateway name<input id="gatewayEditName" type="text"></label><label>Subtitle / location<input id="gatewayEditSubtitle" type="text"></label>
+        <label>Gateway type<select id="gatewayEditType"><option value="property">Property / Villa</option><option value="restaurant">Restaurant</option><option value="bar">Bar</option><option value="cafe">Café</option><option value="tour">Tour Operator</option><option value="attraction">Attraction</option><option value="other">Other</option></select></label>
+        <label>Menu tiles<input id="gatewayEditTiles" type="text" placeholder="menu, specials, nearby, tours, transport"></label>
+        <label class="gateway-enabled"><input id="gatewayEditEnabled" type="checkbox"> Gateway enabled</label><button id="gatewayEditSaveBtn" type="button" class="primary-btn">Save Gateway</button>
+      </div>
+    </section>
     <h3>A5 Welcome Card</h3>
     <p class="muted">A standard upright A5 sheet for the clear plastic stand. It uses this villa's branding and Wi-Fi details automatically.</p>
     <div class="welcome-a5-actions">
@@ -556,6 +568,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.25.0" defer></script>
+  <script src="app.js?v=0.26.0" defer></script>
 </body>
 </html>

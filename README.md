@@ -718,3 +718,9 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Guest curated results can display concise visitor metadata.
 - Removed sticky admin role-switcher behavior that could cover content on iPhone.
 - Backup v6; v1-v5 restore compatibility preserved.
+
+## v0.26.0
+- Adds reusable QR/A5 Gateway foundation for properties, restaurants, bars, cafés, tours and attractions.
+- Shared Places can become Gateways without duplication.
+- Enhances existing Photo → Shared Place visitor-field migration.
+- Backup v7 includes Gateways.

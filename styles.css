@@ -1407,3 +1407,6 @@ body.guest-explore-mode #guestExplorePanel{
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
 }
+
+/* v0.26.0 Gateway */
+.gateway-manager{margin:1.5rem 0;padding:1rem;border:1px solid #3a3325;border-radius:20px;background:#111}.gateway-manager-list{display:grid;gap:.7rem;margin-top:1rem}.gateway-row{display:flex;justify-content:space-between;gap:1rem;align-items:center;padding:.85rem;border:1px solid #343434;border-radius:14px;background:#171717}.gateway-name{font-weight:800}.gateway-tile-summary{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.5rem}.gateway-tile-summary span{padding:.2rem .45rem;border-radius:999px;background:#242118;color:#dfc16e;font-size:11px;text-transform:capitalize}.gateway-edit-panel{margin-top:1rem;padding:1rem;border:1px solid #4b4027;border-radius:16px;background:#15130f}.gateway-edit-panel.hidden{display:none!important}.gateway-edit-panel>label{display:grid;gap:.35rem;margin:.75rem 0}.gateway-edit-panel input,.gateway-edit-panel select{width:100%}.gateway-enabled{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center}@media(max-width:600px){.gateway-row{display:block}.gateway-row button{width:100%;margin-top:.7rem}}
