@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.26.0" />
+<link rel="stylesheet" href="styles.css?v=0.27.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.26.0</div>
+      <div class="eyebrow">PAPA GOLF · V0.27.0</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -103,11 +103,11 @@
 <section id="welcomeModule" class="screen hidden">
   <div class="screen-header">
     <button id="welcomeBackBtn" class="secondary-btn">← Back</button>
-    <div><h2>Property Welcome</h2><p class="muted">Branding, guest information, nearby discovery and partner recommendations.</p></div>
+    <div><h2>Welcome / Gateways</h2><p class="muted">Choose a section. Only the section you are using stays open.</p></div>
   </div>
 
   <div class="welcome-grid">
-    <article class="panel welcome-brand-panel">
+    <article class="panel welcome-brand-panel pg-nav-section" data-pg-section="property" data-pg-label="Property / Villa" data-pg-summary="Identity, location, host and emergency details">
       <h3>Property identity</h3>
       <img id="welcomeBrandPreview" class="welcome-brand-preview" src="magic-dragon-villa-logo.png" alt="Property logo">
       <label>Property / development name
@@ -133,7 +133,7 @@
       <button id="saveWelcomePropertyBtn" class="primary-btn">Save Property</button>
     </article>
 
-    <article class="panel welcome-google-places-setup">
+    <article class="panel welcome-google-places-setup pg-nav-section" data-pg-section="google" data-pg-label="Google Places" data-pg-summary="Nearby utility discovery and API connection">
       <h3>Google Places API</h3>
       <p class="small muted">Paste your restricted Google Places key here. It is stored only in this iPhone/browser and is not included in Papa Golf update ZIPs or GitHub.</p>
       <label>Google Places API Key
@@ -147,7 +147,7 @@
       <div id="welcomeGooglePlacesTestResults" class="welcome-google-test-results"></div>
     </article>
 
-    <article class="panel">
+    <article class="panel welcome-villa-panel pg-nav-section" data-pg-section="guest-info" data-pg-label="Guest Information" data-pg-summary="Wi-Fi, villa guide and guest-facing information">
       <h3>Villa guest information</h3>
       <label>Guest-facing villa name
         <input id="welcomeUnitName" type="text" placeholder="e.g. Magic Dragon Villa">
@@ -169,14 +169,14 @@
       <button id="saveWelcomeUnitBtn" class="primary-btn">Save Villa</button>
     </article>
 
-    <article class="panel welcome-categories-panel">
+    <article class="panel welcome-categories-panel pg-nav-section" data-pg-section="categories" data-pg-label="Explore Nearby" data-pg-summary="Choose which nearby categories guests can discover">
       <h3>Explore Nearby categories</h3>
       <p class="muted">You decide what guests are allowed to discover. Utility categories can later use live nearby search; commercial categories can be restricted to your approved partners.</p>
       <div id="welcomeCategoryEditor" class="welcome-category-editor"></div>
       <button id="saveWelcomeCategoriesBtn" class="primary-btn">Save Categories</button>
     </article>
 
-    <article class="panel welcome-partners-panel">
+    <article class="panel welcome-partners-panel pg-nav-section" data-pg-section="places" data-pg-label="Places & Affiliates" data-pg-summary="Shared Places, curated businesses and affiliate recommendations">
       <div class="shared-place-status-wrap">
         <div class="eyebrow">SHARED PAPA GOLF PLACES</div>
         <div id="papaGolfPlaceStatus" class="small shared-place-status">Building shared place index…</div>
@@ -247,7 +247,7 @@
     </article>
   </div>
 
-  <article class="panel welcome-a5-panel">
+  <article class="panel welcome-a5-panel pg-nav-section" data-pg-section="gateways" data-pg-label="Gateways & A5 / QR" data-pg-summary="QR entry points, Gateway settings and A5 cards">
     <section class="gateway-manager">
       <div class="eyebrow">PAPA GOLF GATEWAYS</div><h3>QR / A5 entry points</h3>
       <p class="muted">A Gateway starts the Papa Golf experience from a villa, restaurant, bar, café, tour operator or attraction.</p>
@@ -265,7 +265,9 @@
     <div class="welcome-a5-actions">
       <button id="previewWelcomeA5Btn" class="primary-btn" type="button">Preview A5 Welcome Card</button>
       <button id="printWelcomeA5Btn" class="secondary-btn" type="button">Print / Save as PDF</button>
+      <a class="secondary-btn pg-public-demo-link" href="gateway-demo.html" target="_blank" rel="noopener">Open Public Gateway Demo</a>
     </div>
+    <p class="small muted pg-public-demo-note">This public demo is stored in the website itself, so it can be opened on another phone without using your iPhone's local Papa Golf data.</p>
   </article>
 
   <div class="welcome-preview-action">
@@ -568,6 +570,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.26.0" defer></script>
+  <script src="app.js?v=0.27.0" defer></script>
 </body>
 </html>

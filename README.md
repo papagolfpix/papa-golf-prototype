@@ -724,3 +724,14 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Shared Places can become Gateways without duplication.
 - Enhances existing Photo → Shared Place visitor-field migration.
 - Backup v7 includes Gateways.
+
+
+## v0.27.0 — Progressive navigation + first public Gateway demo
+
+- Introduces the Papa Golf progressive-disclosure navigation pattern in Welcome/Admin: one major section open at a time.
+- Remembers the last major section used on the device.
+- Editors automatically open the correct parent section.
+- Raises the readability baseline on iPhone: 16px form inputs, larger secondary text, and comfortable touch targets.
+- Adds `gateway-demo.html`, a public cross-device Magic Dragon Villa Gateway demonstration that does not depend on IndexedDB/localStorage from the admin phone.
+- A5/QR public URL target is centralized on `gateway-demo.html` for this prototype stage.
+- No photo records, IndexedDB data, Welcome localStorage, Google key, or backup data are deleted or reset.

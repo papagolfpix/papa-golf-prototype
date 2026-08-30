@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.26.0';
+const RUNTIME_VERSION = '0.27.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2687,7 +2687,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.26.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.27.0', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2715,7 +2715,7 @@ function gatewayForPlace(id){return getPapaGolfGateways().find(g=>g.placeId===id
 function ensureDefaultPropertyGateway(){let a=getPapaGolfGateways();if(a.length)return a;const d=effectiveWelcome();a=[{id:'gateway-property-'+Date.now(),type:'property',placeId:'',brandName:d.propertyName||d.name||'Magic Dragon Villa',subtitle:d.locationLabel||'Bangrak, Samui',enabled:true,tiles:gatewayDefaultTiles('property'),createdAt:new Date().toISOString()}];savePapaGolfGateways(a);return a}
 function createGatewayForPlace(placeId,type='other'){const p=getPapaGolfPlace(placeId);if(!p)return null;const a=getPapaGolfGateways(),e=a.find(g=>g.placeId===placeId);if(e)return e;const g={id:'gateway-'+Date.now(),placeId,type,brandName:papaGolfPlaceDisplayName(p),subtitle:'',enabled:true,tiles:gatewayDefaultTiles(type),createdAt:new Date().toISOString()};a.push(g);savePapaGolfGateways(a);renderPapaGolfGatewayManager();return g}
 function renderPapaGolfGatewayManager(){const host=document.getElementById('gatewayManagerList');if(!host)return;const a=ensureDefaultPropertyGateway();host.innerHTML=a.map(g=>`<article class="gateway-row"><div><div class="gateway-name">${escapeHtml(g.brandName||'Gateway')}</div><div class="small muted">${escapeHtml(PAPA_GOLF_GATEWAY_TYPES.find(x=>x.id===g.type)?.label||'Gateway')}</div><div class="gateway-tile-summary">${(g.tiles||[]).map(t=>`<span>${escapeHtml(t)}</span>`).join('')}</div></div><button type="button" class="secondary-btn" data-edit-gateway="${escapeHtml(g.id)}">Edit Gateway</button></article>`).join('')}
-function openGatewayEditor(id){const g=getPapaGolfGateways().find(x=>x.id===id),p=document.getElementById('gatewayEditPanel');if(!g||!p)return;p.classList.remove('hidden');p.dataset.gatewayId=id;const set=(x,v)=>{const e=document.getElementById(x);if(e)e.value=v??''};set('gatewayEditName',g.brandName);set('gatewayEditSubtitle',g.subtitle);set('gatewayEditType',g.type);set('gatewayEditTiles',(g.tiles||[]).join(', '));const e=document.getElementById('gatewayEditEnabled');if(e)e.checked=g.enabled!==false;p.scrollIntoView({behavior:'smooth',block:'start'})}
+function openGatewayEditor(id){window.papaGolfOpenAdminSection?.('gateways');const g=getPapaGolfGateways().find(x=>x.id===id),p=document.getElementById('gatewayEditPanel');if(!g||!p)return;p.classList.remove('hidden');p.dataset.gatewayId=id;const set=(x,v)=>{const e=document.getElementById(x);if(e)e.value=v??''};set('gatewayEditName',g.brandName);set('gatewayEditSubtitle',g.subtitle);set('gatewayEditType',g.type);set('gatewayEditTiles',(g.tiles||[]).join(', '));const e=document.getElementById('gatewayEditEnabled');if(e)e.checked=g.enabled!==false;p.scrollIntoView({behavior:'smooth',block:'start'})}
 function saveGatewayEditor(){const p=document.getElementById('gatewayEditPanel'),id=p?.dataset.gatewayId||'',a=getPapaGolfGateways(),i=a.findIndex(x=>x.id===id);if(i<0)return;const v=x=>document.getElementById(x)?.value?.trim?.()||'';a[i]={...a[i],brandName:v('gatewayEditName'),subtitle:v('gatewayEditSubtitle'),type:v('gatewayEditType')||'other',tiles:v('gatewayEditTiles').split(',').map(x=>x.trim()).filter(Boolean),enabled:!!document.getElementById('gatewayEditEnabled')?.checked};savePapaGolfGateways(a);p.classList.add('hidden');renderPapaGolfGatewayManager()}
 
 
@@ -2803,6 +2803,7 @@ function updatePapaGolfPlace(placeId,changes={}){
 }
 function placeEditorValue(id){return document.getElementById(id)?.value?.trim?.()||''}
 function openPapaGolfPlaceEditor(placeId){
+  window.papaGolfOpenAdminSection?.('places');
   const place=getPapaGolfPlace(placeId),panel=document.getElementById('sharedPlaceEditPanel');
   if(!place||!panel)return;
   panel.classList.remove('hidden');panel.dataset.placeId=place.id;
@@ -4069,7 +4070,7 @@ function focusWelcomeNearbyPlace(placeId){
 function welcomePublicUrl(){
   // The first real property currently uses the prototype page. This remains
   // centralized so a dedicated villa slug can replace it without changing the A5 renderer.
-  return `${location.origin}${location.pathname}`;
+  return new URL('gateway-demo.html', location.href).href;
 }
 function renderWelcomeA5(){
   const d=effectiveWelcome();
@@ -4096,7 +4097,50 @@ function printWelcomeA5(){
   setTimeout(()=>window.print(),80);
 }
 
+
+const PAPA_GOLF_NAV_SECTION_KEY='papaGolfAdminSectionV1';
+function setupPapaGolfProgressiveSections(){
+  const root=document.getElementById('welcomeModule');
+  if(!root)return;
+  const sections=[...root.querySelectorAll('.pg-nav-section[data-pg-section]')];
+  if(!sections.length)return;
+  const stored=(()=>{try{return localStorage.getItem(PAPA_GOLF_NAV_SECTION_KEY)||''}catch{return ''}})();
+  const defaultId=sections.some(x=>x.dataset.pgSection===stored)?stored:(sections[0]?.dataset.pgSection||'');
+  const setOpen=(id,{scroll=false}={})=>{
+    sections.forEach(section=>{
+      const open=section.dataset.pgSection===id;
+      section.classList.toggle('pg-section-open',open);
+      section.classList.toggle('pg-section-collapsed',!open);
+      const toggle=section.querySelector(':scope > .pg-section-toggle');
+      if(toggle){toggle.setAttribute('aria-expanded',open?'true':'false');toggle.querySelector('.pg-section-chevron').textContent=open?'−':'+';}
+    });
+    try{localStorage.setItem(PAPA_GOLF_NAV_SECTION_KEY,id)}catch{}
+    if(scroll){
+      const target=sections.find(x=>x.dataset.pgSection===id);
+      const toggle=target?.querySelector(':scope > .pg-section-toggle');
+      setTimeout(()=>toggle?.scrollIntoView({behavior:'smooth',block:'start'}),40);
+    }
+  };
+  sections.forEach(section=>{
+    if(section.querySelector(':scope > .pg-section-toggle'))return;
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='pg-section-toggle';
+    btn.setAttribute('aria-expanded','false');
+    btn.innerHTML=`<span class="pg-section-toggle-copy"><strong>${escapeHtml(section.dataset.pgLabel||'Section')}</strong><span>${escapeHtml(section.dataset.pgSummary||'')}</span></span><span class="pg-section-chevron" aria-hidden="true">+</span>`;
+    btn.addEventListener('click',()=>{
+      const isOpen=section.classList.contains('pg-section-open');
+      if(isOpen){section.classList.remove('pg-section-open');section.classList.add('pg-section-collapsed');btn.setAttribute('aria-expanded','false');btn.querySelector('.pg-section-chevron').textContent='+';return;}
+      setOpen(section.dataset.pgSection,{scroll:true});
+    });
+    section.prepend(btn);
+  });
+  setOpen(defaultId);
+  window.papaGolfOpenAdminSection=(id,options={})=>setOpen(id,options);
+}
+
 function initWelcomeModule(){
+  setupPapaGolfProgressiveSections();
   document.addEventListener('click',event=>{
     const btn=event.target.closest('[data-open-photo-place]');
     if(!btn)return;
