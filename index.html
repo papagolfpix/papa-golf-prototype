@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.22.2" />
+<link rel="stylesheet" href="styles.css?v=0.23.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.22.2</div>
+      <div class="eyebrow">PAPA GOLF · V0.23.0</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -181,8 +181,29 @@
         <div class="eyebrow">SHARED PAPA GOLF PLACES</div>
         <div id="papaGolfPlaceStatus" class="small shared-place-status">Building shared place index…</div>
       </div>
+      <div class="shared-place-manager">
+        <div class="shared-place-manager-head">
+          <div><h3>Shared place library</h3><p class="muted">Reuse one place across Photos, Welcome and Google discovery.</p></div>
+          <button id="refreshSharedPlacesBtn" type="button" class="secondary-btn">↻ Rebuild index</button>
+        </div>
+        <select id="sharedPlaceFilter">
+          <option value="all">All shared places</option>
+          <option value="photos">Photo places</option>
+          <option value="welcome">Curated places</option>
+          <option value="google">Google discoveries</option>
+        </select>
+        <div id="sharedPlaceManagerList" class="shared-place-manager-list"></div>
+      </div>
       <h3>Curated / affiliate places</h3>
       <p class="muted">Add businesses or places that you specifically want guests to see. These already work on the guest map in this prototype.</p>
+      <div class="shared-place-picker">
+        <label for="welcomeExistingPlaceSelect">Use an existing shared place</label>
+        <div class="shared-place-picker-row">
+          <select id="welcomeExistingPlaceSelect"><option value="">Choose a shared place…</option></select>
+          <button id="welcomeUseExistingPlaceBtn" type="button" class="secondary-btn">Use selected place</button>
+        </div>
+        <div class="small muted">Choose a Photo or Google-discovered place to avoid typing its name and coordinates again.</div>
+      </div>
       <div class="welcome-partner-form">
         <label>Name<input id="welcomePartnerName" type="text" placeholder="e.g. Favourite Beach Bar"></label>
         <label>Category<select id="welcomePartnerCategory"></select></label>
@@ -506,6 +527,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.22.2" defer></script>
+  <script src="app.js?v=0.23.0" defer></script>
 </body>
 </html>

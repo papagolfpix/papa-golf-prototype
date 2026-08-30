@@ -1348,3 +1348,26 @@ body.guest-explore-mode #guestExplorePanel{
   border:0 !important;
   background:transparent !important;
 }
+
+/* v0.23.0 — active Shared Place library */
+.shared-place-manager{margin:0 0 1.25rem;padding:1rem;border:1px solid #343434;border-radius:18px;background:#111}
+.shared-place-manager-head{display:flex;gap:1rem;justify-content:space-between;align-items:flex-start}
+.shared-place-manager-head h3{margin:.1rem 0 .25rem}
+.shared-place-manager>select{width:100%;min-height:44px;margin:.8rem 0}
+.shared-place-manager-list{display:grid;gap:.7rem}
+.shared-place-row{display:flex;justify-content:space-between;gap:1rem;padding:.85rem;border:1px solid #343434;border-radius:14px;background:#171717}
+.shared-place-main{min-width:0}.shared-place-name{font-weight:800;font-size:16px}
+.shared-place-badges{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem}
+.shared-place-badges span{padding:.25rem .5rem;border-radius:999px;background:#242118;color:#dfc16e;font-size:11px}
+.shared-place-actions{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;justify-content:flex-end}
+.shared-place-actions .secondary-btn,.shared-place-actions .link-btn{min-height:38px;padding:.45rem .65rem;font-size:12px}
+.shared-place-empty{padding:.9rem;border:1px dashed #444;border-radius:12px;color:#aaa}
+.shared-place-picker{margin:.9rem 0 1rem;padding:.85rem;border:1px solid #3a3325;border-radius:14px;background:#15130f}
+.shared-place-picker>label{display:block;font-weight:700;margin-bottom:.45rem}
+.shared-place-picker-row{display:grid;grid-template-columns:1fr auto;gap:.5rem}.shared-place-picker-row select{min-width:0}
+.gallery-place-link{margin-top:.25rem;color:#d4b75e}
+@media(max-width:600px){
+ .shared-place-manager-head{display:block}.shared-place-manager-head .secondary-btn{width:100%;margin-top:.7rem}
+ .shared-place-row{display:block}.shared-place-actions{justify-content:flex-start;margin-top:.7rem}
+ .shared-place-picker-row{grid-template-columns:1fr}
+}

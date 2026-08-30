@@ -687,3 +687,12 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Inside the guest preview, all editor/preview controls are hidden except the actual guest shell.
 - This removes Photos/Map/Areas/Welcome navigation and Edit Welcome from above Explore.
 - Compact Main Menu + villa logo + language selector remain as the only header.
+
+## v0.23.0 — Active Shared Place library
+- Shared Places can now be browsed by Photo, Curated, or Google source.
+- Google-discovered places can be promoted directly into Welcome.
+- Curated-place editor can reuse an existing shared Place and auto-fill its location.
+- Curated records preserve shared placeId, Google Place ID, and Google Maps link.
+- Photo→place links are stored separately from IndexedDB, so linking never rewrites image Blobs.
+- Photo cards show the linked shared Place.
+- Backup v4 includes the photo→place link map and still restores v1/v2/v3.
