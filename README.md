@@ -696,3 +696,14 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Photo→place links are stored separately from IndexedDB, so linking never rewrites image Blobs.
 - Photo cards show the linked shared Place.
 - Backup v4 includes the photo→place link map and still restores v1/v2/v3.
+
+
+## v0.24.0 — Access modes + cleaner admin foundation
+
+- Adds explicit Guest, Affiliate and Admin modes.
+- Guest mode can be opened directly with `?mode=guest` for friend testing.
+- Adds a registered-guest account placeholder for future favourites, albums, lists and alerts without pretending secure authentication exists yet.
+- Adds an Affiliate dashboard shell with venue-scoped promotion, menu-link and opening-hours fields; drafts are local-only until secure accounts/backend are connected.
+- Protects core Papa Golf editorial/location data from the affiliate editing surface.
+- Moves Safety Backup into a collapsible Admin tools drawer to reduce everyday scrolling.
+- Keeps Admin as the safe default for existing installations unless a saved mode or explicit URL mode is selected.

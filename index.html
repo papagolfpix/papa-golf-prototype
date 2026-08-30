@@ -7,16 +7,22 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.23.0" />
+<link rel="stylesheet" href="styles.css?v=0.24.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.23.0</div>
+      <div class="eyebrow">PAPA GOLF · V0.24.0</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
   </header>
+
+  <div class="mode-bar" aria-label="Papa Golf access mode">
+    <button id="guestModeBtn" class="mode-pill" type="button">Guest</button>
+    <button id="affiliateModeBtn" class="mode-pill" type="button">Affiliate</button>
+    <button id="adminModeBtn" class="mode-pill active" type="button">Admin</button>
+  </div>
 
   <main>
     <nav class="view-tabs" aria-label="Main views">
@@ -54,19 +60,22 @@
           <h2>Photo library</h2>
         </div>
       </div>
-      <div class="backup-panel">
-        <div class="backup-copy">
-          <strong>Safety backup</strong>
-          <span>Back up main photos, related photos, metadata and Welcome/property setup before major updates.</span>
+      <details class="admin-tools-drawer">
+        <summary>Admin tools & safety backup</summary>
+        <div class="backup-panel">
+          <div class="backup-copy">
+            <strong>Safety backup</strong>
+            <span>Back up main photos, related photos, metadata and Welcome/property setup before major updates.</span>
+          </div>
+          <div class="backup-actions">
+            <button id="exportBackupBtn" class="secondary-button" type="button">Export backup</button>
+            <label class="ghost-button import-button">Restore backup
+              <input id="importBackupInput" type="file" accept="application/json,.json" />
+            </label>
+          </div>
+          <div id="backupStatus" class="small backup-status" aria-live="polite"></div>
         </div>
-        <div class="backup-actions">
-          <button id="exportBackupBtn" class="secondary-button" type="button">Export backup</button>
-          <label class="ghost-button import-button">Restore backup
-            <input id="importBackupInput" type="file" accept="application/json,.json" />
-          </label>
-        </div>
-        <div id="backupStatus" class="small backup-status" aria-live="polite"></div>
-      </div>
+      </details>
       <div id="gallery" class="gallery"></div>
       <button id="clearAllBtn" class="danger-link clear-all-bottom" type="button">Clear all saved photos</button>
       <div id="emptyState" class="empty-state">No photos saved yet.</div>
@@ -347,7 +356,67 @@
       <div id="guestEmergencyInfo" class="guest-info-card"></div>
     </section>
 
+    <section class="guest-account-strip" aria-label="Guest account">
+      <div>
+        <strong>Make Papa Golf yours</strong>
+        <span>Sign in later to keep favourites, albums and alerts across devices.</span>
+      </div>
+      <button id="guestAccountBtn" class="secondary-btn" type="button">Account</button>
+    </section>
+    <div id="guestAccountPanel" class="guest-account-panel hidden">
+      <button class="guest-account-close" type="button">×</button>
+      <div class="eyebrow">REGISTERED GUEST</div>
+      <h2>Your Papa Golf</h2>
+      <p class="muted">The account layer is now reserved for favourites, personal photo albums, followed places and alerts. Secure sign-in will be connected before these features store personal data online.</p>
+      <div class="guest-feature-grid">
+        <div>★ <strong>Favourites</strong><small>Save restaurants, bars & activities</small></div>
+        <div>▣ <strong>My albums</strong><small>Keep personal trip photo collections</small></div>
+        <div>🔔 <strong>Alerts</strong><small>Follow offers and useful updates</small></div>
+        <div>☰ <strong>My lists</strong><small>Build things-to-do and food lists</small></div>
+      </div>
+      <button class="primary-btn" type="button" disabled>Sign in — coming next</button>
+    </div>
     <div class="guest-welcome-footer">Powered by Papa Golf</div>
+  </div>
+</section>
+
+<section id="affiliateModule" class="screen hidden">
+  <div class="affiliate-shell">
+    <div class="affiliate-topbar">
+      <div><div class="eyebrow">PAPA GOLF AFFILIATE</div><h2>Business dashboard</h2></div>
+      <button id="affiliateExitBtn" class="secondary-btn" type="button">Exit</button>
+    </div>
+    <div class="affiliate-identity panel">
+      <div><strong id="affiliateBusinessName">Example partner venue</strong><span>Editorial access · assigned venue only</span></div>
+      <span class="permission-badge">Limited editor</span>
+    </div>
+    <div class="affiliate-grid">
+      <article class="panel">
+        <h3>Promotion / happy hour</h3>
+        <label>Headline<input id="affiliatePromoTitle" type="text" placeholder="e.g. Sunset happy hour"></label>
+        <label>Details<textarea id="affiliatePromoDetails" rows="4" placeholder="Times, offer and conditions"></textarea></label>
+        <label>Valid until<input id="affiliatePromoUntil" type="date"></label>
+      </article>
+      <article class="panel">
+        <h3>Menus</h3>
+        <p class="muted">Add guest-facing menu links now; menu-file upload can be connected with the account backend.</p>
+        <label>Food menu URL<input id="affiliateFoodMenu" type="url" inputmode="url" placeholder="https://…"></label>
+        <label>Drinks menu URL<input id="affiliateDrinkMenu" type="url" inputmode="url" placeholder="https://…"></label>
+      </article>
+      <article class="panel">
+        <h3>Opening-hours note</h3>
+        <textarea id="affiliateHoursNote" rows="4" placeholder="e.g. Kitchen closes 10 pm"></textarea>
+      </article>
+      <article class="panel affiliate-locked">
+        <h3>Protected Papa Golf data</h3>
+        <p>Location, coordinates, categories, Papa Golf editorial description, verification and other businesses remain admin-only.</p>
+      </article>
+    </div>
+    <div class="affiliate-actions">
+      <button id="affiliateSaveBtn" class="primary-btn" type="button">Save draft on this device</button>
+      <button id="affiliatePreviewBtn" class="secondary-btn" type="button">Preview guest view</button>
+      <span id="affiliateStatus" class="small muted"></span>
+    </div>
   </div>
 </section>
 
@@ -527,6 +596,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.23.0" defer></script>
+  <script src="app.js?v=0.24.0" defer></script>
 </body>
 </html>
