@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.21.0';
+const RUNTIME_VERSION = '0.21.1';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2665,14 +2665,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0210foundation';
+    const key = 'papaGolfSwReloaded0211';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.21.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.21.1', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3422,6 +3422,34 @@ function welcomeMapBoundsAround(lat,lng,halfSpanMeters=WELCOME_MAP_HALF_SPAN_MET
   ];
 }
 
+
+function settleWelcomeNearbyMapLayout(map){
+  if(!map || typeof map.invalidateSize!=='function') return;
+  const settle=()=>{
+    try{ map.invalidateSize({pan:false,animate:false}); }catch{}
+  };
+  requestAnimationFrame(()=>{
+    settle();
+    requestAnimationFrame(settle);
+  });
+  setTimeout(settle,120);
+  setTimeout(settle,450);
+}
+
+let welcomeMapResizeTimer=null;
+function scheduleWelcomeMapResize(){
+  clearTimeout(welcomeMapResizeTimer);
+  welcomeMapResizeTimer=setTimeout(()=>{
+    if(welcomeNearbyMap) settleWelcomeNearbyMapLayout(welcomeNearbyMap);
+  },100);
+}
+window.addEventListener('resize',scheduleWelcomeMapResize,{passive:true});
+window.addEventListener('orientationchange',scheduleWelcomeMapResize,{passive:true});
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize',scheduleWelcomeMapResize,{passive:true});
+}
+
+
 function renderWelcomeNearbyMap(){
   const d=effectiveWelcome();
   const mapEl=document.getElementById('welcomeNearbyMap');
@@ -3511,6 +3539,8 @@ function renderWelcomeNearbyMap(){
       </article>`;
     }).join(''):'<div class="guest-info-card"><p class="muted">No approved places have been added for this filter yet.</p></div>';
   }
+
+  settleWelcomeNearbyMapLayout(welcomeNearbyMap);
 }
 function renderGuestFoodList(){
   const host=document.getElementById('guestFoodList');

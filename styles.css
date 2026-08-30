@@ -1218,3 +1218,21 @@ dialog{
     margin-bottom:max(10px,env(safe-area-inset-bottom));
   }
 }
+
+
+/* v0.21.1 iOS Safari Leaflet/sticky map hardening */
+.welcome-nearby-sticky-shell{
+  contain:layout;
+  transform:translateZ(0);
+  -webkit-transform:translateZ(0);
+}
+.welcome-nearby-map{
+  position:relative;
+  isolation:isolate;
+  transform:translateZ(0);
+  -webkit-transform:translateZ(0);
+}
+.welcome-nearby-map .leaflet-tile-pane,
+.welcome-nearby-map .leaflet-map-pane{
+  will-change:transform;
+}

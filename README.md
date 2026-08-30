@@ -648,3 +648,10 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Guest menu expands from 1–2 columns to 3–4 columns where screen space allows.
 - Large-screen result lists can use two columns.
 - Added overflow protection, safe-area handling and viewport-safe dialogs.
+
+## v0.21.1 — Sticky map base-layer fix
+- Hardened Leaflet map rendering inside the sticky Explore Nearby container on iOS Safari.
+- Forces Leaflet to recalculate its viewport immediately and after sticky layout settles.
+- Recalculates after viewport resize/orientation changes.
+- Preserves sticky category filters + Refresh Nearby + map behavior.
+- No data model or backup changes from v0.21.0.
