@@ -1372,13 +1372,26 @@ body.guest-explore-mode #guestExplorePanel{
  .shared-place-picker-row{grid-template-columns:1fr}
 }
 
+/* v0.24.0 — authoritative Papa Golf Place editor */
+.shared-place-edit-panel{margin:1rem 0 1.25rem;padding:1rem;border:1px solid #4b4027;border-radius:18px;background:#15130f}
+.shared-place-edit-panel.hidden{display:none!important}
+.shared-place-edit-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start}
+.shared-place-edit-head h3{margin:.15rem 0 .25rem}
+.shared-place-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem;margin-top:1rem}
+.shared-place-edit-grid label{display:grid;gap:.35rem}.shared-place-edit-grid .wide{grid-column:1/-1}
+.shared-place-edit-grid input,.shared-place-edit-grid textarea{width:100%}
+.shared-place-edit-flags{display:flex;flex-wrap:wrap;gap:1rem;margin:1rem 0}
+.shared-place-edit-flags label{display:flex;gap:.45rem;align-items:center}
+.shared-place-google-link{color:#e2bf5c!important;text-decoration:none!important;border:1px solid #5d5030!important;border-radius:999px!important}
+.gallery-place-button{appearance:none;border:0;padding:0;background:none;color:#d4b75e;text-decoration:underline;font:inherit}
+.shared-place-manager-list{max-height:70vh;overflow:auto;padding-right:.15rem}
+@media(max-width:600px){
+ .shared-place-edit-grid{grid-template-columns:1fr}.shared-place-edit-grid .wide{grid-column:auto}
+ .shared-place-edit-head{display:block}.shared-place-edit-head .secondary-btn{margin-top:.6rem;width:100%}
+}
 
-/* Papa Golf v0.24.0 — role-aware guest / affiliate / admin foundation */
-.mode-bar{position:sticky;top:0;z-index:120;display:flex;gap:7px;padding:8px max(12px,env(safe-area-inset-left));background:rgba(17,17,17,.94);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.08)}
-.mode-pill{appearance:none;border:1px solid #3b3b3b;background:#1c1c1c;color:#d8d4ca;border-radius:999px;padding:8px 13px;font:800 12px/1 inherit;letter-spacing:.04em}.mode-pill.active{background:#e0bc66;border-color:#e0bc66;color:#111}
-body[data-papa-golf-mode="guest"] .app-header,body[data-papa-golf-mode="affiliate"] .app-header,body[data-papa-golf-mode="guest"] main>.view-tabs,body[data-papa-golf-mode="affiliate"] main>.view-tabs{display:none}
-body[data-papa-golf-mode="guest"] .mode-bar{justify-content:flex-end;background:#0b0b0b;border-bottom-color:#242424}.guest-account-strip{margin:18px 14px 4px;padding:14px;border:1px solid #34312b;border-radius:16px;background:#151515;display:flex;align-items:center;justify-content:space-between;gap:12px}.guest-account-strip div{display:grid;gap:4px}.guest-account-strip span{font-size:12px;color:#9f9a90}.guest-account-panel{position:fixed;z-index:500;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));max-width:620px;margin:auto;padding:22px;border:1px solid #444;border-radius:22px;background:#171717;box-shadow:0 18px 70px #000}.guest-account-close{float:right;border:0;background:transparent;color:#fff;font-size:28px}.guest-feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:18px 0}.guest-feature-grid>div{display:grid;gap:3px;padding:12px;border:1px solid #333;border-radius:13px;background:#111}.guest-feature-grid small{color:#969188;line-height:1.3}
-.affiliate-shell{max-width:760px;margin:0 auto;padding:16px 14px 90px}.affiliate-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.affiliate-topbar h2{margin:2px 0}.affiliate-identity{display:flex;align-items:center;justify-content:space-between;gap:12px}.affiliate-identity>div{display:grid;gap:4px}.affiliate-identity span{font-size:12px;color:#999}.permission-badge{padding:6px 9px;border-radius:999px;background:#27231a;color:#e0bc66!important;white-space:nowrap}.affiliate-grid{display:grid;gap:12px;margin-top:12px}.affiliate-grid .panel{margin:0}.affiliate-grid label{display:grid;gap:6px;margin-top:12px;font-size:12px;font-weight:800}.affiliate-grid input,.affiliate-grid textarea{width:100%}.affiliate-locked{opacity:.72;border-style:dashed!important}.affiliate-actions{position:sticky;bottom:0;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 0;background:linear-gradient(transparent,#0b0b0b 20%)}.affiliate-actions .small{flex-basis:100%}
-.admin-tools-drawer{margin:14px 0;border:1px solid #302f2c;border-radius:14px;background:#141414}.admin-tools-drawer>summary{cursor:pointer;padding:13px 14px;font-weight:800;color:#c8c3b8}.admin-tools-drawer[open]>summary{border-bottom:1px solid #302f2c}.admin-tools-drawer .backup-panel{margin:0;border:0;border-radius:0;background:transparent}
-@media(min-width:680px){.affiliate-grid{grid-template-columns:1fr 1fr}.guest-account-strip{margin-left:auto;margin-right:auto;max-width:650px}}
-@media(max-width:430px){.mode-bar{overflow-x:auto}.guest-feature-grid{grid-template-columns:1fr}.affiliate-identity{align-items:flex-start;flex-direction:column}}
+/* v0.24.1 — ensure Shared Place controls render on iPhone */
+.shared-place-actions-visible{display:flex!important;visibility:visible!important;opacity:1!important;flex-wrap:wrap;gap:.55rem;margin-top:.8rem}
+.shared-place-actions-visible button{display:inline-flex!important;visibility:visible!important;opacity:1!important;min-height:42px;align-items:center;justify-content:center}
+.shared-place-curated-label{display:inline-flex;align-items:center;padding:.45rem .7rem;min-height:38px;border:1px solid #5d5030;border-radius:999px;color:#dfc16e;font-size:13px}
+@media(max-width:600px){.shared-place-actions-visible{display:flex!important}.shared-place-actions-visible button{flex:1 1 145px}}
