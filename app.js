@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.22.0';
+const RUNTIME_VERSION = '0.22.1';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2672,14 +2672,14 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0220';
+    const key = 'papaGolfSwReloaded0221';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.22.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.22.1', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2816,7 +2816,8 @@ function renderPapaGolfPlaceStatus(){
   const items=getPapaGolfPlaces();
   const photos=items.filter(p=>(p.sources||[]).includes('photos')).length;
   const welcome=items.filter(p=>(p.sources||[]).includes('welcome')).length;
-  host.textContent=`${items.length} shared place${items.length===1?'':'s'} · ${photos} from Photos · ${welcome} from Welcome`;
+  const google=items.filter(p=>(p.sources||[]).includes('google-discovery')).length;
+  host.textContent=`${photos} Papa Golf photo place${photos===1?'':'s'} · ${welcome} curated place${welcome===1?'':'s'} · ${google} Google discover${google===1?'y':'ies'}`;
 }
 
 
@@ -3119,6 +3120,7 @@ function addWelcomePartner(){
   renderWelcomePartnerEditor();
 }
 function showGuestWelcomeHome(){
+  document.body.classList.remove('guest-explore-mode');
   document.querySelector('#welcomeGuestPreview .guest-welcome-shell')?.classList.remove('explore-focused');
   document.getElementById('guestWelcomeHome')?.classList.remove('hidden');
   document.querySelectorAll('.guest-welcome-panel').forEach(el=>el.classList.add('hidden'));
@@ -3126,10 +3128,12 @@ function showGuestWelcomeHome(){
 }
 function openGuestWelcomePanel(id){
   const shell=document.querySelector('#welcomeGuestPreview .guest-welcome-shell');
+  const exploring=id==='guestExplorePanel';
+  document.body.classList.toggle('guest-explore-mode',exploring);
   document.getElementById('guestWelcomeHome')?.classList.add('hidden');
   document.querySelectorAll('.guest-welcome-panel').forEach(el=>el.classList.toggle('hidden',el.id!==id));
-  shell?.classList.toggle('explore-focused',id==='guestExplorePanel');
-  if(id==='guestExplorePanel'){
+  shell?.classList.toggle('explore-focused',exploring);
+  if(exploring){
     const d=effectiveWelcome();
     const logo=document.getElementById('guestExploreLogo');
     if(logo)logo.src=d.logo;

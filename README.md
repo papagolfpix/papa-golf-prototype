@@ -674,3 +674,10 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Nearby category labels, source labels, navigation action and YOU ARE HERE localize.
 - Fixed stale Google cache constant and added language/provider cache metadata.
 - Backup format v3 includes shared Places and language preference; v1/v2 restore compatibility remains.
+
+## v0.22.1 — True focused Explore Nearby
+- Entering Guest Explore Nearby now applies a body-level guest mode.
+- Papa Golf prototype header, app navigation, Welcome editor return controls and other admin chrome are hidden while Explore is open.
+- Explore begins at compact Main Menu + villa logo + language control, followed immediately by filters, Refresh, sticky map and results.
+- Returning to the Welcome main menu restores the normal admin/preview shell.
+- Shared Places status now separates Papa Golf photo places, curated places and Google discoveries.

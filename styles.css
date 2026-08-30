@@ -1280,3 +1280,49 @@ dialog{
   .guest-explore-back{font-size:11px;padding:.4rem .5rem}
   .welcome-language-select{max-width:92px;font-size:11px;padding:.35rem .4rem}
 }
+
+
+/* v0.22.1 — true focused guest Explore mode */
+body.guest-explore-mode > header,
+body.guest-explore-mode .app-header,
+body.guest-explore-mode .top-nav,
+body.guest-explore-mode .main-tabs,
+body.guest-explore-mode #mainNav,
+body.guest-explore-mode #welcomeGuestPreview > .section-heading,
+body.guest-explore-mode #welcomeGuestPreview .welcome-editor-return,
+body.guest-explore-mode #welcomeGuestPreview > button,
+body.guest-explore-mode #welcomeGuestPreview > .panel-heading{
+  display:none !important;
+}
+
+body.guest-explore-mode main{
+  padding-top:max(4px,env(safe-area-inset-top)) !important;
+}
+
+body.guest-explore-mode #welcomeGuestPreview{
+  margin-top:0 !important;
+  padding-top:0 !important;
+  border-top:0 !important;
+}
+
+body.guest-explore-mode .guest-welcome-shell{
+  margin-top:0 !important;
+  padding-top:0 !important;
+}
+
+body.guest-explore-mode .guest-explore-compact-header{
+  position:sticky;
+  top:max(0px,env(safe-area-inset-top));
+  z-index:1300;
+}
+
+/* Keep focused header deliberately compact on phones. */
+@media(max-width:600px){
+  body.guest-explore-mode main{
+    padding-left:10px !important;
+    padding-right:10px !important;
+  }
+  body.guest-explore-mode .guest-explore-compact-header{
+    min-height:46px;
+  }
+}
