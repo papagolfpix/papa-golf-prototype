@@ -760,3 +760,7 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Public test links contain only explicitly displayed promotion/business fields; no admin data, API keys, local storage, or logo data is transmitted.
 - Keeps Brand Kit and creative export foundation from v0.28.1.
 - No IndexedDB/photo migration.
+
+## v0.30.2 — Loyverse sandbox connection test
+
+Adds a manual GitHub Actions workflow at `.github/workflows/loyverse-sandbox-test.yml` for the first Papa Golf × Loyverse proof-of-connection. The workflow is deliberately read-only and uses the encrypted repository secret `LOYVERSE_SANDBOX_TOKEN`. It checks Merchant, Stores, POS devices, Payment types, Items and Receipts without printing account records or storing the access token in the Papa Golf web app. This is a temporary sandbox bridge; production affiliate connections should use OAuth with server-side token storage.
