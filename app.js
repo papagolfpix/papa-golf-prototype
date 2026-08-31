@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.28.0';
+const RUNTIME_VERSION = '0.29.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -253,7 +253,8 @@ function welcomeBackupSnapshot() {
     sharedPlaces: readWelcomeJson(PAPA_GOLF_PLACES_KEY, []),
     language: localStorage.getItem(WELCOME_LANGUAGE_KEY)||'auto',
     photoPlaceLinks: readWelcomeJson(PAPA_GOLF_PHOTO_PLACE_LINKS_KEY,{}),
-    gateways: getPapaGolfGateways()
+    gateways: getPapaGolfGateways(),
+    affiliateProfile: getPapaGolfAffiliateProfile()
   };
 }
 
@@ -286,7 +287,7 @@ async function exportBackup() {
 
   const payload = {
     format: 'papa-golf-backup',
-    version: 7,
+    version: 8,
     exportedAt: new Date().toISOString(),
     appVersion: RUNTIME_VERSION,
     customFields,
@@ -366,7 +367,8 @@ function restoreWelcomeBackup(welcome) {
     [WELCOME_PARTNER_KEY, welcome.partners],
     [PAPA_GOLF_PLACES_KEY, welcome.sharedPlaces],
     [PAPA_GOLF_PHOTO_PLACE_LINKS_KEY, welcome.photoPlaceLinks],
-    [PAPA_GOLF_GATEWAYS_KEY, welcome.gateways]
+    [PAPA_GOLF_GATEWAYS_KEY, welcome.gateways],
+    [PAPA_GOLF_AFFILIATE_PROFILE_KEY, welcome.affiliateProfile]
   ];
   let restored = false;
   entries.forEach(([key, value]) => {
@@ -388,7 +390,7 @@ async function importBackupFile(file) {
   try { payload = JSON.parse(text); }
   catch { throw new Error('That file is not valid JSON.'); }
 
-  if (payload?.format !== 'papa-golf-backup' || ![1,2,3,4,5,6,7].includes(payload?.version) || !Array.isArray(payload.records)) {
+  if (payload?.format !== 'papa-golf-backup' || ![1,2,3,4,5,6,7,8].includes(payload?.version) || !Array.isArray(payload.records)) {
     throw new Error('That is not a compatible Papa Golf backup file.');
   }
 
@@ -2687,7 +2689,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.28.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.29.0', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -4147,21 +4149,70 @@ function setupPapaGolfProgressiveSections(){
 }
 
 const PAPA_GOLF_AFFILIATE_PROFILE_KEY='papaGolfAffiliateProfileV1';
+let pendingAffiliateLogo=null;
 function getPapaGolfAffiliateProfile(){return readWelcomeJson(PAPA_GOLF_AFFILIATE_PROFILE_KEY,{})||{}}
 function affiliateVal(id){return document.getElementById(id)?.value?.trim?.()||''}
+function affiliateStatus(message){const st=document.getElementById('affiliateProfileStatus');if(st)st.textContent=message||''}
+function renderAffiliateLogoPreview(dataUrl,label='Saved Brand Kit logo'){
+  const box=document.getElementById('affiliateLogoPreview');if(!box)return;
+  box.innerHTML=dataUrl?`<img src="${dataUrl}" alt="Affiliate logo preview"><div class="affiliate-logo-state">${escapeHtml(label)}</div>`:'<span>No logo saved yet</span>';
+}
 function loadAffiliateProfile(){
   const a=getPapaGolfAffiliateProfile(), set=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||''};
   set('affiliateBusinessName',a.businessName);set('affiliateBusinessType',a.businessType||'bar');set('affiliateBrandPrimary',a.brandPrimary);set('affiliateBrandAccent',a.brandAccent);set('affiliateBrandStyle',a.brandStyle);set('affiliateContactLine',a.contactLine);
-  const box=document.getElementById('affiliateLogoPreview');if(box)box.innerHTML=a.logoDataUrl?`<img src="${a.logoDataUrl}" alt="Affiliate logo preview">`:'<span>No logo saved yet</span>';
+  pendingAffiliateLogo=null;renderAffiliateLogoPreview(a.logoDataUrl||'',a.logoDataUrl?'Saved Brand Kit logo':'');
+}
+function compressAffiliateLogo(file){
+  return new Promise((resolve,reject)=>{
+    if(!file||!file.type?.startsWith('image/'))return reject(new Error('Choose an image file.'));
+    const reader=new FileReader();reader.onerror=()=>reject(reader.error||new Error('Could not read image.'));
+    reader.onload=()=>{const img=new Image();img.onerror=()=>reject(new Error('Could not decode image.'));img.onload=()=>{
+      const max=900,scale=Math.min(1,max/Math.max(img.naturalWidth||1,img.naturalHeight||1));
+      const w=Math.max(1,Math.round(img.naturalWidth*scale)),h=Math.max(1,Math.round(img.naturalHeight*scale));
+      const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');ctx.drawImage(img,0,0,w,h);
+      let dataUrl='';try{dataUrl=c.toDataURL('image/webp',0.86)}catch{}if(!dataUrl||dataUrl==='data:,')dataUrl=c.toDataURL('image/jpeg',0.86);
+      resolve({dataUrl,name:file.name,width:w,height:h,originalBytes:file.size||0});
+    };img.src=String(reader.result||'')};reader.readAsDataURL(file);
+  });
+}
+async function selectAffiliateLogo(file){
+  if(!file)return;affiliateStatus('Preparing logo preview…');
+  try{pendingAffiliateLogo=await compressAffiliateLogo(file);renderAffiliateLogoPreview(pendingAffiliateLogo.dataUrl,'Selected · tap Save Affiliate Brand Kit');affiliateStatus('Logo selected. Save the Brand Kit to keep it.');}
+  catch(error){pendingAffiliateLogo=null;affiliateStatus(`Logo could not be prepared: ${error.message||error}`)}
 }
 function saveAffiliateProfile(){
   const old=getPapaGolfAffiliateProfile();const a={...old,businessName:affiliateVal('affiliateBusinessName'),businessType:affiliateVal('affiliateBusinessType')||'bar',brandPrimary:affiliateVal('affiliateBrandPrimary'),brandAccent:affiliateVal('affiliateBrandAccent'),brandStyle:affiliateVal('affiliateBrandStyle'),contactLine:affiliateVal('affiliateContactLine'),updatedAt:new Date().toISOString()};
-  localStorage.setItem(PAPA_GOLF_AFFILIATE_PROFILE_KEY,JSON.stringify(a));const st=document.getElementById('affiliateProfileStatus');if(st)st.textContent='Affiliate Brand Kit saved on this device.';loadAffiliateProfile();
+  if(pendingAffiliateLogo){a.logoDataUrl=pendingAffiliateLogo.dataUrl;a.logoName=pendingAffiliateLogo.name;a.logoWidth=pendingAffiliateLogo.width;a.logoHeight=pendingAffiliateLogo.height;}
+  try{localStorage.setItem(PAPA_GOLF_AFFILIATE_PROFILE_KEY,JSON.stringify(a));pendingAffiliateLogo=null;loadAffiliateProfile();affiliateStatus('Affiliate Brand Kit saved on this device.');}
+  catch(error){affiliateStatus(`Brand Kit was not saved: ${error?.name==='QuotaExceededError'?'logo is still too large for local storage':(error.message||error)}`)}
 }
-function loadAffiliateLogo(file){if(!file)return;const r=new FileReader();r.onload=()=>{const a=getPapaGolfAffiliateProfile();a.logoDataUrl=String(r.result||'');a.logoName=file.name;a.updatedAt=new Date().toISOString();localStorage.setItem(PAPA_GOLF_AFFILIATE_PROFILE_KEY,JSON.stringify(a));loadAffiliateProfile()};r.readAsDataURL(file)}
-function loadAffiliateDemo(){const a={businessName:'Papa Golf Test Bar',businessType:'bar',brandPrimary:'#111111',brandAccent:'#D4AF37',brandStyle:'Relaxed tropical bar · clean black and gold · bold event photography',contactLine:'Bangrak, Samui · Papa Golf Founding Affiliate',updatedAt:new Date().toISOString()};localStorage.setItem(PAPA_GOLF_AFFILIATE_PROFILE_KEY,JSON.stringify(a));loadAffiliateProfile();const st=document.getElementById('affiliateProfileStatus');if(st)st.textContent='Test Bar example loaded. Edit anything and save.'}
-function renderAffiliatePromoPreview(){const a=getPapaGolfAffiliateProfile();const host=document.getElementById('affiliatePromoPreview');if(!host)return;const type=document.querySelector('#affiliatePromoTypes button.active')?.dataset.promoType||'promotion';const opts=[['Sound on','affiliatePromoSound'],['Big screen','affiliatePromoBigScreen'],['Multiple screens','affiliatePromoMultipleScreens']].filter(([,id])=>document.getElementById(id)?.checked).map(([x])=>x);const title=affiliateVal('affiliatePromoTitle')||'Your promotion';const date=affiliateVal('affiliatePromoDate'),time=affiliateVal('affiliatePromoTime'),offer=affiliateVal('affiliatePromoOffer');host.classList.remove('hidden');host.innerHTML=`<div class="promo-preview-kicker">${escapeHtml(type.replace('-',' '))} · PAPA GOLF STRUCTURED PROMOTION</div><h4>${escapeHtml(title)}</h4><div>${escapeHtml([date,time].filter(Boolean).join(' · ')||'Date / time not set')}</div>${offer?`<strong>${escapeHtml(offer)}</strong>`:''}${opts.length?`<div class="promo-preview-options">${opts.map(x=>`<span>✓ ${escapeHtml(x)}</span>`).join('')}</div>`:''}<small>${escapeHtml(a.businessName||'Affiliate business')} · Powered by Papa Golf</small><p>This structured record is what the future AI Designer will turn into consistent social artwork and campaign QR material.</p>`}
-function initAffiliateStudio(){loadAffiliateProfile();document.getElementById('saveAffiliateProfileBtn')?.addEventListener('click',saveAffiliateProfile);document.getElementById('loadAffiliateDemoBtn')?.addEventListener('click',loadAffiliateDemo);document.getElementById('affiliateLogoInput')?.addEventListener('change',e=>loadAffiliateLogo(e.target.files?.[0]));document.getElementById('affiliatePromoTypes')?.addEventListener('click',e=>{const b=e.target.closest('[data-promo-type]');if(!b)return;document.querySelectorAll('#affiliatePromoTypes button').forEach(x=>x.classList.remove('active'));b.classList.add('active')});document.getElementById('previewAffiliatePromoBtn')?.addEventListener('click',renderAffiliatePromoPreview)}
+function loadAffiliateDemo(){const existing=getPapaGolfAffiliateProfile();const a={...existing,businessName:'Papa Golf Test Bar',businessType:'bar',brandPrimary:'#111111',brandAccent:'#D4AF37',brandStyle:'Relaxed tropical bar · clean black and gold · bold event photography',contactLine:'Bangrak, Samui · Papa Golf Founding Affiliate',updatedAt:new Date().toISOString()};localStorage.setItem(PAPA_GOLF_AFFILIATE_PROFILE_KEY,JSON.stringify(a));loadAffiliateProfile();affiliateStatus('Test Bar example loaded. Existing saved logo kept. Edit anything and save.')}
+function currentAffiliatePromotion(){const type=document.querySelector('#affiliatePromoTypes button.active')?.dataset.promoType||'promotion';return{type,title:affiliateVal('affiliatePromoTitle')||'Your promotion',date:affiliateVal('affiliatePromoDate'),time:affiliateVal('affiliatePromoTime'),offer:affiliateVal('affiliatePromoOffer'),options:[['Sound on','affiliatePromoSound'],['Big screen','affiliatePromoBigScreen'],['Multiple screens','affiliatePromoMultipleScreens']].filter(([,id])=>document.getElementById(id)?.checked).map(([x])=>x)}}
+function renderAffiliatePromoPreview(){const a=getPapaGolfAffiliateProfile();const p=currentAffiliatePromotion();const host=document.getElementById('affiliatePromoPreview');if(!host)return;host.classList.remove('hidden');host.innerHTML=`<div class="promo-preview-kicker">${escapeHtml(p.type.replace('-',' '))} · PAPA GOLF STRUCTURED PROMOTION</div><h4>${escapeHtml(p.title)}</h4><div>${escapeHtml([p.date,p.time].filter(Boolean).join(' · ')||'Date / time not set')}</div>${p.offer?`<strong>${escapeHtml(p.offer)}</strong>`:''}${p.options.length?`<div class="promo-preview-options">${p.options.map(x=>`<span>✓ ${escapeHtml(x)}</span>`).join('')}</div>`:''}<small>${escapeHtml(a.businessName||'Affiliate business')} · Powered by Papa Golf</small><p>This same structured record now also drives the first Brand Studio export below.</p>`;renderAffiliateCreative()}
+function hexOr(value,fallback){const v=String(value||'').trim();return /^#[0-9a-f]{6}$/i.test(v)?v:fallback}
+function wrapCanvasText(ctx,text,maxWidth){const words=String(text||'').split(/\s+/);const lines=[];let line='';for(const word of words){const test=line?line+' '+word:word;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=word}else line=test}if(line)lines.push(line);return lines}
+async function drawAffiliateLogo(ctx,dataUrl,x,y,maxW,maxH){if(!dataUrl)return false;return new Promise(resolve=>{const img=new Image();img.onload=()=>{const scale=Math.min(maxW/img.naturalWidth,maxH/img.naturalHeight,1);const w=img.naturalWidth*scale,h=img.naturalHeight*scale;ctx.drawImage(img,x,y,w,h);resolve(true)};img.onerror=()=>resolve(false);img.src=dataUrl})}
+async function renderAffiliateCreative(){
+  const canvas=document.getElementById('affiliateCreativeCanvas');if(!canvas)return;const a=getPapaGolfAffiliateProfile(),p=currentAffiliatePromotion();const format=document.getElementById('affiliateCreativeFormat')?.value||'square';const dims=format==='story'?[1080,1920]:[1080,1080];canvas.width=dims[0];canvas.height=dims[1];const [w,h]=dims,ctx=canvas.getContext('2d');const primary=hexOr(a.brandPrimary,'#111111'),accent=hexOr(a.brandAccent,'#D4AF37');
+  ctx.fillStyle=primary;ctx.fillRect(0,0,w,h);ctx.fillStyle=accent;ctx.fillRect(0,0,w,18);ctx.fillRect(0,h-18,w,18);
+  await drawAffiliateLogo(ctx,a.logoDataUrl,64,64,360,190);
+  ctx.fillStyle=accent;ctx.font='700 30px system-ui, sans-serif';ctx.fillText((p.type||'PROMOTION').replace('-',' ').toUpperCase(),64,format==='story'?350:300);
+  ctx.fillStyle='#ffffff';ctx.font='800 72px system-ui, sans-serif';let y=format==='story'?450:400;for(const line of wrapCanvasText(ctx,p.title,w-128).slice(0,5)){ctx.fillText(line,64,y);y+=86}
+  ctx.fillStyle='#dddddd';ctx.font='500 38px system-ui, sans-serif';ctx.fillText([p.date,p.time].filter(Boolean).join(' · ')||'Date / time to be confirmed',64,y+22);y+=92;
+  if(p.offer){ctx.fillStyle=accent;ctx.font='800 52px system-ui, sans-serif';for(const line of wrapCanvasText(ctx,p.offer,w-128).slice(0,3)){ctx.fillText(line,64,y);y+=64}}
+  if(p.options.length){y+=20;ctx.fillStyle='#ffffff';ctx.font='600 34px system-ui, sans-serif';for(const option of p.options){ctx.fillText('✓ '+option,64,y);y+=52}}
+  const footerY=h-120;ctx.fillStyle='#bdbdbd';ctx.font='500 28px system-ui, sans-serif';ctx.fillText(a.businessName||'Affiliate business',64,footerY);ctx.textAlign='right';ctx.fillStyle=accent;ctx.font='700 28px system-ui, sans-serif';ctx.fillText('POWERED BY PAPA GOLF',w-64,footerY);ctx.textAlign='left';
+  const note=document.getElementById('affiliateCreativeStatus');if(note)note.textContent='Preview generated locally. Campaign QR will be added when this promotion is published to a public Papa Golf URL.';
+}
+function downloadAffiliateCreative(){const canvas=document.getElementById('affiliateCreativeCanvas');if(!canvas)return;const a=document.createElement('a');const name=(affiliateVal('affiliateBusinessName')||'papa-golf-affiliate').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');a.download=`${name||'papa-golf'}-promotion.png`;a.href=canvas.toDataURL('image/png');document.body.appendChild(a);a.click();a.remove()}
+
+const PAPA_GOLF_EVENT_CATALOG={
+  'f1-monaco':{title:'F1 · Monaco Grand Prix'},'f1-singapore':{title:'F1 · Singapore Grand Prix'},'epl-feature':{title:'Premier League · Featured match'},'afl-feature':{title:'AFL · Featured match'},'nrl-feature':{title:'NRL · Featured match'}
+};
+function updateAffiliateQuickPick(type){const box=document.getElementById('affiliateSportsQuickPick');if(box)box.classList.toggle('hidden',type!=='sport')}
+function applyAffiliateSportEvent(){const item=PAPA_GOLF_EVENT_CATALOG[document.getElementById('affiliateSportEventSelect')?.value];if(!item)return;const title=document.getElementById('affiliatePromoTitle');if(title)title.value=item.title;affiliateStatus('Papa Golf event selected. Add the venue-specific date/time, showing details and special.')}
+function createPublicPromoLink(){const a=getPapaGolfAffiliateProfile(),p=currentAffiliatePromotion();const params=new URLSearchParams({type:p.type,title:p.title,date:p.date,time:p.time,offer:p.offer,options:p.options.join('|'),venue:a.businessName||'Papa Golf Affiliate',contact:a.contactLine||'',accent:hexOr(a.brandAccent,'#D4AF37')});const url=new URL('promotion.html',location.href);url.search=params.toString();const host=document.getElementById('affiliatePublicPromoLink');if(host){host.classList.remove('hidden');host.innerHTML=`<strong>Public test promotion</strong><p class="small muted">This link contains only the promotion details shown here — no private admin data or saved logo.</p><a class="secondary-btn" href="${escapeHtml(url.href)}" target="_blank" rel="noopener">Open Public Promotion</a><button id="copyPublicPromoLinkBtn" class="secondary-btn" type="button">Copy Link</button>`;document.getElementById('copyPublicPromoLinkBtn')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(url.href);affiliateStatus('Public promotion link copied. Send it to another phone for the cross-device test.')}catch{affiliateStatus('Open the public promotion and copy its address from Safari.') }})}}
+function initAffiliateStudio(){loadAffiliateProfile();document.getElementById('saveAffiliateProfileBtn')?.addEventListener('click',saveAffiliateProfile);document.getElementById('loadAffiliateDemoBtn')?.addEventListener('click',loadAffiliateDemo);document.getElementById('affiliateLogoInput')?.addEventListener('change',e=>selectAffiliateLogo(e.target.files?.[0]));document.getElementById('affiliatePromoTypes')?.addEventListener('click',e=>{const b=e.target.closest('[data-promo-type]');if(!b)return;document.querySelectorAll('#affiliatePromoTypes button').forEach(x=>x.classList.remove('active'));b.classList.add('active');updateAffiliateQuickPick(b.dataset.promoType)});document.getElementById('affiliateSportEventSelect')?.addEventListener('change',applyAffiliateSportEvent);document.getElementById('previewAffiliatePromoBtn')?.addEventListener('click',renderAffiliatePromoPreview);document.getElementById('affiliateCreativeFormat')?.addEventListener('change',renderAffiliateCreative);document.getElementById('downloadAffiliateCreativeBtn')?.addEventListener('click',downloadAffiliateCreative);document.getElementById('createPublicPromoLinkBtn')?.addEventListener('click',createPublicPromoLink)}
 
 function initWelcomeModule(){
   setupPapaGolfProgressiveSections();

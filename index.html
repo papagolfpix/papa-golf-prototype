@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.28.0" />
+<link rel="stylesheet" href="styles.css?v=0.29.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.28.0</div>
+      <div class="eyebrow">PAPA GOLF · V0.29.0</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -268,6 +268,7 @@
     <hr class="affiliate-divider">
     <div class="eyebrow">PROMOTION BUILDER · FOUNDATION</div><h3>What are you promoting?</h3><p class="muted">The full AI designer comes next. This first structured form proves the “tick and flick” information that will drive consistent posters, social posts, offers and live listings.</p>
     <div class="promo-type-chips" id="affiliatePromoTypes"><button type="button" data-promo-type="sport">Sport</button><button type="button" data-promo-type="live-music">Live Music</button><button type="button" data-promo-type="food">Food Special</button><button type="button" data-promo-type="happy-hour">Happy Hour</button><button type="button" data-promo-type="event">Event</button><button type="button" data-promo-type="offer">Other Offer</button></div>
+    <div id="affiliateSportsQuickPick" class="affiliate-quick-pick hidden"><label>Popular sports · quick pick<select id="affiliateSportEventSelect"><option value="">Choose an event…</option><option value="f1-monaco">F1 · Monaco Grand Prix</option><option value="f1-singapore">F1 · Singapore Grand Prix</option><option value="epl-feature">Premier League · Featured match</option><option value="afl-feature">AFL · Featured match</option><option value="nrl-feature">NRL · Featured match</option></select></label><p class="small muted">Prototype canonical event picker. Later Papa Golf will load the real international schedule and Samui-local start times automatically.</p></div>
     <div class="affiliate-studio-grid">
       <label class="wide">Event / promotion title<input id="affiliatePromoTitle" type="text" placeholder="e.g. Monaco Grand Prix · Live Sunday"></label>
       <label>Date<input id="affiliatePromoDate" type="date"></label><label>Start time<input id="affiliatePromoTime" type="time"></label>
@@ -276,6 +277,13 @@
     <div class="promo-options"><label><input id="affiliatePromoSound" type="checkbox"> Sound on</label><label><input id="affiliatePromoBigScreen" type="checkbox"> Big screen</label><label><input id="affiliatePromoMultipleScreens" type="checkbox"> Multiple screens</label></div>
     <button id="previewAffiliatePromoBtn" class="secondary-btn" type="button">Preview Structured Promotion</button>
     <div id="affiliatePromoPreview" class="affiliate-promo-preview hidden"></div>
+    <div class="affiliate-divider"></div>
+    <div class="eyebrow">BRAND STUDIO · FIRST EXPORT</div><h3>Create branded promotion artwork</h3>
+    <p class="muted">This first exporter uses the saved Brand Kit and structured promotion. It is deliberately template-driven for consistency; the AI design layer will build on this same data.</p>
+    <label class="affiliate-format-label">Output format<select id="affiliateCreativeFormat"><option value="square">Social square · 1080 × 1080</option><option value="story">Story / Reel cover · 1080 × 1920</option></select></label>
+    <canvas id="affiliateCreativeCanvas" class="affiliate-creative-canvas" width="1080" height="1080" aria-label="Branded promotion preview"></canvas>
+    <div id="affiliateCreativeStatus" class="small muted">Create the structured promotion above to generate artwork.</div>
+    <div class="affiliate-studio-actions"><button id="downloadAffiliateCreativeBtn" class="primary-btn" type="button">Download Promotion PNG</button><button id="createPublicPromoLinkBtn" class="secondary-btn" type="button">Create Public Test Link</button></div><div id="affiliatePublicPromoLink" class="affiliate-public-link hidden"></div>
   </article>
 
   <article class="panel welcome-a5-panel pg-nav-section" data-pg-section="gateways" data-pg-label="Gateways & A5 / QR" data-pg-summary="QR entry points, Gateway settings and A5 cards">
@@ -601,6 +609,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.28.0" defer></script>
+  <script src="app.js?v=0.29.0" defer></script>
 </body>
 </html>

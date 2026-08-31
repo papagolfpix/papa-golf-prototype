@@ -743,3 +743,20 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - Public Gateway demo follows the same closed-first navigation rule.
 - Preserves explicit programmatic opening of a section when an editor/action needs it.
 - No IndexedDB or Papa Golf saved-photo data migrations in this release.
+
+
+## v0.28.1 — Brand Kit persistence + first creative export
+- Fixes iPhone/Safari affiliate logo persistence by resizing the selected image before local storage and making Selected vs Saved state explicit.
+- Preserves an existing saved logo when loading the Test Bar example.
+- Adds the Affiliate Brand Kit to Papa Golf backup/restore (backup format v8, backward-compatible with v1–v7).
+- Adds first template-driven Brand Studio export: social square or Story/Reel cover generated from the saved Brand Kit + structured promotion.
+- Adds local PNG download for the generated promotion artwork.
+- Public campaign QR remains intentionally deferred until a promotion has a real published Papa Golf URL.
+- No IndexedDB/photo migration.
+
+## v0.29.0 — canonical event quick-pick + public promotion test
+- Adds the first canonical Papa Golf sports-event quick picker to prove the future tick-and-flick workflow.
+- Adds a cross-device public promotion page generated from structured affiliate promotion data.
+- Public test links contain only explicitly displayed promotion/business fields; no admin data, API keys, local storage, or logo data is transmitted.
+- Keeps Brand Kit and creative export foundation from v0.28.1.
+- No IndexedDB/photo migration.
