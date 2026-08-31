@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.29.0" />
+<link rel="stylesheet" href="styles.css?v=0.30.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.29.0</div>
+      <div class="eyebrow">PAPA GOLF · V0.30.0</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -266,7 +266,13 @@
     <div class="affiliate-studio-actions"><button id="saveAffiliateProfileBtn" class="primary-btn" type="button">Save Affiliate Brand Kit</button><button id="loadAffiliateDemoBtn" class="secondary-btn" type="button">Load Test Bar Example</button></div>
     <div id="affiliateProfileStatus" class="small muted" aria-live="polite"></div>
     <hr class="affiliate-divider">
-    <div class="eyebrow">PROMOTION BUILDER · FOUNDATION</div><h3>What are you promoting?</h3><p class="muted">The full AI designer comes next. This first structured form proves the “tick and flick” information that will drive consistent posters, social posts, offers and live listings.</p>
+    <div class="eyebrow">EVENT LIBRARY · AFFILIATE CONTROL</div><h3>What’s happening at your venue?</h3><p class="muted">Add one thing or keep adding them. Events stay in chronological order and can later be selected together for a flyer, social post or public programme. Past events leave the active list automatically but remain in History.</p>
+    <div class="affiliate-event-toolbar"><button id="showAffiliateUpcomingBtn" class="secondary-btn active" type="button">Upcoming</button><button id="showAffiliatePastBtn" class="secondary-btn" type="button">History</button><select id="affiliateEventFilter" aria-label="Filter events"><option value="all">All types</option><option value="sport">Sport</option><option value="live-music">Live Music</option><option value="food">Food</option><option value="happy-hour">Happy Hour</option><option value="event">Event</option><option value="offer">Other</option></select></div>
+    <div id="affiliateEventLibrary" class="affiliate-event-library"></div>
+    <div class="affiliate-studio-actions"><button id="createPromoFromSelectedBtn" class="primary-btn" type="button">Create Promotion from Selected</button><button id="newAffiliateEventBtn" class="secondary-btn" type="button">+ Add another event</button></div>
+    <div id="affiliateEventStatus" class="small muted" aria-live="polite"></div>
+    <hr class="affiliate-divider">
+    <div class="eyebrow">ADD / EDIT EVENT</div><h3>Event details</h3><p class="muted">A promotion is optional. Simply list what you are showing or doing, then reuse the event later without retyping it.</p>
     <div class="promo-type-chips" id="affiliatePromoTypes"><button type="button" data-promo-type="sport">Sport</button><button type="button" data-promo-type="live-music">Live Music</button><button type="button" data-promo-type="food">Food Special</button><button type="button" data-promo-type="happy-hour">Happy Hour</button><button type="button" data-promo-type="event">Event</button><button type="button" data-promo-type="offer">Other Offer</button></div>
     <div id="affiliateSportsQuickPick" class="affiliate-quick-pick hidden"><label>Popular sports · quick pick<select id="affiliateSportEventSelect"><option value="">Choose an event…</option><option value="f1-monaco">F1 · Monaco Grand Prix</option><option value="f1-singapore">F1 · Singapore Grand Prix</option><option value="epl-feature">Premier League · Featured match</option><option value="afl-feature">AFL · Featured match</option><option value="nrl-feature">NRL · Featured match</option></select></label><p class="small muted">Prototype canonical event picker. Later Papa Golf will load the real international schedule and Samui-local start times automatically.</p></div>
     <div class="affiliate-studio-grid">
@@ -275,7 +281,7 @@
       <label class="wide">Special / offer<input id="affiliatePromoOffer" type="text" placeholder="e.g. ฿99 pints during the race"></label>
     </div>
     <div class="promo-options"><label><input id="affiliatePromoSound" type="checkbox"> Sound on</label><label><input id="affiliatePromoBigScreen" type="checkbox"> Big screen</label><label><input id="affiliatePromoMultipleScreens" type="checkbox"> Multiple screens</label></div>
-    <button id="previewAffiliatePromoBtn" class="secondary-btn" type="button">Preview Structured Promotion</button>
+    <div class="affiliate-studio-actions"><button id="saveAffiliateEventBtn" class="primary-btn" type="button">Save Event</button><button id="previewAffiliatePromoBtn" class="secondary-btn" type="button">Preview Current Event</button></div>
     <div id="affiliatePromoPreview" class="affiliate-promo-preview hidden"></div>
     <div class="affiliate-divider"></div>
     <div class="eyebrow">BRAND STUDIO · FIRST EXPORT</div><h3>Create branded promotion artwork</h3>
@@ -609,6 +615,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.29.0" defer></script>
+  <script src="app.js?v=0.30.0" defer></script>
 </body>
 </html>
