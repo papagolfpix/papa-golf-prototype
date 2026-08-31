@@ -737,7 +737,7 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 - No photo records, IndexedDB data, Welcome localStorage, Google key, or backup data are deleted or reset.
 
 
-## v0.27.1 — Quiet-entry navigation polish
+## v0.28.0 — Quiet-entry navigation polish
 - Welcome / Gateways now enters with every major section collapsed.
 - Replaced ambiguous plus/minus expansion marks with chevrons.
 - Public Gateway demo follows the same closed-first navigation rule.

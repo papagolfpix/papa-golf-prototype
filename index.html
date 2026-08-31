@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.27.1" />
+<link rel="stylesheet" href="styles.css?v=0.28.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.27.1</div>
+      <div class="eyebrow">PAPA GOLF · V0.28.0</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -246,6 +246,37 @@
       <div id="welcomePartnerList" class="welcome-partner-list"></div>
     </article>
   </div>
+
+
+  <article class="panel pg-nav-section" data-pg-section="affiliates" data-pg-label="Affiliates & Brand Studio" data-pg-summary="Business profile, brand kit and promotion-ready content">
+    <div class="affiliate-studio-head"><div><div class="eyebrow">PAPA GOLF AFFILIATE</div><h3>Affiliate foundation</h3><p class="muted">Set up a business once. Papa Golf can reuse its identity for Gateways, offers, live events and future AI-generated promotion artwork.</p></div></div>
+    <div class="affiliate-studio-grid">
+      <label>Business / trading name<input id="affiliateBusinessName" type="text" placeholder="e.g. Bangrak Beach Bar"></label>
+      <label>Business type<select id="affiliateBusinessType"><option value="bar">Bar</option><option value="restaurant">Restaurant</option><option value="cafe">Café</option><option value="tour">Tour / Activity</option><option value="accommodation">Accommodation</option><option value="service">Local service</option><option value="other">Other</option></select></label>
+      <label>Primary brand colour<input id="affiliateBrandPrimary" type="text" placeholder="#111111 or black"></label>
+      <label>Accent colour<input id="affiliateBrandAccent" type="text" placeholder="#D4AF37 or gold"></label>
+      <label class="wide">Brand character<input id="affiliateBrandStyle" type="text" placeholder="e.g. relaxed beach bar, black/gold, bold photography"></label>
+      <label class="wide">Standard footer / contact line<input id="affiliateContactLine" type="text" placeholder="Phone · social handle · booking details"></label>
+    </div>
+    <div class="affiliate-brand-assets">
+      <label class="affiliate-logo-label">Logo / brand reference<input id="affiliateLogoInput" type="file" accept="image/*"></label>
+      <div id="affiliateLogoPreview" class="affiliate-logo-preview"><span>No logo saved yet</span></div>
+      <p class="small muted">Stored only on this device in this Alpha build. Future public/cloud publishing will use approved brand assets without exposing private admin data.</p>
+    </div>
+    <div class="affiliate-studio-actions"><button id="saveAffiliateProfileBtn" class="primary-btn" type="button">Save Affiliate Brand Kit</button><button id="loadAffiliateDemoBtn" class="secondary-btn" type="button">Load Test Bar Example</button></div>
+    <div id="affiliateProfileStatus" class="small muted" aria-live="polite"></div>
+    <hr class="affiliate-divider">
+    <div class="eyebrow">PROMOTION BUILDER · FOUNDATION</div><h3>What are you promoting?</h3><p class="muted">The full AI designer comes next. This first structured form proves the “tick and flick” information that will drive consistent posters, social posts, offers and live listings.</p>
+    <div class="promo-type-chips" id="affiliatePromoTypes"><button type="button" data-promo-type="sport">Sport</button><button type="button" data-promo-type="live-music">Live Music</button><button type="button" data-promo-type="food">Food Special</button><button type="button" data-promo-type="happy-hour">Happy Hour</button><button type="button" data-promo-type="event">Event</button><button type="button" data-promo-type="offer">Other Offer</button></div>
+    <div class="affiliate-studio-grid">
+      <label class="wide">Event / promotion title<input id="affiliatePromoTitle" type="text" placeholder="e.g. Monaco Grand Prix · Live Sunday"></label>
+      <label>Date<input id="affiliatePromoDate" type="date"></label><label>Start time<input id="affiliatePromoTime" type="time"></label>
+      <label class="wide">Special / offer<input id="affiliatePromoOffer" type="text" placeholder="e.g. ฿99 pints during the race"></label>
+    </div>
+    <div class="promo-options"><label><input id="affiliatePromoSound" type="checkbox"> Sound on</label><label><input id="affiliatePromoBigScreen" type="checkbox"> Big screen</label><label><input id="affiliatePromoMultipleScreens" type="checkbox"> Multiple screens</label></div>
+    <button id="previewAffiliatePromoBtn" class="secondary-btn" type="button">Preview Structured Promotion</button>
+    <div id="affiliatePromoPreview" class="affiliate-promo-preview hidden"></div>
+  </article>
 
   <article class="panel welcome-a5-panel pg-nav-section" data-pg-section="gateways" data-pg-label="Gateways & A5 / QR" data-pg-summary="QR entry points, Gateway settings and A5 cards">
     <section class="gateway-manager">
@@ -570,6 +601,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.27.1" defer></script>
+  <script src="app.js?v=0.28.0" defer></script>
 </body>
 </html>
