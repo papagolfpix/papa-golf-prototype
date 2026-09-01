@@ -1,0 +1,187 @@
+name: Loyverse Sandbox Connection Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  read-only-connection-test:
+    runs-on: ubuntu-latest
+    env:
+      BASE_URL: https://api.loyverse.com/v1.0
+      LOYVERSE_TOKEN: ${{ secrets.LOYVERSE_SANDBOX_TOKEN }}
+    steps:
+      - name: Verify sandbox secret exists
+        shell: bash
+        run: |
+          if [ -z "$LOYVERSE_TOKEN" ]; then
+            echo "::error::Missing repository secret LOYVERSE_SANDBOX_TOKEN"
+            exit 1
+          fi
+          echo "Sandbox token is configured. Token value will not be printed."
+
+      - name: Test read-only Loyverse resources
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          call_api() {
+            local label="$1"
+            local path="$2"
+            local array_key="${3:-}"
+            local body status count
+            body="$(mktemp)"
+            status="$(curl --silent --show-error \
+              --output "$body" \
+              --write-out '%{http_code}' \
+              --request GET \
+              --header "Authorization: Bearer $LOYVERSE_TOKEN" \
+              --header 'Accept: application/json' \
+              "$BASE_URL$path")"
+
+            if [ "$status" != "200" ]; then
+              echo "$label: FAILED (HTTP $status)"
+              rm -f "$body"
+              return 1
+            fi
+
+            if [ -n "$array_key" ]; then
+              count="$(jq -r --arg key "$array_key" '(.[$key] // []) | length' "$body" 2>/dev/null || echo '?')"
+              echo "$label: OK — $count returned in first page"
+            else
+              echo "$label: OK"
+            fi
+            rm -f "$body"
+          }
+
+          failed=0
+          call_api "Merchant" "/merchant/" || failed=1
+          call_api "Stores" "/stores" "stores" || failed=1
+          call_api "POS devices" "/pos_devices" "pos_devices" || failed=1
+          call_api "Payment types" "/payment_types" "payment_types" || failed=1
+          call_api "Items" "/items?limit=10" "items" || failed=1
+          call_api "Receipts" "/receipts?limit=10" "receipts" || failed=1
+
+          if [ "$failed" -ne 0 ]; then
+            echo "::error::One or more read-only API checks failed."
+            exit 1
+          fi
+
+          echo "All read-only Loyverse sandbox checks passed."
+
+      - name: Inspect latest sandbox receipt safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          receipts_file="$(mktemp)"
+          payments_file="$(mktemp)"
+          stores_file="$(mktemp)"
+          pos_file="$(mktemp)"
+          trap 'rm -f "$receipts_file" "$payments_file" "$stores_file" "$pos_file"' EXIT
+
+          api_get() {
+            local path="$1"
+            local outfile="$2"
+            local status
+            status="$(curl --silent --show-error \
+              --output "$outfile" \
+              --write-out '%{http_code}' \
+              --request GET \
+              --header "Authorization: Bearer $LOYVERSE_TOKEN" \
+              --header 'Accept: application/json' \
+              "$BASE_URL$path")"
+            if [ "$status" != "200" ]; then
+              echo "::error::Read-only API request failed for $path (HTTP $status)"
+              exit 1
+            fi
+          }
+
+          api_get "/receipts?limit=10" "$receipts_file"
+          api_get "/payment_types" "$payments_file"
+          api_get "/stores" "$stores_file"
+          api_get "/pos_devices" "$pos_file"
+
+          receipt_count="$(jq -r '(.receipts // []) | length' "$receipts_file")"
+          if [ "$receipt_count" -eq 0 ]; then
+            echo "No receipts found yet."
+            exit 0
+          fi
+
+          latest="$(jq -c '.receipts[0]' "$receipts_file")"
+          receipt_number="$(jq -r '.receipt_number // "unknown"' <<<"$latest")"
+          receipt_type="$(jq -r '.receipt_type // "unknown"' <<<"$latest")"
+          refund_for="$(jq -r '.refund_for // ""' <<<"$latest")"
+          receipt_date="$(jq -r '.receipt_date // .created_at // "unknown"' <<<"$latest")"
+          total_money="$(jq -r '.total_money // 0' <<<"$latest")"
+          total_discount="$(jq -r '.total_discount // 0' <<<"$latest")"
+          source="$(jq -r '.source // "unknown"' <<<"$latest")"
+          store_id="$(jq -r '.store_id // ""' <<<"$latest")"
+          pos_id="$(jq -r '.pos_device_id // ""' <<<"$latest")"
+          store_name="$(jq -r --arg id "$store_id" '([.stores[]? | select(.id == $id) | .name][0]) // "unknown"' "$stores_file")"
+          pos_name="$(jq -r --arg id "$pos_id" '([.pos_devices[]? | select(.id == $id) | .name][0]) // "unknown"' "$pos_file")"
+
+          echo "Latest receipt summary"
+          echo "Receipt number: $receipt_number"
+          echo "Type: $receipt_type"
+          if [ -n "$refund_for" ]; then
+            echo "Refund for: $refund_for"
+          fi
+          echo "Receipt date: $receipt_date"
+          echo "Total: ฿$total_money"
+          echo "Discount: ฿$total_discount"
+          echo "Store: $store_name"
+          echo "POS: $pos_name"
+          echo "Source: $source"
+
+          echo "Line items:"
+          jq -r '
+            (.line_items // [])[] |
+            "- " + ((.item_name // .name // .variant_name // .sku // .variant_id // "item")|tostring) +
+            " × " + ((.quantity // 0)|tostring) +
+            " @ ฿" + ((.price // 0)|tostring) +
+            (if (.line_total? != null) then " = ฿" + (.line_total|tostring) else "" end)
+          ' <<<"$latest"
+
+          echo "Payments:"
+          while IFS= read -r payment; do
+            payment_type_id="$(jq -r '.payment_type_id // ""' <<<"$payment")"
+            payment_name="$(jq -r --arg id "$payment_type_id" '([.payment_types[]? | select(.id == $id) | .name][0]) // "unknown"' "$payments_file")"
+            money_amount="$(jq -r '.money_amount // .amount // ""' <<<"$payment")"
+            paid_at="$(jq -r '.paid_at // ""' <<<"$payment")"
+            if [ -n "$money_amount" ]; then
+              echo "- $payment_name: ฿$money_amount${paid_at:+ at $paid_at}"
+            else
+              echo "- $payment_name${paid_at:+ at $paid_at}"
+            fi
+          done < <(jq -c '(.payments // [])[]' <<<"$latest")
+
+          {
+            echo '## Latest Loyverse sandbox receipt'
+            echo ''
+            echo "- Receipt: \`$receipt_number\`"
+            echo "- Type: **$receipt_type**"
+            if [ -n "$refund_for" ]; then echo "- Refund for: \`$refund_for\`"; fi
+            echo "- Date: $receipt_date"
+            echo "- Total: **฿$total_money**"
+            echo "- Store: $store_name"
+            echo "- POS: $pos_name"
+            echo ''
+            echo 'This is a read-only inspection. No Loyverse data was changed.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Papa Golf sandbox result
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo ''
+            echo '## Papa Golf × Loyverse sandbox safety'
+            echo ''
+            echo 'This workflow performs GET requests only. It never creates, edits, refunds, or deletes Loyverse data.'
+            echo ''
+            echo 'The personal access token is read from the encrypted repository secret `LOYVERSE_SANDBOX_TOKEN` and is never intentionally printed.'
+            echo ''
+            echo 'This sandbox workflow prints only transaction fields needed for the controlled Papa Golf test. Do not use it unchanged for real affiliate accounts.'
+          } >> "$GITHUB_STEP_SUMMARY"
