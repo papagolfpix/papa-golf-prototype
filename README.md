@@ -764,3 +764,10 @@ Public publishing now uses the same automated GitHub update pipeline as applicat
 ## v0.30.2 — Loyverse sandbox connection test
 
 Adds a manual GitHub Actions workflow at `.github/workflows/loyverse-sandbox-test.yml` for the first Papa Golf × Loyverse proof-of-connection. The workflow is deliberately read-only and uses the encrypted repository secret `LOYVERSE_SANDBOX_TOKEN`. It checks Merchant, Stores, POS devices, Payment types, Items and Receipts without printing account records or storing the access token in the Papa Golf web app. This is a temporary sandbox bridge; production affiliate connections should use OAuth with server-side token storage.
+
+## v0.31.0 — Villa Welcome completion pass
+- Added Villa Welcome readiness status for the owner/admin view.
+- Added guest Quick Essentials for Wi-Fi, villa directions, and host/manager access.
+- Added one-tap Wi-Fi network/password copy controls.
+- Preserved the existing progressive disclosure, A5 Welcome Card, Explore Nearby, Event Library, Brand Studio, photo data protections, backup paths, and Loyverse sandbox workflow.
+- Added `scripts/validate-update.js` and wired validation into future Apply Papa Golf Update runs. The validator checks required files, version/cache consistency, key Welcome DOM/runtime hooks, photo Blob hardening, no bulk IndexedDB/localStorage deletion, and Brand Kit asset/backup protections.

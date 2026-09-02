@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.30.2" />
+<link rel="stylesheet" href="styles.css?v=0.31.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.30.2</div>
+      <div class="eyebrow">PAPA GOLF · V0.31.0</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -104,6 +104,15 @@
   <div class="screen-header">
     <button id="welcomeBackBtn" class="secondary-btn">← Back</button>
     <div><h2>Welcome / Gateways</h2><p class="muted">Choose a section. Only the section you are using stays open.</p></div>
+  </div>
+
+  <div id="welcomeReadinessCard" class="welcome-readiness-card" aria-live="polite">
+    <div>
+      <div class="eyebrow">VILLA WELCOME STATUS</div>
+      <strong id="welcomeReadinessTitle">Checking setup…</strong>
+      <div id="welcomeReadinessText" class="small muted"></div>
+    </div>
+    <button id="welcomeReadinessPreviewBtn" class="secondary-btn" type="button">Preview guest view</button>
   </div>
 
   <div class="welcome-grid">
@@ -368,6 +377,14 @@
     </div>
 
     <div id="guestWelcomeHome" class="guest-welcome-home">
+      <div id="guestQuickEssentials" class="guest-quick-essentials">
+        <div class="guest-essential-head"><strong>Quick essentials</strong><span>Everything guests usually need first</span></div>
+        <div class="guest-essential-grid">
+          <button id="guestQuickWifiBtn" class="guest-essential-action" type="button" data-welcome-panel="guestWifiPanel"><span>📶</span><div><strong>Wi-Fi</strong><small id="guestQuickWifiName">Open network details</small></div></button>
+          <a id="guestQuickDirections" class="guest-essential-action" href="#" target="_blank" rel="noopener"><span>📍</span><div><strong>Villa location</strong><small>Open directions</small></div></a>
+          <button id="guestQuickHostBtn" class="guest-essential-action" type="button" data-welcome-panel="guestVillaPanel"><span>☎️</span><div><strong>Host / manager</strong><small id="guestQuickHostText">Contact information</small></div></button>
+        </div>
+      </div>
       <div class="guest-menu-grid">
         <button class="guest-menu-tile" type="button" data-welcome-panel="guestVillaPanel"><span>🏠</span><strong>Villa Guide</strong><small>House information & help</small></button>
         <button class="guest-menu-tile" type="button" data-welcome-panel="guestWifiPanel"><span>📶</span><strong>Wi-Fi</strong><small>Network & technology</small></button>
@@ -615,6 +632,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.30.2" defer></script>
+  <script src="app.js?v=0.31.0" defer></script>
 </body>
 </html>

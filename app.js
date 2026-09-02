@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.30.2';
+const RUNTIME_VERSION = '0.31.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -3229,6 +3229,28 @@ function welcomeShow(target){
   if(target===welcome)document.getElementById('openWelcomeModuleBtn')?.classList.add('active');
   window.scrollTo(0,0);
 }
+function welcomeSetupStatus(){
+  const p=getWelcomeProperty(),u=getWelcomeUnit();
+  const checks=[
+    ['Villa identity',!!String(p.name||u.name||'').trim()],
+    ['Villa location',Number.isFinite(Number(p.lat))&&Number.isFinite(Number(p.lng))],
+    ['Wi-Fi',!!String(u.wifiName||'').trim()&&!!String(u.wifiPassword||'').trim()],
+    ['Host contact',!!String((u.overrideHost?u.host:p.host)||'').trim()],
+    ['Emergency information',!!String((u.overrideEmergency?u.emergency:p.emergency)||'').trim()],
+    ['Villa guide',!!String(u.villaInfo||'').trim()]
+  ];
+  const complete=checks.filter(([,ok])=>ok).length;
+  return {checks,complete,total:checks.length,missing:checks.filter(([,ok])=>!ok).map(([name])=>name)};
+}
+function renderWelcomeReadiness(){
+  const status=welcomeSetupStatus();
+  const title=document.getElementById('welcomeReadinessTitle');
+  const text=document.getElementById('welcomeReadinessText');
+  const card=document.getElementById('welcomeReadinessCard');
+  if(title)title.textContent=status.complete===status.total?'Guest essentials ready':`${status.complete} of ${status.total} essentials ready`;
+  if(text)text.textContent=status.missing.length?`Still useful to add: ${status.missing.join(', ')}.`:'The core villa welcome information is complete. Preview it before printing the A5 card.';
+  if(card)card.classList.toggle('is-ready',status.complete===status.total);
+}
 function loadWelcomeEditor(){
   const p=getWelcomeProperty(),u=getWelcomeUnit();
   welcomeSet('welcomePropertyName',p.name);
@@ -3253,6 +3275,7 @@ function loadWelcomeEditor(){
   renderWelcomeCategoryEditor();
   renderWelcomePartnerEditor();
   renderPapaGolfPlaceStatus();
+  renderWelcomeReadiness();
 }
 function effectiveWelcome(){
   const p=getWelcomeProperty(),u=getWelcomeUnit();
@@ -3287,6 +3310,7 @@ function saveWelcomeProperty(){
     logo:'magic-dragon-villa-logo.png'
   };
   localStorage.setItem(WELCOME_PROPERTY_KEY,JSON.stringify(data));
+  renderWelcomeReadiness();
 }
 function saveWelcomeUnit(){
   localStorage.setItem(WELCOME_UNIT_KEY,JSON.stringify({
@@ -3300,6 +3324,7 @@ function saveWelcomeUnit(){
     overrideEmergency:!!document.getElementById('overrideWelcomeEmergency')?.checked,
     emergency:welcomeVal('welcomeUnitEmergency')
   }));
+  renderWelcomeReadiness();
 }
 function renderWelcomeCategoryEditor(){
   const host=document.getElementById('welcomeCategoryEditor');
@@ -3429,8 +3454,24 @@ function renderGuestWelcome(){
   const head=document.getElementById('guestWelcomeHeading');
   if(head)head.textContent='Welcome to '+d.unitName;
 
+  const quickWifi=document.getElementById('guestQuickWifiName');
+  if(quickWifi)quickWifi.textContent=d.wifiName||'Open network details';
+  const quickHost=document.getElementById('guestQuickHostText');
+  if(quickHost)quickHost.textContent=d.host||'Contact information';
+  const quickDirections=document.getElementById('guestQuickDirections');
+  if(quickDirections){
+    const hasCoords=Number.isFinite(d.lat)&&Number.isFinite(d.lng);
+    quickDirections.href=hasCoords?welcomeGoogleMapsUrl(d.lat,d.lng):'#';
+    quickDirections.classList.toggle('is-disabled',!hasCoords);
+    quickDirections.setAttribute('aria-disabled',hasCoords?'false':'true');
+    const small=quickDirections.querySelector('small');
+    if(small)small.textContent=hasCoords?'Open directions':'Location not added yet';
+  }
+
   const wifi=document.getElementById('guestWifiInfo');
-  if(wifi)wifi.innerHTML=(d.wifiName||d.wifiPassword)?`<p><strong>Wi-Fi:</strong> ${escapeHtml(d.wifiName||'—')}</p><p><strong>Password:</strong> ${escapeHtml(d.wifiPassword||'—')}</p>`:'<p class="muted">Wi-Fi information has not been added yet.</p>';
+  if(wifi)wifi.innerHTML=(d.wifiName||d.wifiPassword)?`
+    <div class="guest-wifi-line"><div><span>Wi-Fi network</span><strong>${escapeHtml(d.wifiName||'—')}</strong></div>${d.wifiName?'<button type="button" class="secondary-btn guest-copy-btn" data-copy-welcome="wifi-name">Copy</button>':''}</div>
+    <div class="guest-wifi-line"><div><span>Password</span><strong>${escapeHtml(d.wifiPassword||'—')}</strong></div>${d.wifiPassword?'<button type="button" class="secondary-btn guest-copy-btn" data-copy-welcome="wifi-password">Copy</button>':''}</div>`:'<p class="muted">Wi-Fi information has not been added yet.</p>';
   const bt=document.getElementById('guestBluetoothInfo');
   if(bt)bt.innerHTML=d.bluetooth?`<p>${escapeHtml(d.bluetooth)}</p>`:'';
   const vi=document.getElementById('guestVillaInfo');
@@ -4357,6 +4398,10 @@ function initWelcomeModule(){
     renderPapaGolfPlaceStatus();
   });
 
+  document.getElementById('welcomeReadinessPreviewBtn')?.addEventListener('click',()=>{
+    saveWelcomeProperty(); saveWelcomeUnit(); renderGuestWelcome(); welcomeShow(preview);
+  });
+
   document.getElementById('previewWelcomeGuestBtn')?.addEventListener('click',()=>{
     saveWelcomeProperty();
     saveWelcomeUnit();
@@ -4409,6 +4454,19 @@ function initWelcomeModule(){
   });
 
   document.getElementById('welcomeGuestPreview')?.addEventListener('click',event=>{
+    const disabledLink=event.target.closest('a.is-disabled');
+    if(disabledLink){event.preventDefault();return}
+    const copyBtn=event.target.closest('[data-copy-welcome]');
+    if(copyBtn){
+      const d=effectiveWelcome();
+      const value=copyBtn.dataset.copyWelcome==='wifi-password'?d.wifiPassword:d.wifiName;
+      if(value){
+        navigator.clipboard?.writeText(value).then(()=>{
+          const old=copyBtn.textContent; copyBtn.textContent='Copied ✓'; setTimeout(()=>copyBtn.textContent=old,1200);
+        }).catch(()=>{});
+      }
+      return;
+    }
     const tile=event.target.closest('[data-welcome-panel]');
     if(tile){openGuestWelcomePanel(tile.dataset.welcomePanel);return}
     if(event.target.closest('.guest-panel-back')){showGuestWelcomeHome();return}
