@@ -15,8 +15,8 @@ if(v){
   check(html.toUpperCase().includes(`V${v}`.toUpperCase()),'visible header version matches runtime');
   check(sw.includes(`v${v.replace(/\./g,'')}`)||sw.includes(`v${v.replace(/\./g,'')}-`), 'service-worker cache version matches runtime');
 }
-for(const id of ['welcomeReadinessCard','welcomeReadinessPreviewBtn','guestQuickEssentials','guestQuickWifiName','guestQuickDirections','guestQuickHostText']) check(html.includes(`id="${id}"`),`Welcome UI id present: ${id}`);
-for(const id of ['welcomeReadinessCard','welcomeReadinessPreviewBtn','guestQuickWifiName','guestQuickDirections','guestQuickHostText']) check(app.includes(id),`Welcome runtime references: ${id}`);
+for(const id of ['welcomeReadinessCard','welcomeReadinessPreviewBtn','guestQuickEssentials','guestQuickWifiName','guestQuickDirections','guestQuickHostText','welcomeTransportInfo','welcomeFoodInfo','welcomeOtherServices','guestTransportInfo','guestFoodServiceInfo','guestOtherServices']) check(html.includes(`id="${id}"`),`Welcome UI id present: ${id}`);
+for(const id of ['welcomeReadinessCard','welcomeReadinessPreviewBtn','guestQuickWifiName','guestQuickDirections','guestQuickHostText','welcomeTransportInfo','welcomeFoodInfo','welcomeOtherServices','guestTransportInfo','guestFoodServiceInfo','guestOtherServices']) check(app.includes(id),`Welcome runtime references: ${id}`);
 check(app.includes('materializeSafeRelatedPhotos'),'Safari related-photo Blob hardening retained');
 check(!/indexedDB\.deleteDatabase\s*\(/.test(app),'no IndexedDB database deletion in app runtime');
 check(!/localStorage\.clear\s*\(/.test(app),'no localStorage.clear in app runtime');

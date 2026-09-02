@@ -20,7 +20,7 @@ A deliberately small, iPhone-first prototype for the Papa Golf Platform.
 
 ## Important v0.4 limitation
 
-There is **no cloud backend yet**. Photos saved by Millie on her iPhone remain on that iPhone/browser. This is intentional for the first prototype so the user flow can be tested before adding accounts, cloud storage, shared access, mapping, QR, or other modules.
+There is **no cloud backend yet**. Photos saved by Pauly Gee on her iPhone remain on that iPhone/browser. This is intentional for the first prototype so the user flow can be tested before adding accounts, cloud storage, shared access, mapping, QR, or other modules.
 
 ## iPhone notes
 
@@ -52,7 +52,7 @@ For an iPhone, deploy it to an HTTPS host such as GitHub Pages, Netlify, Cloudfl
 
 ## Suggested next module — v0.4
 
-Add cloud storage and a shared database so Millie's uploads are visible from another device. The current UI and record structure can remain; only the storage adapter needs to change.
+Add cloud storage and a shared database so Pauly Gee's uploads are visible from another device. The current UI and record structure can remain; only the storage adapter needs to change.
 
 
 ## v0.4
@@ -771,3 +771,11 @@ Adds a manual GitHub Actions workflow at `.github/workflows/loyverse-sandbox-tes
 - Added one-tap Wi-Fi network/password copy controls.
 - Preserved the existing progressive disclosure, A5 Welcome Card, Explore Nearby, Event Library, Brand Studio, photo data protections, backup paths, and Loyverse sandbox workflow.
 - Added `scripts/validate-update.js` and wired validation into future Apply Papa Golf Update runs. The validator checks required files, version/cache consistency, key Welcome DOM/runtime hooks, photo Blob hardening, no bulk IndexedDB/localStorage deletion, and Brand Kit asset/backup protections.
+
+
+## v0.31.1 — Villa guest services pass
+- Added practical owner-editable Transport, Food/Delivery and Other Guest Services fields.
+- Connected those fields to the existing guest Food & Drink and Transport panels.
+- Preserved the progressive collapsed Welcome editor and existing local data.
+- Updated sample documentation references from Millie to Pauly Gee.
+- Expanded automated validation to cover the new Welcome service fields and guest render targets.

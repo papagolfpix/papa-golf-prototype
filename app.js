@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.31.0';
+const RUNTIME_VERSION = '0.31.1';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2695,7 +2695,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.30.2', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.31.1', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3101,6 +3101,9 @@ const WELCOME_DEFAULT_UNIT = {
   wifiPassword:'FrameBalls555',
   bluetooth:'',
   villaInfo:'',
+  transportInfo:'',
+  foodInfo:'',
+  otherServices:'',
   overrideHost:false,
   host:'',
   overrideEmergency:false,
@@ -3265,6 +3268,9 @@ function loadWelcomeEditor(){
   welcomeSet('welcomeWifiPassword',u.wifiPassword);
   welcomeSet('welcomeBluetooth',u.bluetooth);
   welcomeSet('welcomeVillaInfo',u.villaInfo);
+  welcomeSet('welcomeTransportInfo',u.transportInfo);
+  welcomeSet('welcomeFoodInfo',u.foodInfo);
+  welcomeSet('welcomeOtherServices',u.otherServices);
   welcomeSet('welcomeUnitHost',u.host);
   welcomeSet('welcomeUnitEmergency',u.emergency);
   const oh=document.getElementById('overrideWelcomeHost'),oe=document.getElementById('overrideWelcomeEmergency');
@@ -3292,7 +3298,10 @@ function effectiveWelcome(){
     wifiName:u.wifiName||'',
     wifiPassword:u.wifiPassword||'',
     bluetooth:u.bluetooth||'',
-    villaInfo:u.villaInfo||''
+    villaInfo:u.villaInfo||'',
+    transportInfo:u.transportInfo||'',
+    foodInfo:u.foodInfo||'',
+    otherServices:u.otherServices||''
   };
 }
 function saveWelcomeProperty(){
@@ -3319,6 +3328,9 @@ function saveWelcomeUnit(){
     wifiPassword:welcomeVal('welcomeWifiPassword'),
     bluetooth:welcomeVal('welcomeBluetooth'),
     villaInfo:welcomeVal('welcomeVillaInfo'),
+    transportInfo:welcomeVal('welcomeTransportInfo'),
+    foodInfo:welcomeVal('welcomeFoodInfo'),
+    otherServices:welcomeVal('welcomeOtherServices'),
     overrideHost:!!document.getElementById('overrideWelcomeHost')?.checked,
     host:welcomeVal('welcomeUnitHost'),
     overrideEmergency:!!document.getElementById('overrideWelcomeEmergency')?.checked,
@@ -3476,6 +3488,12 @@ function renderGuestWelcome(){
   if(bt)bt.innerHTML=d.bluetooth?`<p>${escapeHtml(d.bluetooth)}</p>`:'';
   const vi=document.getElementById('guestVillaInfo');
   if(vi)vi.innerHTML=d.villaInfo?`<p>${escapeHtml(d.villaInfo).replace(/\n/g,'<br>')}</p>`:'<p class="muted">Villa instructions have not been added yet.</p>';
+  const transport=document.getElementById('guestTransportInfo');
+  if(transport)transport.innerHTML=d.transportInfo?`<p>${escapeHtml(d.transportInfo).replace(/\n/g,'<br>')}</p>`:'<p class="muted">Transport recommendations have not been added yet.</p>';
+  const foodService=document.getElementById('guestFoodServiceInfo');
+  if(foodService){foodService.classList.toggle('hidden',!d.foodInfo);foodService.innerHTML=d.foodInfo?`<p>${escapeHtml(d.foodInfo).replace(/\n/g,'<br>')}</p>`:'';}
+  const otherServices=document.getElementById('guestOtherServices');
+  if(otherServices){otherServices.classList.toggle('hidden',!d.otherServices);otherServices.innerHTML=d.otherServices?`<p><strong>Other guest services</strong><br>${escapeHtml(d.otherServices).replace(/\n/g,'<br>')}</p>`:'';}
   const host=document.getElementById('guestHostInfo');
   if(host)host.innerHTML=d.host?`<p><strong>Host / manager:</strong> ${escapeHtml(d.host)}</p>`:'';
   const em=document.getElementById('guestEmergencyInfo');

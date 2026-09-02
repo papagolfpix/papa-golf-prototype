@@ -1471,3 +1471,7 @@ input,textarea,select{font-size:16px}
 @media (min-width:620px){.guest-essential-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.guest-essential-action{min-height:84px;align-items:flex-start}}
 @media (max-width:560px){.welcome-readiness-card{align-items:flex-start;flex-direction:column}.welcome-readiness-card button{width:100%}}
 .guest-wifi-line{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.7rem 0;border-bottom:1px solid rgba(255,255,255,.08)}.guest-wifi-line:last-child{border-bottom:0}.guest-wifi-line div{min-width:0}.guest-wifi-line span,.guest-wifi-line strong{display:block}.guest-wifi-line span{font-size:13px;color:#aaa49a;margin-bottom:.2rem}.guest-wifi-line strong{font-size:17px;overflow-wrap:anywhere}.guest-copy-btn{flex:0 0 auto;min-width:76px}
+
+/* v0.31.1 Welcome guest services */
+.welcome-service-editor{margin:1rem 0;padding:1rem;border:1px solid rgba(224,188,102,.2);border-radius:16px;background:rgba(224,188,102,.035)}
+.welcome-service-editor>strong{display:block;font-size:17px;margin-bottom:.15rem}

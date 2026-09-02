@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.31.0" />
+<link rel="stylesheet" href="styles.css?v=0.31.1" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.31.0</div>
+      <div class="eyebrow">PAPA GOLF · V0.31.1</div>
       <h1>Photo Upload Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -165,6 +165,14 @@
       <label>Wi-Fi password<input id="welcomeWifiPassword" type="text" placeholder="Wi-Fi password"></label>
       <label>Bluetooth / entertainment<textarea id="welcomeBluetooth" rows="3" placeholder="Speaker, TV, streaming or Bluetooth instructions"></textarea></label>
       <label>Villa Guide<textarea id="welcomeVillaInfo" rows="5" placeholder="Check-in/out, rubbish, air-con, appliances, housekeeping, pool, gates, etc."></textarea></label>
+
+      <div class="welcome-service-editor">
+        <strong>Guest services</strong>
+        <p class="small muted">Keep these practical. Guests see them only when they open the relevant section.</p>
+        <label>Transport / scooter / car hire<textarea id="welcomeTransportInfo" rows="3" placeholder="Recommended taxi, airport transfer, scooter/car hire, contact or booking instructions"></textarea></label>
+        <label>Food / room service / delivery<textarea id="welcomeFoodInfo" rows="3" placeholder="Room service, delivery, breakfast, restaurant partner or ordering instructions"></textarea></label>
+        <label>Other guest services<textarea id="welcomeOtherServices" rows="3" placeholder="Laundry, massage, tours, housekeeping or other useful services"></textarea></label>
+      </div>
 
       <div class="inheritance-box">
         <strong>Property inheritance</strong>
@@ -435,15 +443,15 @@
       <button class="guest-panel-back" type="button">← Welcome menu</button>
       <h2>🍽 Food & Drink</h2>
       <p class="muted">Only Papa Golf / property-approved restaurants and bars are shown here.</p>
+      <div id="guestFoodServiceInfo" class="guest-info-card hidden"></div>
       <div id="guestFoodList" class="welcome-nearby-list"></div>
     </section>
 
     <section id="guestTransportPanel" class="guest-welcome-panel hidden">
       <button class="guest-panel-back" type="button">← Welcome menu</button>
       <h2>🛵 Transport</h2>
-      <div class="guest-info-card">
-        <p>Nearby transport, scooter/car hire and route tools will appear here as the live routing layer is connected.</p>
-      </div>
+      <div id="guestTransportInfo" class="guest-info-card"></div>
+      <div id="guestOtherServices" class="guest-info-card hidden"></div>
     </section>
 
     <section id="guestEmergencyPanel" class="guest-welcome-panel hidden">
@@ -632,6 +640,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.31.0" defer></script>
+  <script src="app.js?v=0.31.1" defer></script>
 </body>
 </html>
