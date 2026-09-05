@@ -26,4 +26,18 @@
 @media(max-width:520px){.intro h1{font-size:17px}}
 
 .today-strip{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 18px;padding:13px 15px;border:1px solid rgba(224,188,102,.38);border-radius:16px;background:rgba(224,188,102,.08);color:inherit;text-align:left}.today-strip-icon{font-size:25px}.today-strip-copy{display:flex;flex-direction:column;min-width:0}.today-strip-copy strong{font-size:16px}.today-strip-copy small{margin-top:3px;color:#aaa49a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.today-strip-chevron{margin-left:auto;color:#e0bc66;font-size:29px}
-\n\n/* v0.35.1 public What's On contrast/readability fix */\n.activity-card{\n  background:#1b1b1b;\n  color:#f7f7f7;\n  border-color:rgba(255,255,255,.14);\n  box-shadow:none;\n}\n.activity-head strong,\n.activity-head span,\n.activity-time{color:#f7f7f7}\n.activity-card p,\n.activity-booking{color:#bdb8af}\n.day-group h4{border-bottom-color:rgba(255,255,255,.14)}\n
+
+
+/* v0.35.1 public What's On contrast/readability fix */
+.activity-card{
+  background:#1b1b1b;
+  color:#f7f7f7;
+  border-color:rgba(255,255,255,.14);
+  box-shadow:none;
+}
+.activity-head strong,
+.activity-head span,
+.activity-time{color:#f7f7f7}
+.activity-card p,
+.activity-booking{color:#bdb8af}
+.day-group h4{border-bottom-color:rgba(255,255,255,.14)}

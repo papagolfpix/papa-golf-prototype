@@ -1,3 +1,9 @@
+## v0.35.2 — What's On contrast fix (corrected CSS delivery)
+
+- Fixes the v0.35.1 readability patch not applying because escaped newline characters were written into the CSS.
+- Activity cards now render dark with high-contrast text in owner/admin, guest preview, and public Welcome.
+- No IndexedDB/localStorage clearing or photo-data migration.
+
 ## v0.35.1 — What's On readability fix
 
 - Fixed white-on-white activity cards in owner, guest preview and public Welcome.
