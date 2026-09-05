@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.35.0';
+const RUNTIME_VERSION = '0.35.1';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2695,7 +2695,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.35.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.35.1', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })

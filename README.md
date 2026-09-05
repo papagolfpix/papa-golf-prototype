@@ -1,4 +1,10 @@
-## v0.35.0 — Guest Today + cleaner owner readiness
+## v0.35.1 — What's On readability fix
+
+- Fixed white-on-white activity cards in owner, guest preview and public Welcome.
+- Activity cards now use the dark Papa Golf card surface with high-contrast primary and secondary text.
+- Preserves all v0.35.0 functionality and data-safety protections.
+
+## v0.35.1 — Guest Today + cleaner owner readiness
 
 - Removes the redundant “Add more guest content” button once all core Welcome essentials are complete.
 - Replaces it with quiet guidance: choose a category below to add or update content.
