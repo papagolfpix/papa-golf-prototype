@@ -1536,3 +1536,22 @@ body.welcome-admin-mode main{padding-top:max(10px,env(safe-area-inset-top))}
 .welcome-readiness-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.welcome-readiness-actions button{min-height:46px}
 .welcome-services-panel .welcome-service-editor{display:grid;gap:14px;margin-top:12px}.welcome-services-panel .welcome-service-editor label{margin:0}
 @media(max-width:600px){.welcome-readiness-card{align-items:stretch}.welcome-readiness-actions{width:100%}.welcome-readiness-actions button{flex:1 1 100%;width:100%}}
+
+
+/* v0.34.1 Welcome setup-at-a-glance section status */
+.pg-section-toggle-end{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.pg-section-status{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:4px 9px;border:1px solid #3a3a3a;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap;color:#aaa49a;background:#101010}
+.pg-section-status-icon{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;font-size:12px;line-height:1}
+.pg-section-status.is-ready{color:#9fe0ae;border-color:rgba(125,207,145,.42);background:rgba(86,160,105,.09)}
+.pg-section-status.is-ready .pg-section-status-icon{color:#07130a;background:#7dcf91}
+.pg-section-status.is-more{color:#efd48b;border-color:rgba(224,188,102,.42);background:rgba(224,188,102,.07)}
+.pg-section-status.is-more .pg-section-status-icon{color:#181107;background:#e0bc66}
+.pg-section-status.is-optional{color:#aaa49a;border-color:#363636;background:#101010}
+.pg-section-status.is-optional .pg-section-status-icon{font-size:18px;color:#777}
+@media(max-width:520px){
+  .pg-section-toggle{gap:8px}
+  .pg-section-toggle-end{gap:7px}
+  .pg-section-status{padding:4px 7px;font-size:11px}
+  .pg-section-chevron{width:34px;height:34px;flex-basis:34px}
+}
+@media(max-width:390px){.pg-section-status span:last-child{display:none}.pg-section-status{padding:5px}.pg-section-status-icon{width:20px;height:20px}}

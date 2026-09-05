@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.34.0';
+const RUNTIME_VERSION = '0.34.1';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2695,7 +2695,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.34.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.34.1', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2724,7 +2724,7 @@ function ensureDefaultPropertyGateway(){let a=getPapaGolfGateways();if(a.length)
 function createGatewayForPlace(placeId,type='other'){const p=getPapaGolfPlace(placeId);if(!p)return null;const a=getPapaGolfGateways(),e=a.find(g=>g.placeId===placeId);if(e)return e;const g={id:'gateway-'+Date.now(),placeId,type,brandName:papaGolfPlaceDisplayName(p),subtitle:'',enabled:true,tiles:gatewayDefaultTiles(type),createdAt:new Date().toISOString()};a.push(g);savePapaGolfGateways(a);renderPapaGolfGatewayManager();return g}
 function renderPapaGolfGatewayManager(){const host=document.getElementById('gatewayManagerList');if(!host)return;const a=ensureDefaultPropertyGateway();host.innerHTML=a.map(g=>`<article class="gateway-row"><div><div class="gateway-name">${escapeHtml(g.brandName||'Gateway')}</div><div class="small muted">${escapeHtml(PAPA_GOLF_GATEWAY_TYPES.find(x=>x.id===g.type)?.label||'Gateway')}</div><div class="gateway-tile-summary">${(g.tiles||[]).map(t=>`<span>${escapeHtml(t)}</span>`).join('')}</div></div><button type="button" class="secondary-btn" data-edit-gateway="${escapeHtml(g.id)}">Edit Gateway</button></article>`).join('')}
 function openGatewayEditor(id){window.papaGolfOpenAdminSection?.('gateways');const g=getPapaGolfGateways().find(x=>x.id===id),p=document.getElementById('gatewayEditPanel');if(!g||!p)return;p.classList.remove('hidden');p.dataset.gatewayId=id;const set=(x,v)=>{const e=document.getElementById(x);if(e)e.value=v??''};set('gatewayEditName',g.brandName);set('gatewayEditSubtitle',g.subtitle);set('gatewayEditType',g.type);set('gatewayEditTiles',(g.tiles||[]).join(', '));const e=document.getElementById('gatewayEditEnabled');if(e)e.checked=g.enabled!==false;p.scrollIntoView({behavior:'smooth',block:'start'})}
-function saveGatewayEditor(){const p=document.getElementById('gatewayEditPanel'),id=p?.dataset.gatewayId||'',a=getPapaGolfGateways(),i=a.findIndex(x=>x.id===id);if(i<0)return;const v=x=>document.getElementById(x)?.value?.trim?.()||'';a[i]={...a[i],brandName:v('gatewayEditName'),subtitle:v('gatewayEditSubtitle'),type:v('gatewayEditType')||'other',tiles:v('gatewayEditTiles').split(',').map(x=>x.trim()).filter(Boolean),enabled:!!document.getElementById('gatewayEditEnabled')?.checked};savePapaGolfGateways(a);p.classList.add('hidden');renderPapaGolfGatewayManager()}
+function saveGatewayEditor(){const p=document.getElementById('gatewayEditPanel'),id=p?.dataset.gatewayId||'',a=getPapaGolfGateways(),i=a.findIndex(x=>x.id===id);if(i<0)return;const v=x=>document.getElementById(x)?.value?.trim?.()||'';a[i]={...a[i],brandName:v('gatewayEditName'),subtitle:v('gatewayEditSubtitle'),type:v('gatewayEditType')||'other',tiles:v('gatewayEditTiles').split(',').map(x=>x.trim()).filter(Boolean),enabled:!!document.getElementById('gatewayEditEnabled')?.checked};savePapaGolfGateways(a);p.classList.add('hidden');renderPapaGolfGatewayManager();renderWelcomeSectionStatuses()}
 
 
 function getPapaGolfPhotoPlaceLinks(){
@@ -3259,6 +3259,70 @@ function welcomeSetupStatus(){
   const complete=core.filter(x=>x.ok).length,enhanced=enhancements.filter(x=>x.ok).length;
   return {core,enhancements,complete,total:core.length,enhanced,enhancementTotal:enhancements.length,missing:core.filter(x=>!x.ok),next:core.find(x=>!x.ok)||enhancements.find(x=>!x.ok)||null};
 }
+function welcomeSectionSetupState(id){
+  const p=getWelcomeProperty(),u=getWelcomeUnit(),partners=getWelcomePartners();
+  const has=v=>!!String(v??'').trim();
+  const coords=Number.isFinite(Number(p.lat))&&Number.isFinite(Number(p.lng));
+  if(id==='property'){
+    const checks=[has(p.name||u.name),coords,has(u.overrideHost?u.host:p.host),has(u.overrideEmergency?u.emergency:p.emergency)];
+    const done=checks.filter(Boolean).length;
+    return {state:done===checks.length?'ready':done?'more':'more',label:done===checks.length?'Ready':`${done}/${checks.length} details`};
+  }
+  if(id==='guest-info'){
+    const checks=[has(u.wifiName)&&has(u.wifiPassword),has(u.villaInfo)];
+    const done=checks.filter(Boolean).length;
+    return {state:done===checks.length?'ready':'more',label:done===checks.length?'Ready':`${done}/${checks.length} details`};
+  }
+  if(id==='services'){
+    const count=[u.foodInfo,u.transportInfo,u.wellnessInfo,u.toursInfo,u.otherServices].filter(has).length;
+    return count?{state:'ready',label:`${count} added`}:{state:'more',label:'Add info'};
+  }
+  if(id==='schedule'){
+    const count=Array.isArray(u.activities)?u.activities.filter(x=>x&&x.enabled!==false&&has(x.title)).length:0;
+    return count?{state:'ready',label:`${count} added`}:{state:'more',label:'Add activity'};
+  }
+  if(id==='categories'){
+    const count=getWelcomeCategories().filter(x=>x.enabled!==false).length;
+    return count?{state:'ready',label:`${count} enabled`}:{state:'more',label:'Choose categories'};
+  }
+  if(id==='places'){
+    return partners.length?{state:'ready',label:`${partners.length} added`}:{state:'optional',label:'Optional'};
+  }
+  if(id==='google'){
+    let key='';try{key=localStorage.getItem(WELCOME_GOOGLE_PLACES_KEY)||''}catch{}
+    return has(key)?{state:'ready',label:'Connected'}:{state:'optional',label:'Optional'};
+  }
+  if(id==='affiliates'){
+    const a=getPapaGolfAffiliateProfile();
+    return has(a.businessName)?{state:'ready',label:'Profile saved'}:{state:'optional',label:'Optional'};
+  }
+  if(id==='gateways'){
+    const count=getPapaGolfGateways().filter(g=>g&&g.enabled!==false).length;
+    return count?{state:'ready',label:`${count} active`}:{state:'more',label:'Set up QR'};
+  }
+  return {state:'optional',label:'Optional'};
+}
+function renderWelcomeSectionStatuses(){
+  const root=document.getElementById('welcomeModule');
+  if(!root)return;
+  root.querySelectorAll('.pg-nav-section[data-pg-section]').forEach(section=>{
+    const toggle=section.querySelector(':scope > .pg-section-toggle');
+    if(!toggle)return;
+    const state=welcomeSectionSetupState(section.dataset.pgSection);
+    let badge=toggle.querySelector('.pg-section-status');
+    if(!badge){
+      badge=document.createElement('span');
+      badge.className='pg-section-status';
+      const chevron=toggle.querySelector('.pg-section-chevron');
+      const wrap=document.createElement('span');wrap.className='pg-section-toggle-end';
+      if(chevron)toggle.insertBefore(wrap,chevron);else toggle.appendChild(wrap);
+      wrap.appendChild(badge);if(chevron)wrap.appendChild(chevron);
+    }
+    badge.className=`pg-section-status is-${state.state}`;
+    badge.innerHTML=`<span class="pg-section-status-icon" aria-hidden="true">${state.state==='ready'?'✓':state.state==='more'?'✎':'·'}</span><span>${escapeHtml(state.label)}</span>`;
+    badge.setAttribute('aria-label',state.state==='ready'?`Complete: ${state.label}`:state.state==='more'?`More information can be added: ${state.label}`:`${state.label} section`);
+  });
+}
 function renderWelcomeReadiness(){
   const status=welcomeSetupStatus();
   const title=document.getElementById('welcomeReadinessTitle');
@@ -3270,6 +3334,7 @@ function renderWelcomeReadiness(){
   if(text)text.textContent=!ready?`Next: ${status.missing[0]?.name||'finish setup'}.`:`Core ready · ${status.enhanced} of ${status.enhancementTotal} optional guest sections populated.`;
   if(card)card.classList.toggle('is-ready',ready);
   if(continueBtn){continueBtn.textContent=ready&&status.next?'Add more guest content':ready?'Review setup':'Continue setup';continueBtn.dataset.targetSection=status.next?.section||'guest-info';}
+  renderWelcomeSectionStatuses();
 }
 function finishWelcomeEdit(button,message){
   const section=button?.closest?.('.pg-nav-section');
@@ -4329,6 +4394,7 @@ function setupPapaGolfProgressiveSections(){
     const toggle=section.querySelector(':scope > .pg-section-toggle');
     if(toggle){toggle.setAttribute('aria-expanded','false');toggle.querySelector('.pg-section-chevron').textContent='›';}
   });
+  renderWelcomeSectionStatuses();
   window.papaGolfOpenAdminSection=(id,options={})=>setOpen(id,options);
   window.papaGolfCollapseAdminSections=()=>{sections.forEach(section=>{section.classList.remove('pg-section-open');section.classList.add('pg-section-collapsed');const toggle=section.querySelector(':scope > .pg-section-toggle');if(toggle){toggle.setAttribute('aria-expanded','false');const c=toggle.querySelector('.pg-section-chevron');if(c)c.textContent='›';}})};
 }

@@ -1,3 +1,14 @@
+## v0.34.1 — Welcome setup-at-a-glance status
+
+- Added live status badges to every Welcome setup section.
+- Green tick = section is ready/configured.
+- Amber pencil = useful information is still missing or can be added.
+- Grey dot = genuinely optional section not yet configured.
+- Core Property/Villa and Guest Information sections show completion counts until ready.
+- Guest Services, What’s On, Explore Nearby, Places/Affiliates, Google Places, Brand Studio and Gateways report their current setup state.
+- Statuses refresh after the existing readiness/save flows without changing stored photo or Welcome data.
+- Preserves the iPhone-first progressive-disclosure layout and v0.33.3 compact guest header.
+
 ## v0.34.0 — Compact guest arrival header
 
 - Guest Preview now welcomes by property name, not unit/floor.
