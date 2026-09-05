@@ -22,6 +22,8 @@ check(!/indexedDB\.deleteDatabase\s*\(/.test(app),'no IndexedDB database deletio
 check(!/localStorage\.clear\s*\(/.test(app),'no localStorage.clear in app runtime');
 check(app.includes("papa-golf-assets-v01"),'separate affiliate asset database retained');
 check(app.includes('affiliateLogoAsset'),'affiliate logo remains in backup path');
+check(app.includes('Firebase Shared Data project/API settings and anonymous owner auth tokens'),'Firebase Shared Data auth/config explicitly excluded from backup');
+check(!/welcomeBackupSnapshot[\s\S]{0,1200}PAPA_GOLF_SHARED_AUTH_KEY/.test(app),'Firebase owner auth token not included in Welcome backup snapshot');
 
 check(app.includes("new URL('welcome.html'"),'public Welcome URL uses standalone cross-device page');
 check(app.includes("url.hash='d='"),'public Welcome data is carried in URL fragment, not server query');
@@ -33,6 +35,12 @@ check(app.includes('publishSharedWelcome')&&app.includes('sharedPermanentWelcome
 check(app.includes('papaGolfGateways')&&app.includes('identitytoolkit.googleapis.com'),'Firebase owner/auth bridge present');
 check(publicWelcomeJs.includes('loadSharedWelcome')&&publicWelcomeJs.includes('firestore.googleapis.com'),'public Welcome can resolve stable shared Gateway');
 check(fs.existsSync(path.join(root,'FIREBASE_SETUP.md')),'Firebase setup guide included');
+check(html.includes('id="sharedSetupIdentity"')&&html.includes('id="sharedRulesText"')&&html.includes('id="copySharedRulesBtn"'),'secure Shared Data setup assistant present');
+check(app.includes('buildSharedFirestoreRules')&&app.includes('allow list: if false'),'generated Firestore rules block collection listing');
+check(app.includes("request.auth.uid == '${uid}'")&&app.includes('request.resource.data.ownerUid == request.auth.uid'),'generated Firestore writes bind to exact owner UID');
+check(!app.includes('allow read, write: if true'),'no permissive Firestore rule embedded in runtime');
+check(app.includes('OPERATION_NOT_ALLOWED')&&app.includes('Anonymous sign-in is not enabled yet'),'Firebase auth diagnostics explain disabled Anonymous sign-in');
+check(app.includes("localStorage.removeItem(PAPA_GOLF_SHARED_AUTH_KEY)"),'changing Firebase project/key invalidates stale owner auth');
 
 check((()=>{try{new Function(publicWelcomeJs);return true}catch{return false}})(),'standalone public Welcome JavaScript parses');
 for(const file of ['index.html','welcome.html','gateway-demo.html','promotion.html']){

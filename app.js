@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.37.0';
+const RUNTIME_VERSION = '0.38.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -296,6 +296,7 @@ async function exportBackup() {
     records: serialized
     // Deliberately excluded:
     // - Google Places API key
+    // - Firebase Shared Data project/API settings and anonymous owner auth tokens
     // - temporary Nearby provider caches
     // - service-worker/browser caches
   };
@@ -2695,7 +2696,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.37.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.38.0', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3363,9 +3364,10 @@ function welcomeSectionSetupState(id){
     return has(a.businessName)?{state:'ready',label:'Profile saved'}:{state:'optional',label:'Optional'};
   }
   if(id==='shared-data'){
-    const cfg=getSharedBackendConfig(),st=getSharedPublishState();
+    const cfg=getSharedBackendConfig(),st=getSharedPublishState(),auth=getSharedStoredAuth();
     if(st.lastPublishedAt&&st.projectId===cfg.projectId)return {state:'ready',label:'Shared'};
-    return cfg.projectId&&cfg.apiKey?{state:'more',label:'Ready to publish'}:{state:'more',label:'Connect backend'};
+    if(auth?.localId&&cfg.projectId&&cfg.apiKey)return {state:'more',label:'Secure rules next'};
+    return cfg.projectId&&cfg.apiKey?{state:'more',label:'Owner identity next'}:{state:'more',label:'Connect backend'};
   }
   if(id==='gateways'){
     const count=getPapaGolfGateways().filter(g=>g&&g.enabled!==false).length;
@@ -4493,6 +4495,7 @@ const PAPA_GOLF_SHARED_AUTH_KEY='papaGolfSharedFirebaseAuthV1';
 const PAPA_GOLF_SHARED_STATE_KEY='papaGolfSharedPublishStateV1';
 function getSharedBackendConfig(){return readWelcomeJson(PAPA_GOLF_SHARED_BACKEND_KEY,{projectId:'',apiKey:''})||{projectId:'',apiKey:''}}
 function getSharedPublishState(){return readWelcomeJson(PAPA_GOLF_SHARED_STATE_KEY,{lastPublishedAt:'',gatewayId:'',projectId:'',ownerUid:''})||{}}
+function getSharedStoredAuth(){return readWelcomeJson(PAPA_GOLF_SHARED_AUTH_KEY,null)}
 function sharedGateway(){return ensureDefaultPropertyGateway().find(g=>g.type==='property')||ensureDefaultPropertyGateway()[0]}
 function sharedPermanentWelcomeUrl(){
   const cfg=getSharedBackendConfig(),g=sharedGateway();
@@ -4505,8 +4508,19 @@ function sharedBackendCanUseStableLink(){
   const cfg=getSharedBackendConfig(),st=getSharedPublishState(),g=sharedGateway();
   return !!(cfg.projectId&&g?.id&&st.lastPublishedAt&&st.gatewayId===g.id&&st.projectId===cfg.projectId);
 }
+function buildSharedFirestoreRules(ownerUid){
+  const uid=String(ownerUid||'').trim().replace(/'/g,'');
+  if(!uid)return `// Create / test the owner identity first. Papa Golf will generate the secure rules here.`;
+  return `rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /papaGolfGateways/{gatewayId} {\n      function isOwner() {\n        return request.auth != null && request.auth.uid == '${uid}';\n      }\n\n      // Guests may fetch a known, published Gateway. Collection browsing stays blocked.\n      allow get: if resource.data.published == true\n                 || (isOwner() && resource.data.ownerUid == request.auth.uid);\n      allow list: if false;\n\n      // Only this Papa Golf owner identity may publish or change a Gateway.\n      allow create: if isOwner()\n                    && request.resource.data.ownerUid == request.auth.uid;\n      allow update: if isOwner()\n                    && resource.data.ownerUid == request.auth.uid\n                    && request.resource.data.ownerUid == request.auth.uid;\n      allow delete: if isOwner()\n                    && resource.data.ownerUid == request.auth.uid;\n    }\n  }\n}`;
+}
+function updateSharedSetupStep(id,state){
+  const el=document.getElementById(id);if(!el)return;
+  el.classList.remove('is-ready','is-current');
+  if(state==='ready')el.classList.add('is-ready');
+  if(state==='current')el.classList.add('is-current');
+}
 function renderSharedDataSection(){
-  const cfg=getSharedBackendConfig(),st=getSharedPublishState(),g=sharedGateway();
+  const cfg=getSharedBackendConfig(),st=getSharedPublishState(),g=sharedGateway(),auth=getSharedStoredAuth();
   const project=document.getElementById('sharedFirebaseProjectId'),key=document.getElementById('sharedFirebaseApiKey');
   if(project&&document.activeElement!==project)project.value=cfg.projectId||'';
   if(key&&document.activeElement!==key)key.value=cfg.apiKey||'';
@@ -4514,19 +4528,39 @@ function renderSharedDataSection(){
   const mode=document.getElementById('sharedDataMode');if(mode)mode.textContent=sharedBackendCanUseStableLink()?'Shared Beta':'Local Alpha';
   const last=document.getElementById('sharedDataLastPublished');if(last)last.textContent=st.lastPublishedAt?new Date(st.lastPublishedAt).toLocaleString():'Not published';
   const copy=document.getElementById('copyPermanentWelcomeBtn');if(copy)copy.disabled=!sharedBackendCanUseStableLink();
-  const publish=document.getElementById('publishSharedWelcomeBtn');if(publish)publish.disabled=!(cfg.projectId&&cfg.apiKey);
+  const publish=document.getElementById('publishSharedWelcomeBtn');if(publish)publish.disabled=!(cfg.projectId&&cfg.apiKey&&auth?.localId);
+  const ownerCard=document.getElementById('sharedOwnerCard'),ownerUid=document.getElementById('sharedOwnerUid');
+  if(ownerCard)ownerCard.classList.toggle('hidden',!auth?.localId);
+  if(ownerUid)ownerUid.textContent=auth?.localId||'—';
+  const rules=document.getElementById('sharedRulesText');if(rules)rules.value=buildSharedFirestoreRules(auth?.localId||'');
+  const connected=!!(cfg.projectId&&cfg.apiKey),identified=!!auth?.localId,published=sharedBackendCanUseStableLink();
+  updateSharedSetupStep('sharedSetupConnection',connected?'ready':'current');
+  updateSharedSetupStep('sharedSetupIdentity',identified?'ready':connected?'current':'');
+  updateSharedSetupStep('sharedSetupRules',identified?(published?'ready':'current'):'');
+  updateSharedSetupStep('sharedSetupPublish',published?'ready':'');
   renderWelcomeSectionStatuses();
 }
 function saveSharedBackendSettings(){
   const projectId=document.getElementById('sharedFirebaseProjectId')?.value?.trim()||'';
   const apiKey=document.getElementById('sharedFirebaseApiKey')?.value?.trim()||'';
+  const previous=getSharedBackendConfig();
   localStorage.setItem(PAPA_GOLF_SHARED_BACKEND_KEY,JSON.stringify({projectId,apiKey}));
-  const status=document.getElementById('sharedBackendTestStatus');if(status)status.textContent=projectId&&apiKey?'Settings saved on this device.':'Enter both values to connect.';
+  if((previous.projectId&&previous.projectId!==projectId)||(previous.apiKey&&previous.apiKey!==apiKey)){
+    localStorage.removeItem(PAPA_GOLF_SHARED_AUTH_KEY);
+  }
+  const status=document.getElementById('sharedBackendTestStatus');if(status)status.textContent=projectId&&apiKey?'Firebase settings saved on this device. Next: create / test the owner identity.':'Enter both Firebase values first.';
   renderSharedDataSection();
+}
+function sharedFirebaseErrorMessage(message){
+  const m=String(message||'');
+  if(m.includes('OPERATION_NOT_ALLOWED'))return 'Anonymous sign-in is not enabled yet. In Firebase: Authentication → Get started → Sign-in method → Anonymous → Enable → Save.';
+  if(m.includes('API_KEY_INVALID')||m.includes('API key not valid'))return 'Firebase rejected the Web API key. Re-copy the Web API key from Project settings → Your apps.';
+  if(m.includes('PROJECT_NOT_FOUND'))return 'Firebase could not find that project. Check the Project ID.';
+  return m||'Firebase connection failed.';
 }
 async function getSharedFirebaseAuth({force=false}={}){
   const cfg=getSharedBackendConfig();if(!cfg.apiKey)throw new Error('Firebase Web API key is missing.');
-  let auth=readWelcomeJson(PAPA_GOLF_SHARED_AUTH_KEY,null);
+  let auth=getSharedStoredAuth();
   const now=Math.floor(Date.now()/1000);
   if(!force&&auth?.idToken&&Number(auth.expiresAt||0)>now+120)return auth;
   if(auth?.refreshToken&&!force){
@@ -4535,21 +4569,32 @@ async function getSharedFirebaseAuth({force=false}={}){
     if(r.ok){const x=await r.json();auth={idToken:x.id_token,refreshToken:x.refresh_token,localId:x.user_id,expiresAt:now+Number(x.expires_in||3600)};localStorage.setItem(PAPA_GOLF_SHARED_AUTH_KEY,JSON.stringify(auth));return auth}
   }
   const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${encodeURIComponent(cfg.apiKey)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({returnSecureToken:true})});
-  if(!r.ok){const x=await r.json().catch(()=>({}));throw new Error(x?.error?.message||`Firebase sign-in failed (${r.status}). Enable Anonymous Authentication in Firebase.`)}
+  if(!r.ok){const x=await r.json().catch(()=>({}));throw new Error(sharedFirebaseErrorMessage(x?.error?.message||`Firebase sign-in failed (${r.status}).`))}
   const x=await r.json();auth={idToken:x.idToken,refreshToken:x.refreshToken,localId:x.localId,expiresAt:now+Number(x.expiresIn||3600)};localStorage.setItem(PAPA_GOLF_SHARED_AUTH_KEY,JSON.stringify(auth));return auth;
 }
 function sharedFirestoreDocumentUrl(projectId,gatewayId){return `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/databases/(default)/documents/papaGolfGateways/${encodeURIComponent(gatewayId)}`}
 async function testSharedBackend(){
   saveSharedBackendSettings();const status=document.getElementById('sharedBackendTestStatus'),cfg=getSharedBackendConfig();
-  if(status)status.textContent='Testing Firebase connection…';
+  if(status)status.textContent='Creating or refreshing the secure owner identity…';
   try{
     if(!cfg.projectId)throw new Error('Firebase project ID is missing.');
+    if(!cfg.apiKey)throw new Error('Firebase Web API key is missing.');
     const auth=await getSharedFirebaseAuth();
-    const r=await fetch(sharedFirestoreDocumentUrl(cfg.projectId,sharedGateway()?.id||'test'),{headers:{Authorization:`Bearer ${auth.idToken}`}});
-    if(![200,403,404].includes(r.status))throw new Error(`Firestore returned ${r.status}. Check the project ID and Firestore setup.`);
-    if(status)status.textContent=`Connected as owner ${auth.localId.slice(0,8)}… · Firestore ${r.status===403?'rules still need setup':r.status===404?'ready; no Welcome published yet':'reachable'}.`;
-  }catch(err){if(status)status.textContent=`Connection not ready: ${err.message}`}
+    if(status)status.textContent=`Owner identity ready: ${auth.localId}. Next: copy the generated Firestore security rules and publish them in Firebase.`;
+    document.getElementById('sharedRulesDetails')?.setAttribute('open','');
+  }catch(err){if(status)status.textContent=`Setup not ready: ${sharedFirebaseErrorMessage(err.message)}`}
   renderSharedDataSection();
+}
+async function copySharedOwnerId(){
+  const uid=getSharedStoredAuth()?.localId||'',status=document.getElementById('sharedBackendTestStatus');
+  if(!uid){if(status)status.textContent='Create the owner identity first.';return}
+  try{await navigator.clipboard.writeText(uid);if(status)status.textContent='Owner ID copied.'}catch{if(status)status.textContent='Could not copy automatically. Press and hold the Owner ID to copy it.'}
+}
+async function copySharedRules(){
+  const auth=getSharedStoredAuth(),status=document.getElementById('sharedBackendTestStatus');
+  if(!auth?.localId){if(status)status.textContent='Create the owner identity first so Papa Golf can lock the rules to it.';return}
+  const text=buildSharedFirestoreRules(auth.localId);
+  try{await navigator.clipboard.writeText(text);if(status)status.textContent='Secure Firestore rules copied. Replace the current Firebase rules with these and tap Publish in Firebase.'}catch{if(status)status.textContent='Could not copy automatically. Select the generated rules and copy them manually.'}
 }
 async function publishSharedWelcome(){
   saveWelcomeProperty();saveWelcomeUnit();saveWelcomeCategories();
@@ -4561,11 +4606,12 @@ async function publishSharedWelcome(){
     const payload=welcomePublicPayload();
     const body={fields:{payload:{stringValue:JSON.stringify(payload)},ownerUid:{stringValue:auth.localId},published:{booleanValue:true},gatewayId:{stringValue:g.id},propertyName:{stringValue:String(payload?.p?.n||'')},schemaVersion:{integerValue:String(PAPA_GOLF_WELCOME_SCHEMA_VERSION)},updatedAt:{timestampValue:new Date().toISOString()}}};
     const r=await fetch(sharedFirestoreDocumentUrl(cfg.projectId,g.id),{method:'PATCH',headers:{Authorization:`Bearer ${auth.idToken}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!r.ok){const x=await r.json().catch(()=>({}));throw new Error(x?.error?.message||`Publish failed (${r.status}). Check Firestore security rules.`)}
+    if(!r.ok){const x=await r.json().catch(()=>({}));const raw=x?.error?.message||`Publish failed (${r.status}).`;throw new Error(r.status===403?'Firestore blocked the publish. Copy Papa Golf’s generated security rules into Firebase → Firestore → Rules, publish them, then try again.':raw)}
     const publishedAt=new Date().toISOString();localStorage.setItem(PAPA_GOLF_SHARED_STATE_KEY,JSON.stringify({lastPublishedAt:publishedAt,gatewayId:g.id,projectId:cfg.projectId,ownerUid:auth.localId}));
-    if(status)status.textContent='Published. This Gateway now has a permanent shared link; future updates can use the same QR.';
+    if(status)status.textContent='Published ✓ Permanent link is live. Future edits can be republished without changing the QR or URL.';
+    const test=document.getElementById('sharedBackendTestStatus');if(test)test.textContent='Secure shared publishing is working.';
     renderSharedDataSection();renderPublicWelcomeLink();renderWelcomeA5();
-  }catch(err){if(status)status.textContent=`Publish failed: ${err.message}`}
+  }catch(err){if(status)status.textContent=`Publish failed: ${sharedFirebaseErrorMessage(err.message)}`}
 }
 async function copyPermanentWelcomeLink(){
   const url=sharedPermanentWelcomeUrl(),status=document.getElementById('sharedDataStatus');if(!url||!sharedBackendCanUseStableLink()){if(status)status.textContent='Publish this Welcome to shared data first.';return}
@@ -4873,7 +4919,10 @@ function initWelcomeModule(){
   document.getElementById('welcomeA5BackBtn')?.addEventListener('click',()=>welcomeShow(page));
   document.getElementById('welcomeA5PrintBtn')?.addEventListener('click',printWelcomeA5);
   document.getElementById('saveSharedBackendBtn')?.addEventListener('click',saveSharedBackendSettings);
-  document.getElementById('testSharedBackendBtn')?.addEventListener('click',testSharedBackend);
+  document.getElementById('createSharedOwnerBtn')?.addEventListener('click',testSharedBackend);
+  document.getElementById('recheckSharedBackendBtn')?.addEventListener('click',testSharedBackend);
+  document.getElementById('copySharedOwnerBtn')?.addEventListener('click',copySharedOwnerId);
+  document.getElementById('copySharedRulesBtn')?.addEventListener('click',copySharedRules);
   document.getElementById('publishSharedWelcomeBtn')?.addEventListener('click',publishSharedWelcome);
   document.getElementById('copyPermanentWelcomeBtn')?.addEventListener('click',copyPermanentWelcomeLink);
   renderSharedDataSection();

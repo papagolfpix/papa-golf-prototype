@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.37.0" />
+<link rel="stylesheet" href="styles.css?v=0.38.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.37.0</div>
+      <div class="eyebrow">PAPA GOLF · V0.38.0</div>
       <h1>Papa Golf Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -355,13 +355,30 @@
       <div><span class="small muted">Gateway ID</span><strong id="sharedDataGatewayId">—</strong></div>
       <div><span class="small muted">Last shared publish</span><strong id="sharedDataLastPublished">Not published</strong></div>
     </div>
-    <details class="shared-data-config">
-      <summary>Backend connection settings</summary>
-      <p class="small muted">For the first shared-data test we will use Firebase. These are web-app connection values only; never enter a private key or service-account credential here.</p>
-      <label>Firebase project ID<input id="sharedFirebaseProjectId" type="text" autocomplete="off" placeholder="your-project-id"></label>
-      <label>Firebase Web API key<input id="sharedFirebaseApiKey" type="text" autocomplete="off" placeholder="AIza…"></label>
-      <div class="shared-data-actions"><button id="saveSharedBackendBtn" class="secondary-btn" type="button">Save settings</button><button id="testSharedBackendBtn" class="secondary-btn" type="button">Test connection</button></div>
+    <details class="shared-data-config" open>
+      <summary>Secure setup assistant</summary>
+      <p class="small muted">One-time setup. Papa Golf keeps your existing local data untouched until you publish.</p>
+      <div class="shared-setup-steps" aria-label="Shared backend setup steps">
+        <div class="shared-setup-step" id="sharedSetupConnection"><span class="shared-step-number">1</span><div><strong>Connect Firebase</strong><span class="small muted">Save the project ID and Web API key from the Firebase web app.</span></div></div>
+        <div class="shared-setup-step" id="sharedSetupIdentity"><span class="shared-step-number">2</span><div><strong>Create owner identity</strong><span class="small muted">Enable Anonymous sign-in once in Firebase Authentication, then create this device's owner identity.</span></div></div>
+        <div class="shared-setup-step" id="sharedSetupRules"><span class="shared-step-number">3</span><div><strong>Lock publishing to this owner</strong><span class="small muted">Copy the generated Firestore rules and publish them in Firebase.</span></div></div>
+        <div class="shared-setup-step" id="sharedSetupPublish"><span class="shared-step-number">4</span><div><strong>Publish & test</strong><span class="small muted">Publish once, then the permanent QR/link can stay the same.</span></div></div>
+      </div>
+      <label>Firebase project ID<input id="sharedFirebaseProjectId" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="your-project-id"></label>
+      <label>Firebase Web API key<input id="sharedFirebaseApiKey" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="AIza…"></label>
+      <div class="shared-data-actions"><button id="saveSharedBackendBtn" class="secondary-btn" type="button">Save Firebase settings</button><button id="createSharedOwnerBtn" class="secondary-btn" type="button">Create / test owner identity</button></div>
       <div id="sharedBackendTestStatus" class="small muted" aria-live="polite"></div>
+      <div id="sharedOwnerCard" class="shared-owner-card hidden">
+        <span class="small muted">Owner ID for security rules</span>
+        <strong id="sharedOwnerUid">—</strong>
+        <button id="copySharedOwnerBtn" class="text-btn" type="button">Copy owner ID</button>
+      </div>
+      <details id="sharedRulesDetails" class="shared-rules-box">
+        <summary>Firestore security rules</summary>
+        <p class="small muted">These rules allow anyone with the permanent link to read a published Gateway, block collection listing, and restrict all writes to this exact owner identity.</p>
+        <textarea id="sharedRulesText" rows="15" readonly spellcheck="false" aria-label="Generated Firestore security rules"></textarea>
+        <div class="shared-data-actions"><button id="copySharedRulesBtn" class="secondary-btn" type="button">Copy secure rules</button><button id="recheckSharedBackendBtn" class="secondary-btn" type="button">Recheck connection</button></div>
+      </details>
     </details>
     <div class="shared-data-actions"><button id="publishSharedWelcomeBtn" class="primary-btn" type="button">Publish Current Welcome</button><button id="copyPermanentWelcomeBtn" class="secondary-btn" type="button">Copy Permanent Link</button></div>
     <div id="sharedDataStatus" class="small muted" aria-live="polite">Connect the backend when you are ready. Nothing local is changed until you publish.</div>
@@ -737,6 +754,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.37.0" defer></script>
+  <script src="app.js?v=0.38.0" defer></script>
 </body>
 </html>
