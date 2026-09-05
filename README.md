@@ -1,5 +1,13 @@
+## v0.33.1 — Public Welcome QR + iPhone polish
+- Displays a scannable QR directly in the Public Villa Welcome panel.
+- Makes the public Welcome action high contrast.
+- Fixes the Gateway enabled checkbox/label overflow on iPhone.
+- Creating a public link closes the Gateway editor and scrolls to the publishing result.
+- Public Welcome now uses the property name as the main heading and shows unit/floor as secondary context.
+- A5 Welcome gets a real QR image fallback when the optional QRCode library is unavailable.
 
-## v0.33.0 — Welcome Minimum Complete Product, first expansion
+
+## v0.33.1 — Welcome Minimum Complete Product, first expansion
 - Adds structured **What’s On / Activity Schedule** to Villa Welcome. Owners can add recurring activities by day/time with category, guest note, price and booking details.
 - Guest preview and cross-device public Welcome now automatically show **today’s activities** plus the full weekly programme.
 - Adds dedicated **Wellness** and **Tours & Experiences** guest information, instead of burying these inside a generic services box.

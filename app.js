@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.33.0';
+const RUNTIME_VERSION = '0.33.1';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2695,7 +2695,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.33.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.33.1', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -4242,7 +4242,8 @@ function welcomePublicUrl(){
 function renderPublicWelcomeLink(){
   const host=document.getElementById('publicWelcomeLinkBox');if(!host)return;
   const url=welcomePublicUrl();host.classList.remove('hidden');
-  host.innerHTML=`<strong>Public Villa Welcome</strong><p class="small muted">Open this on another phone to test the guest experience. Recreate the link after changing villa information.</p><div class="welcome-public-actions"><a class="secondary-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener">Open Public Welcome</a><button id="copyPublicWelcomeLinkBtn" class="secondary-btn" type="button">Copy Link</button></div>`;
+  const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=420x420&margin=16&format=png&data=${encodeURIComponent(url)}`;
+  host.innerHTML=`<strong>Public Villa Welcome</strong><p class="small muted">Scan this QR on another device, or use the buttons below. Recreate it after changing villa information.</p><div class="welcome-public-qr"><img src="${escapeHtml(qrUrl)}" alt="QR code for this Public Villa Welcome"></div><div class="welcome-public-actions"><a class="welcome-public-open-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener">Open Public Welcome</a><button id="copyPublicWelcomeLinkBtn" class="secondary-btn" type="button">Copy Link</button></div>`;
   document.getElementById('copyPublicWelcomeLinkBtn')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(url);host.querySelector('p').textContent='Public Welcome link copied.'}catch{host.querySelector('p').textContent='Open the public page and copy its Safari address.'}});
 }
 function renderWelcomeA5(){
@@ -4261,7 +4262,7 @@ function renderWelcomeA5(){
     if(typeof QRCode!=='undefined'){
       new QRCode(qr,{text:url,width:210,height:210,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
     }else{
-      qr.innerHTML='<div class="a5-qr-fallback">WELCOME<br>QR</div>';
+      qr.innerHTML=`<img class="a5-qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=420x420&margin=16&format=png&data=${encodeURIComponent(url)}" alt="Public Welcome QR code">`;
     }
   }
 }
@@ -4441,7 +4442,7 @@ function initWelcomeModule(){
     }
   }
 
-  // v0.33.0: preserve the old demo-host migration without touching custom host details.
+  // v0.33.1: preserve the old demo-host migration without touching custom host details.
   const savedPropertyForHost=readWelcomeJson(WELCOME_PROPERTY_KEY,{});
   if(/^Millie\b/i.test(String(savedPropertyForHost.host||'').trim())){
     savedPropertyForHost.host=String(savedPropertyForHost.host).replace(/^Millie\b/i,'Pauly Gee');
@@ -4564,7 +4565,7 @@ function initWelcomeModule(){
   });
   document.getElementById('welcomeA5BackBtn')?.addEventListener('click',()=>welcomeShow(page));
   document.getElementById('welcomeA5PrintBtn')?.addEventListener('click',printWelcomeA5);
-  document.getElementById('createPublicWelcomeLinkBtn')?.addEventListener('click',renderPublicWelcomeLink);
+  document.getElementById('createPublicWelcomeLinkBtn')?.addEventListener('click',()=>{document.getElementById('gatewayEditPanel')?.classList.add('hidden');renderPublicWelcomeLink();setTimeout(()=>document.getElementById('publicWelcomeLinkBox')?.scrollIntoView({behavior:'smooth',block:'center'}),40)});
 
   document.getElementById('welcomeNearbyList')?.addEventListener('click',event=>{
     if(event.target.closest('a'))return;

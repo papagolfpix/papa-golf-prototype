@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.33.0" />
+<link rel="stylesheet" href="styles.css?v=0.33.1" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.33.0</div>
+      <div class="eyebrow">PAPA GOLF · V0.33.1</div>
       <h1>Papa Golf Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -338,7 +338,7 @@
         <label>Gateway name<input id="gatewayEditName" type="text"></label><label>Subtitle / location<input id="gatewayEditSubtitle" type="text"></label>
         <label>Gateway type<select id="gatewayEditType"><option value="property">Property / Villa</option><option value="restaurant">Restaurant</option><option value="bar">Bar</option><option value="cafe">Café</option><option value="tour">Tour Operator</option><option value="attraction">Attraction</option><option value="other">Other</option></select></label>
         <label>Menu tiles<input id="gatewayEditTiles" type="text" placeholder="menu, specials, nearby, tours, transport"></label>
-        <label class="gateway-enabled"><input id="gatewayEditEnabled" type="checkbox"> Gateway enabled</label><button id="gatewayEditSaveBtn" type="button" class="primary-btn">Save Gateway</button>
+        <div class="gateway-edit-actions"><label class="gateway-enabled"><input id="gatewayEditEnabled" type="checkbox"><span>Gateway enabled</span></label><button id="gatewayEditSaveBtn" type="button" class="primary-btn">Save Gateway</button></div>
       </div>
     </section>
     <h3>A5 Welcome Card</h3>
@@ -682,6 +682,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.33.0" defer></script>
+  <script src="app.js?v=0.33.1" defer></script>
 </body>
 </html>

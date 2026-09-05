@@ -1495,7 +1495,7 @@ body.welcome-admin-mode .view-tabs,
 body.welcome-admin-mode .library-tools{display:none!important}
 body.welcome-admin-mode main{padding-top:max(10px,env(safe-area-inset-top))}
 
-/* v0.33.0 Welcome schedule editor */
+/* v0.33.1 Welcome schedule editor */
 .welcome-schedule-form{display:grid;gap:14px;margin-top:12px}
 .welcome-days{border:1px solid var(--line,#d8d8d8);border-radius:14px;padding:12px}
 .welcome-days legend{font-weight:700;padding:0 6px}
@@ -1510,3 +1510,7 @@ body.welcome-admin-mode main{padding-top:max(10px,env(safe-area-inset-top))}
 .welcome-preview-activity-card{background:#fff;border:1px solid var(--line,#ddd);border-radius:14px;padding:14px;margin:10px 0}
 .welcome-preview-activity-head{display:flex;justify-content:space-between;gap:10px}.welcome-preview-activity-head span,.welcome-preview-activity-time{font-weight:800}.welcome-preview-activity-card p{line-height:1.45}
 .welcome-preview-day-group{margin:18px 0}.welcome-preview-day-group h4{margin:0 0 7px;padding-bottom:6px;border-bottom:1px solid var(--line,#ddd)}
+
+/* v0.33.1 public Welcome publishing + iPhone Gateway fixes */
+.gateway-edit-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}.gateway-enabled{display:flex!important;align-items:center!important;gap:10px!important;margin:0!important;min-width:0}.gateway-edit-panel .gateway-enabled input[type=checkbox]{width:24px!important;height:24px!important;min-width:24px;flex:0 0 24px;margin:0}.gateway-enabled span{min-width:0;overflow-wrap:anywhere}.gateway-edit-actions .primary-btn{flex:0 0 auto}.welcome-public-qr{display:flex;justify-content:center;margin:16px auto}.welcome-public-qr img{display:block;width:min(280px,80vw);height:auto;background:#fff;padding:10px;border-radius:16px}.welcome-public-open-btn{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:.7rem 1rem;border-radius:12px;background:#fff;color:#111!important;font-weight:800;text-decoration:none!important;border:2px solid #fff}.a5-qr-image{display:block;width:100%;height:auto}.public-unit{font-weight:700}
+@media(max-width:520px){.gateway-edit-actions{align-items:stretch;flex-direction:column}.gateway-edit-actions .primary-btn{width:100%}.gateway-enabled{min-height:48px;padding:8px 2px}}
