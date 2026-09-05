@@ -1555,3 +1555,9 @@ body.welcome-admin-mode main{padding-top:max(10px,env(safe-area-inset-top))}
   .pg-section-chevron{width:34px;height:34px;flex-basis:34px}
 }
 @media(max-width:390px){.pg-section-status span:last-child{display:none}.pg-section-status{padding:5px}.pg-section-status-icon{width:20px;height:20px}}
+
+
+/* v0.35.0 Welcome owner guidance + guest Today strip */
+.welcome-readiness-hint{margin-top:.35rem;line-height:1.4}
+.guest-today-strip{width:100%;display:flex;align-items:center;gap:.75rem;margin:0 0 1rem;padding:.85rem .95rem;border:1px solid rgba(224,188,102,.38);border-radius:16px;background:rgba(224,188,102,.08);color:inherit;text-align:left}
+.guest-today-icon{font-size:1.5rem;flex:0 0 auto}.guest-today-copy{min-width:0;display:flex;flex-direction:column;gap:.15rem}.guest-today-copy strong{font-size:1rem}.guest-today-copy small{color:#aaa49a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.guest-today-chevron{margin-left:auto;color:#e0bc66;font-size:1.8rem;line-height:1}

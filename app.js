@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.34.1';
+const RUNTIME_VERSION = '0.35.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2695,7 +2695,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.34.1', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.35.0', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3329,11 +3329,17 @@ function renderWelcomeReadiness(){
   const text=document.getElementById('welcomeReadinessText');
   const card=document.getElementById('welcomeReadinessCard');
   const continueBtn=document.getElementById('welcomeContinueSetupBtn');
+  const hint=document.getElementById('welcomeReadinessHint');
   const ready=status.complete===status.total;
   if(title)title.textContent=ready?'Guest essentials ready':`${status.complete} of ${status.total} essentials ready`;
   if(text)text.textContent=!ready?`Next: ${status.missing[0]?.name||'finish setup'}.`:`Core ready · ${status.enhanced} of ${status.enhancementTotal} optional guest sections populated.`;
   if(card)card.classList.toggle('is-ready',ready);
-  if(continueBtn){continueBtn.textContent=ready&&status.next?'Add more guest content':ready?'Review setup':'Continue setup';continueBtn.dataset.targetSection=status.next?.section||'guest-info';}
+  if(continueBtn){
+    continueBtn.classList.toggle('hidden',ready);
+    continueBtn.textContent='Continue setup';
+    continueBtn.dataset.targetSection=status.next?.section||'guest-info';
+  }
+  if(hint)hint.classList.toggle('hidden',!ready);
   renderWelcomeSectionStatuses();
 }
 function finishWelcomeEdit(button,message){
@@ -3596,6 +3602,17 @@ function renderGuestActivities(){
   const today=new Date().getDay();const todayItems=items.filter(x=>(x.days||[]).map(Number).includes(today)).sort((a,b)=>String(a.startTime||'').localeCompare(String(b.startTime||'')));
   const tile=document.getElementById('guestWhatsOnTile');if(tile)tile.classList.toggle('hidden',!items.length);
   const summary=document.getElementById('guestWhatsOnSummary');if(summary)summary.textContent=todayItems.length?`${todayItems.length} ${todayItems.length===1?'activity':'activities'} today`:'Weekly activities';
+  const strip=document.getElementById('guestTodayStrip');
+  const stripSummary=document.getElementById('guestTodayStripSummary');
+  if(strip){
+    strip.classList.toggle('hidden',!todayItems.length);
+    if(stripSummary){
+      const first=todayItems[0];
+      const firstTime=first?.startTime?`${first.startTime} · `:'';
+      const extra=todayItems.length>1?` + ${todayItems.length-1} more`:'';
+      stripSummary.textContent=todayItems.length?`${firstTime}${first.title}${extra}`:'';
+    }
+  }
   const todayHost=document.getElementById('guestTodayActivities');if(todayHost)todayHost.innerHTML=todayItems.length?`<div class="welcome-preview-today-label">Today · ${welcomeDayLabel(today)}</div>${todayItems.map(welcomeActivityPublicCard).join('')}`:'<div class="guest-info-card"><p class="muted">Nothing scheduled for today.</p></div>';
   const weekly=document.getElementById('guestWeeklyActivities');if(weekly)weekly.innerHTML=[1,2,3,4,5,6,0].map(day=>{const rows=items.filter(x=>(x.days||[]).map(Number).includes(day)).sort((a,b)=>String(a.startTime||'').localeCompare(String(b.startTime||'')));return rows.length?`<section class="welcome-preview-day-group"><h4>${welcomeDayLabel(day)}</h4>${rows.map(welcomeActivityPublicCard).join('')}</section>`:''}).join('')||'<div class="guest-info-card"><p class="muted">No weekly activities have been published yet.</p></div>';
 }

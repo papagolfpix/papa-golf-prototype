@@ -24,3 +24,5 @@
 /* v0.33.3 quieter public welcome heading */
 .intro h1{font-size:18px;line-height:1.2;font-weight:800;margin:0}
 @media(max-width:520px){.intro h1{font-size:17px}}
+
+.today-strip{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 18px;padding:13px 15px;border:1px solid rgba(224,188,102,.38);border-radius:16px;background:rgba(224,188,102,.08);color:inherit;text-align:left}.today-strip-icon{font-size:25px}.today-strip-copy{display:flex;flex-direction:column;min-width:0}.today-strip-copy strong{font-size:16px}.today-strip-copy small{margin-top:3px;color:#aaa49a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.today-strip-chevron{margin-left:auto;color:#e0bc66;font-size:29px}

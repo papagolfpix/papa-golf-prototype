@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111111">
   <title>Papa Golf Villa Welcome</title>
-  <link rel="stylesheet" href="welcome.css?v=0.34.1">
+  <link rel="stylesheet" href="welcome.css?v=0.35.0">
 </head>
 <body>
   <main class="public-welcome-shell">
@@ -28,6 +28,8 @@
         <a id="quickDirections" class="quick-action" href="#" target="_blank" rel="noopener"><span>📍</span><div><strong>Villa location</strong><small>Open directions</small></div></a>
         <button class="quick-action" data-panel="villaPanel"><span>☎️</span><div><strong>Host / manager</strong><small id="quickHost">Contact information</small></div></button>
       </section>
+
+      <button id="publicTodayStrip" class="today-strip hidden" data-panel="whatsOnPanel" type="button" aria-label="Open today’s activities"><span class="today-strip-icon">📅</span><span class="today-strip-copy"><strong>Today at your stay</strong><small id="publicTodayStripSummary"></small></span><span class="today-strip-chevron">›</span></button>
 
       <nav class="menu-grid" aria-label="Villa welcome menu">
         <button data-panel="villaPanel"><span>🏠</span><strong>Villa Guide</strong><small>House info & contacts</small></button>
@@ -55,6 +57,6 @@
 
     <footer>Powered by Papa Golf</footer>
   </main>
-  <script src="welcome.js?v=0.34.1" defer></script>
+  <script src="welcome.js?v=0.35.0" defer></script>
 </body>
 </html>

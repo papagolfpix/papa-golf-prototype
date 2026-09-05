@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.34.1" />
+<link rel="stylesheet" href="styles.css?v=0.35.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.34.1</div>
+      <div class="eyebrow">PAPA GOLF · V0.35.0</div>
       <h1>Papa Golf Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -112,6 +112,7 @@
       <strong id="welcomeReadinessTitle">Checking setup…</strong>
       <div id="welcomeReadinessText" class="small muted"></div>
     </div>
+    <div id="welcomeReadinessHint" class="welcome-readiness-hint small muted hidden">Choose a category below to add or update content.</div>
     <div class="welcome-readiness-actions"><button id="welcomeContinueSetupBtn" class="primary-btn" type="button">Continue setup</button><button id="welcomeReadinessPreviewBtn" class="secondary-btn" type="button">Preview guest view</button></div>
   </div>
 
@@ -417,6 +418,7 @@
           <button id="guestQuickHostBtn" class="guest-essential-action" type="button" data-welcome-panel="guestVillaPanel"><span>☎️</span><div><strong>Host / manager</strong><small id="guestQuickHostText">Contact information</small></div></button>
         </div>
       </div>
+      <button id="guestTodayStrip" class="guest-today-strip hidden" type="button" data-welcome-panel="guestWhatsOnPanel" aria-label="Open today’s activities"><span class="guest-today-icon">📅</span><span class="guest-today-copy"><strong>Today at your stay</strong><small id="guestTodayStripSummary"></small></span><span class="guest-today-chevron">›</span></button>
       <div class="guest-menu-grid">
         <button id="guestVillaTile" class="guest-menu-tile" type="button" data-welcome-panel="guestVillaPanel"><span>🏠</span><strong>Villa Guide</strong><small>House info & contacts</small></button>
         <button id="guestExploreTile" class="guest-menu-tile guest-menu-featured" type="button" data-welcome-panel="guestExplorePanel"><span>🗺</span><strong>Explore Nearby</strong><small>Useful places & directions</small></button>
@@ -686,6 +688,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.34.1" defer></script>
+  <script src="app.js?v=0.35.0" defer></script>
 </body>
 </html>

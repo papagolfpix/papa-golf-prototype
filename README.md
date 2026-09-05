@@ -1,3 +1,12 @@
+## v0.35.0 — Guest Today + cleaner owner readiness
+
+- Removes the redundant “Add more guest content” button once all core Welcome essentials are complete.
+- Replaces it with quiet guidance: choose a category below to add or update content.
+- Keeps “Continue setup” only while core guest essentials are genuinely incomplete.
+- Adds a compact dynamic “Today at your stay” strip to Guest Preview and the cross-device Public Welcome when activities are scheduled today.
+- The Today strip shows the next scheduled activity and the number of additional activities, then opens the full What’s On programme.
+- Keeps the existing weekly activity engine, section status dashboard, compact iPhone guest header, QR publishing flow and data-safety protections.
+
 ## v0.34.1 — Welcome setup-at-a-glance status
 
 - Added live status badges to every Welcome setup section.
