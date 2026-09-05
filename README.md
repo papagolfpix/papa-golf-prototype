@@ -1,3 +1,10 @@
+## v0.33.2 — Compact guest arrival header
+
+- Guest Preview now welcomes by property name, not unit/floor.
+- Unit/floor is secondary metadata only.
+- Reduced logo/header/title/tagline height on iPhone so useful actions appear much sooner.
+- Public Welcome uses the same compact hierarchy for consistency.
+
 ## v0.33.1 — Public Welcome QR + iPhone polish
 - Displays a scannable QR directly in the Public Villa Welcome panel.
 - Makes the public Welcome action high contrast.

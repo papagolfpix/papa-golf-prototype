@@ -10,3 +10,13 @@
 .day-group{margin:20px 0}.day-group h4{font-size:1.05rem;margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid #ddd}
 
 .public-unit{display:inline-block;margin:.1rem 0 .25rem;padding:.28rem .6rem;border:1px solid rgba(255,255,255,.18);border-radius:999px;font-size:.9rem;font-weight:700;color:#ddd}.public-unit.hidden{display:none}
+
+
+/* v0.33.2 compact public arrival header */
+.public-brand{padding-top:2px}
+.public-brand img{max-width:150px;max-height:88px}
+.developer,.address{margin-top:3px;font-size:12px;line-height:1.3}
+.intro{padding:8px 4px 12px}
+.intro h1{font-size:clamp(24px,6.5vw,32px);line-height:1.08}
+.intro p{font-size:14px;line-height:1.35;margin:.4rem 0 0}
+.public-unit{font-size:12px;padding:.22rem .55rem}

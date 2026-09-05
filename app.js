@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.33.1';
+const RUNTIME_VERSION = '0.33.2';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2695,7 +2695,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.33.1', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.33.2', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3532,7 +3532,9 @@ function renderGuestWelcome(){
   const prop=document.getElementById('guestWelcomeProperty');
   if(prop)prop.textContent=[d.propertyName,d.address].filter(Boolean).join(' · ');
   const head=document.getElementById('guestWelcomeHeading');
-  if(head)head.textContent='Welcome to '+d.unitName;
+  if(head)head.textContent='Welcome to '+(d.propertyName||'your stay');
+  const unit=document.getElementById('guestWelcomeUnit');
+  if(unit){unit.textContent=d.unitName||'';unit.classList.toggle('hidden',!d.unitName)}
 
   const quickWifi=document.getElementById('guestQuickWifiName');
   if(quickWifi)quickWifi.textContent=d.wifiName||'Open network details';
