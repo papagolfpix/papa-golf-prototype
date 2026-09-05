@@ -41,7 +41,7 @@ check(app.includes('PAPA_GOLF_WELCOME_SCHEMA_VERSION'),'canonical Welcome schema
 check(app.includes('buildCanonicalWelcomeModel'),'backend-ready canonical Welcome model builder retained');
 check(app.includes('ensureWelcomeModelIdentity'),'stable property/unit identity migration retained');
 check(app.includes('version: 9'),'backup format v9 includes consolidated Welcome model');
-check(app.includes('v:3,s:PAPA_GOLF_WELCOME_SCHEMA_VERSION'),'public Welcome payload v3 carries schema version');
+check(app.includes('v:4,s:PAPA_GOLF_WELCOME_SCHEMA_VERSION'),'public Welcome payload v4 carries schema version');
 check(publicWelcome.includes('stayPanel')&&publicWelcome.includes('arrivalInfo'),'standalone public Welcome supports structured stay details');
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');

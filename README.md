@@ -1,23 +1,22 @@
-## v0.36.0 — Welcome data-model consolidation / final local Alpha foundation
+## v0.36.1 — Welcome publishing controls + permanent Help foundation
 
-This release prepares the Welcome module for the next major milestone: moving the source of truth from one browser into a shared Papa Golf backend.
+This pre-backend refinement separates **owner publication state** from whether content exists. Guest-facing sections can now stay saved while being hidden from guests, and content editors have explicit Clear actions where deletion is appropriate.
 
-### What changed
-- Added a canonical Welcome schema (`papa-golf-welcome`, schema version 1) with stable IDs for Property, Unit and Gateway records.
-- Existing local Welcome data is migrated in place; no photo database, IndexedDB store or localStorage collection is deleted.
-- Added `buildCanonicalWelcomeModel()` to assemble a backend-ready graph of Property → Unit → Gateway → Content → Services → Events → Places → Categories while preserving the current local Alpha storage layout.
-- Backup format is now v9 and includes the consolidated canonical Welcome model. Restore remains backward compatible with v1–v9 backups.
-- Public Welcome payload moved to compact payload v3 with an explicit schema version while retaining the current URL-fragment Alpha publishing method.
-- Added a structured **Stay Details** section for information classes confirmed by the Apsara hotel benchmark: check-in/out, facilities/opening hours, property map/wayfinding and important notices.
-- Stay Details appears on Guest Preview and the standalone public Welcome only when useful content exists.
-- Existing What’s On, services, nearby places, Gateways, QR publishing, progressive disclosure and iPhone-first UI remain intact.
+### Added
+- Backend-ready `presentation` policy metadata on the Welcome unit model.
+- Owner **Show to guests** controls for Villa Guide, Stay Details, What’s On, Explore Nearby, Food, Transport, Wellness, Tours and Other Guest Services.
+- **Clear details** actions for Villa Guide, Stay Details, individual guest services and the What’s On schedule. Clear actions require confirmation and only remove that category’s content.
+- Public Welcome payload v4 carries publication state so Guest Preview and another device behave the same way.
+- A permanent compact **Help** button at the top of guest Welcome screens.
+- Help & Emergency is now a system-level item that remains available regardless of future guest personalization.
+- First emergency-routing scaffold: Medical/Health, Fire/Property Emergency, Police/Security and Host/Property Help, using the property’s existing verified/entered contact information rather than inventing public-service numbers.
 
-### Why this matters
-The current app still runs as a safe local Alpha, but the data is now organized around stable entities and relationships suitable for a shared backend. The intended next acceptance test is: edit Magic Dragon Villa on the owner phone, refresh a second device, and see the update through the same permanent QR without regenerating its payload.
+### Architecture
+- Welcome schema version is now 2.
+- Presentation policies distinguish `customizable` guest categories from `system` navigation.
+- This is designed to map directly into the shared backend and later Guest Preference Profile without mixing owner publication controls with guest personalization.
 
-### Safety / validation
-- No `indexedDB.deleteDatabase()` or `localStorage.clear()` added.
-- Safari main/related photo Blob hardening retained.
-- Affiliate Brand Kit asset DB and backup path retained.
-- Google Places API key remains excluded from public Welcome payloads and backups.
-- `node --check app.js`, `node --check welcome.js`, Papa Golf validator and ZIP integrity checks pass.
+### Safety
+- Existing local Welcome content is migrated in place with all new sections defaulting to published, preserving current guest behaviour.
+- No IndexedDB database deletion or localStorage clearing.
+- Existing photos, nested related-photo Blob hardening, Brand Kit assets, backups and Google Places key handling are unchanged.

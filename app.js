@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.36.0';
+const RUNTIME_VERSION = '0.36.1';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2695,7 +2695,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.36.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.36.1', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3084,7 +3084,7 @@ function fillCuratedFormFromPlace(place){
 
 
 
-const PAPA_GOLF_WELCOME_SCHEMA_VERSION = 1;
+const PAPA_GOLF_WELCOME_SCHEMA_VERSION = 2;
 function papaGolfStableId(prefix,existing=''){
   if(String(existing||'').trim())return String(existing).trim();
   const token=(globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2,10)}`).replace(/[^a-zA-Z0-9-]/g,'');
@@ -3119,6 +3119,18 @@ const WELCOME_DEFAULT_UNIT = {
   toursInfo:'',
   otherServices:'',
   activities:[],
+  presentation:{
+    villaGuide:{published:true,policy:'customizable',defaultOrder:10},
+    stayDetails:{published:true,policy:'customizable',defaultOrder:20},
+    whatsOn:{published:true,policy:'customizable',defaultOrder:30},
+    nearby:{published:true,policy:'customizable',defaultOrder:40},
+    food:{published:true,policy:'customizable',defaultOrder:50},
+    wellness:{published:true,policy:'customizable',defaultOrder:60},
+    tours:{published:true,policy:'customizable',defaultOrder:70},
+    transport:{published:true,policy:'customizable',defaultOrder:80},
+    other:{published:true,policy:'customizable',defaultOrder:90},
+    help:{published:true,policy:'system',defaultOrder:100}
+  },
   overrideHost:false,
   host:'',
   overrideEmergency:false,
@@ -3205,12 +3217,12 @@ function getWelcomeProperty(){
 }
 function getWelcomeUnit(){
   const saved=readWelcomeJson(WELCOME_UNIT_KEY,{});
-  return {...WELCOME_DEFAULT_UNIT,...saved,id:papaGolfStableId('unit',saved.id),schemaVersion:PAPA_GOLF_WELCOME_SCHEMA_VERSION,stayDetails:{...WELCOME_DEFAULT_UNIT.stayDetails,...(saved.stayDetails||{})}};
+  return {...WELCOME_DEFAULT_UNIT,...saved,id:papaGolfStableId('unit',saved.id),schemaVersion:PAPA_GOLF_WELCOME_SCHEMA_VERSION,stayDetails:{...WELCOME_DEFAULT_UNIT.stayDetails,...(saved.stayDetails||{})},presentation:{...WELCOME_DEFAULT_UNIT.presentation,...(saved.presentation||{})}};
 }
 function ensureWelcomeModelIdentity(){
   const rawP=readWelcomeJson(WELCOME_PROPERTY_KEY,{}),rawU=readWelcomeJson(WELCOME_UNIT_KEY,{});
   const p={...WELCOME_DEFAULT_PROPERTY,...rawP,id:papaGolfStableId('property',rawP.id),schemaVersion:PAPA_GOLF_WELCOME_SCHEMA_VERSION};
-  const u={...WELCOME_DEFAULT_UNIT,...rawU,id:papaGolfStableId('unit',rawU.id),schemaVersion:PAPA_GOLF_WELCOME_SCHEMA_VERSION,stayDetails:{...WELCOME_DEFAULT_UNIT.stayDetails,...(rawU.stayDetails||{})}};
+  const u={...WELCOME_DEFAULT_UNIT,...rawU,id:papaGolfStableId('unit',rawU.id),schemaVersion:PAPA_GOLF_WELCOME_SCHEMA_VERSION,stayDetails:{...WELCOME_DEFAULT_UNIT.stayDetails,...(rawU.stayDetails||{})},presentation:{...WELCOME_DEFAULT_UNIT.presentation,...(rawU.presentation||{})}};
   localStorage.setItem(WELCOME_PROPERTY_KEY,JSON.stringify(p));
   localStorage.setItem(WELCOME_UNIT_KEY,JSON.stringify(u));
   const gateways=getPapaGolfGateways();
@@ -3235,6 +3247,7 @@ function buildCanonicalWelcomeModel(){
     property:{id:p.id,name:p.name,developer:p.developer,address:p.address,lat:Number(p.lat),lng:Number(p.lng),host:p.host,emergency:p.emergency,logo:p.logo},
     unit:{id:u.id,propertyId:p.id,name:u.name,checkIn:stay.checkIn||'',checkOut:stay.checkOut||'',wifi:{name:u.wifiName||'',password:u.wifiPassword||''},technology:u.bluetooth||'',hostOverride:u.overrideHost?u.host:'',emergencyOverride:u.overrideEmergency?u.emergency:''},
     gateway:{id:gateway?.id||'',type:gateway?.type||'property',enabled:gateway?.enabled!==false,tiles:Array.isArray(gateway?.tiles)?gateway.tiles:[]},
+    presentation:{...WELCOME_DEFAULT_UNIT.presentation,...(u.presentation||{})},
     content,services,
     events:(Array.isArray(u.activities)?u.activities:[]).map(a=>({...a,id:a.id||papaGolfStableId('event')})),
     places:getWelcomePartners().map(x=>({...x})),
@@ -3331,6 +3344,7 @@ function welcomeSectionSetupState(id){
   }
   if(id==='schedule'){
     const count=Array.isArray(u.activities)?u.activities.filter(x=>x&&x.enabled!==false&&has(x.title)).length:0;
+    if(count&&u.presentation?.whatsOn?.published===false)return {state:'hidden',label:'Hidden'};
     return count?{state:'ready',label:`${count} added`}:{state:'more',label:'Add activity'};
   }
   if(id==='categories'){
@@ -3371,8 +3385,8 @@ function renderWelcomeSectionStatuses(){
       wrap.appendChild(badge);if(chevron)wrap.appendChild(chevron);
     }
     badge.className=`pg-section-status is-${state.state}`;
-    badge.innerHTML=`<span class="pg-section-status-icon" aria-hidden="true">${state.state==='ready'?'✓':state.state==='more'?'✎':'·'}</span><span>${escapeHtml(state.label)}</span>`;
-    badge.setAttribute('aria-label',state.state==='ready'?`Complete: ${state.label}`:state.state==='more'?`More information can be added: ${state.label}`:`${state.label} section`);
+    badge.innerHTML=`<span class="pg-section-status-icon" aria-hidden="true">${state.state==='ready'?'✓':state.state==='more'?'✎':state.state==='hidden'?'◌':'·'}</span><span>${escapeHtml(state.label)}</span>`;
+    badge.setAttribute('aria-label',state.state==='ready'?`Complete: ${state.label}`:state.state==='more'?`More information can be added: ${state.label}`:state.state==='hidden'?`Saved but hidden from guests`: `${state.label} section`);
   });
 }
 function renderWelcomeReadiness(){
@@ -3407,6 +3421,22 @@ function finishWelcomeEdit(button,message){
   if(status&&message)status.textContent=message;
   setTimeout(()=>document.getElementById('welcomeReadinessCard')?.scrollIntoView({behavior:'smooth',block:'start'}),40);
 }
+function clearWelcomeCategory(key){
+  const u=getWelcomeUnit();
+  const labels={villaGuide:'Villa Guide',stayDetails:'Stay Details',food:'Food & Drink',transport:'Transport',wellness:'Wellness',tours:'Tours & Experiences',other:'Other Guest Services',schedule:"What's On schedule"};
+  if(!confirm(`Clear ${labels[key]||'these details'}? This removes the saved content from this device.`))return;
+  const next={...u};
+  if(key==='villaGuide')next.villaInfo='';
+  if(key==='stayDetails')next.stayDetails={...WELCOME_DEFAULT_UNIT.stayDetails};
+  if(key==='food')next.foodInfo='';
+  if(key==='transport')next.transportInfo='';
+  if(key==='wellness')next.wellnessInfo='';
+  if(key==='tours')next.toursInfo='';
+  if(key==='other')next.otherServices='';
+  if(key==='schedule')next.activities=[];
+  localStorage.setItem(WELCOME_UNIT_KEY,JSON.stringify(next));
+  loadWelcomeEditor();renderGuestWelcome();
+}
 function loadWelcomeEditor(){
   const p=getWelcomeProperty(),u=getWelcomeUnit();
   welcomeSet('welcomePropertyName',p.name);
@@ -3431,6 +3461,8 @@ function loadWelcomeEditor(){
   welcomeSet('welcomeWellnessInfo',u.wellnessInfo);
   welcomeSet('welcomeToursInfo',u.toursInfo);
   welcomeSet('welcomeOtherServices',u.otherServices);
+  const pr={...WELCOME_DEFAULT_UNIT.presentation,...(u.presentation||{})};
+  [['showWelcomeVillaGuide','villaGuide'],['showWelcomeStayDetails','stayDetails'],['showWelcomeFood','food'],['showWelcomeTransport','transport'],['showWelcomeWellness','wellness'],['showWelcomeTours','tours'],['showWelcomeOther','other'],['showWelcomeWhatsOn','whatsOn'],['showWelcomeNearby','nearby']].forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.checked=pr[key]?.published!==false});
   renderWelcomeActivityEditor();
   welcomeSet('welcomeUnitHost',u.host);
   welcomeSet('welcomeUnitEmergency',u.emergency);
@@ -3468,6 +3500,7 @@ function effectiveWelcome(){
     wellnessInfo:u.wellnessInfo||'',
     toursInfo:u.toursInfo||'',
     otherServices:u.otherServices||'',
+    presentation:{...WELCOME_DEFAULT_UNIT.presentation,...(u.presentation||{})},
     activities:Array.isArray(u.activities)?u.activities:[]
   };
 }
@@ -3505,6 +3538,7 @@ function saveWelcomeUnit(){
     wellnessInfo:welcomeVal('welcomeWellnessInfo'),
     toursInfo:welcomeVal('welcomeToursInfo'),
     otherServices:welcomeVal('welcomeOtherServices'),
+    presentation:{...WELCOME_DEFAULT_UNIT.presentation,...(old.presentation||{}),villaGuide:{...WELCOME_DEFAULT_UNIT.presentation.villaGuide,...(old.presentation?.villaGuide||{}),published:document.getElementById('showWelcomeVillaGuide')?.checked!==false},stayDetails:{...WELCOME_DEFAULT_UNIT.presentation.stayDetails,...(old.presentation?.stayDetails||{}),published:document.getElementById('showWelcomeStayDetails')?.checked!==false},food:{...WELCOME_DEFAULT_UNIT.presentation.food,...(old.presentation?.food||{}),published:document.getElementById('showWelcomeFood')?.checked!==false},transport:{...WELCOME_DEFAULT_UNIT.presentation.transport,...(old.presentation?.transport||{}),published:document.getElementById('showWelcomeTransport')?.checked!==false},wellness:{...WELCOME_DEFAULT_UNIT.presentation.wellness,...(old.presentation?.wellness||{}),published:document.getElementById('showWelcomeWellness')?.checked!==false},tours:{...WELCOME_DEFAULT_UNIT.presentation.tours,...(old.presentation?.tours||{}),published:document.getElementById('showWelcomeTours')?.checked!==false},other:{...WELCOME_DEFAULT_UNIT.presentation.other,...(old.presentation?.other||{}),published:document.getElementById('showWelcomeOther')?.checked!==false},whatsOn:{...WELCOME_DEFAULT_UNIT.presentation.whatsOn,...(old.presentation?.whatsOn||{}),published:document.getElementById('showWelcomeWhatsOn')?.checked!==false},nearby:{...WELCOME_DEFAULT_UNIT.presentation.nearby,...(old.presentation?.nearby||{}),published:document.getElementById('showWelcomeNearby')?.checked!==false},help:{...WELCOME_DEFAULT_UNIT.presentation.help,...(old.presentation?.help||{}),published:true,policy:'system'}},
     activities:Array.isArray(old.activities)?old.activities:[],
     overrideHost:!!document.getElementById('overrideWelcomeHost')?.checked,
     host:welcomeVal('welcomeUnitHost'),
@@ -3663,7 +3697,8 @@ function welcomeActivityPublicCard(a){
   return `<article class="welcome-preview-activity-card"><div class="welcome-preview-activity-head"><strong>${escapeHtml(a.title||'Activity')}</strong>${a.price?`<span>${escapeHtml(a.price)}</span>`:''}</div>${time?`<div class="welcome-preview-activity-time">${escapeHtml(time)}</div>`:''}${a.note?`<p>${escapeHtml(a.note)}</p>`:''}${a.booking?`<div class="small"><strong>Booking:</strong> ${escapeHtml(a.booking)}</div>`:''}</article>`;
 }
 function renderGuestActivities(){
-  const items=(Array.isArray(effectiveWelcome().activities)?effectiveWelcome().activities:[]).filter(x=>x.enabled!==false&&x.title);
+  const current=effectiveWelcome();const published=current.presentation?.whatsOn?.published!==false;
+  const items=published?(Array.isArray(current.activities)?current.activities:[]).filter(x=>x.enabled!==false&&x.title):[];
   const today=new Date().getDay();const todayItems=items.filter(x=>(x.days||[]).map(Number).includes(today)).sort((a,b)=>String(a.startTime||'').localeCompare(String(b.startTime||'')));
   const tile=document.getElementById('guestWhatsOnTile');if(tile)tile.classList.toggle('hidden',!items.length);
   const summary=document.getElementById('guestWhatsOnSummary');if(summary)summary.textContent=todayItems.length?`${todayItems.length} ${todayItems.length===1?'activity':'activities'} today`:'Weekly activities';
@@ -3683,6 +3718,7 @@ function renderGuestActivities(){
 }
 function renderGuestWelcome(){
   const d=effectiveWelcome();
+  const vis={...WELCOME_DEFAULT_UNIT.presentation,...(d.presentation||{})};
   const logo=document.getElementById('guestWelcomeLogo');
   if(logo)logo.src=d.logo;
   const dev=document.getElementById('guestWelcomeDeveloper');
@@ -3710,7 +3746,7 @@ function renderGuestWelcome(){
   const stay=d.stayDetails||{};
   const stayTile=document.getElementById('guestStayTile');
   const hasStay=[stay.checkIn,stay.checkOut,stay.facilities,stay.mapInfo,stay.notices].some(x=>!!String(x||'').trim());
-  if(stayTile)stayTile.classList.toggle('hidden',!hasStay);
+  if(stayTile)stayTile.classList.toggle('hidden',!hasStay||vis.stayDetails?.published===false);
   const arrival=document.getElementById('guestArrivalInfo');
   if(arrival){const parts=[];if(stay.checkIn)parts.push(`<div><strong>Check-in</strong><br>${escapeHtml(stay.checkIn)}</div>`);if(stay.checkOut)parts.push(`<div><strong>Check-out</strong><br>${escapeHtml(stay.checkOut)}</div>`);arrival.classList.toggle('hidden',!parts.length);arrival.innerHTML=parts.length?`<div class="welcome-arrival-grid">${parts.join('')}</div>`:'';}
   const facilities=document.getElementById('guestFacilitiesInfo');if(facilities){facilities.classList.toggle('hidden',!stay.facilities);facilities.innerHTML=stay.facilities?`<p><strong>Facilities & opening hours</strong><br>${escapeHtml(stay.facilities).replace(/\n/g,'<br>')}</p>`:'';}
@@ -3725,10 +3761,12 @@ function renderGuestWelcome(){
   const hasWellness=!!d.wellnessInfo||partners.some(x=>x.category==='spa');
   const hasTours=!!d.toursInfo||partners.some(x=>['activity','tour','attraction'].includes(x.category));
   const hasTransport=!!d.transportInfo||!!d.otherServices||partners.some(x=>x.category==='transport');
-  if(foodTile)foodTile.classList.toggle('hidden',!hasFood);
-  if(wellnessTile)wellnessTile.classList.toggle('hidden',!hasWellness);
-  if(toursTile)toursTile.classList.toggle('hidden',!hasTours);
-  if(transportTile)transportTile.classList.toggle('hidden',!hasTransport);
+  if(document.getElementById('guestVillaTile'))document.getElementById('guestVillaTile').classList.toggle('hidden',vis.villaGuide?.published===false||!d.villaInfo);
+  if(document.getElementById('guestExploreTile'))document.getElementById('guestExploreTile').classList.toggle('hidden',vis.nearby?.published===false);
+  if(foodTile)foodTile.classList.toggle('hidden',!hasFood||vis.food?.published===false);
+  if(wellnessTile)wellnessTile.classList.toggle('hidden',!hasWellness||vis.wellness?.published===false);
+  if(toursTile)toursTile.classList.toggle('hidden',!hasTours||vis.tours?.published===false);
+  if(transportTile)transportTile.classList.toggle('hidden',!hasTransport||vis.transport?.published===false);
 
   const wifi=document.getElementById('guestWifiInfo');
   if(wifi)wifi.innerHTML=(d.wifiName||d.wifiPassword)?`
@@ -3751,7 +3789,8 @@ function renderGuestWelcome(){
   const host=document.getElementById('guestHostInfo');
   if(host)host.innerHTML=d.host?`<p><strong>Host / manager:</strong> ${escapeHtml(d.host)}</p>`:'';
   const em=document.getElementById('guestEmergencyInfo');
-  if(em)em.innerHTML=d.emergency?`<p>${escapeHtml(d.emergency).replace(/\n/g,'<br>')}</p>`:'<p class="muted">Emergency information has not been added yet.</p>';
+  if(em)em.innerHTML=d.emergency?`<p><strong>Emergency information</strong><br>${escapeHtml(d.emergency).replace(/\n/g,'<br>')}</p>`:'<p class="muted">Emergency information has not been added yet.</p>';
+  const emHost=document.getElementById('guestEmergencyHost');if(emHost)emHost.innerHTML=d.host?`<p><strong>Host / property contact</strong><br>${escapeHtml(d.host)}</p>`:'<p class="muted">Host contact has not been added yet.</p>';
 
   renderWelcomeGuestFilters();
   renderGuestActivities();
@@ -4402,7 +4441,7 @@ function welcomePublicPayload(){
     n:x.name||'',c:x.category||'other',a:Number(x.lat),o:Number(x.lng),t:x.note||''
   })).filter(x=>x.n&&Number.isFinite(x.a)&&Number.isFinite(x.o));
   const stay=d.stayDetails||{};
-  return {v:3,s:PAPA_GOLF_WELCOME_SCHEMA_VERSION,p:{n:d.propertyName,d:d.developer,u:d.unitName,a:d.address,la:d.lat,lo:d.lng,h:d.host,e:d.emergency,w:d.wifiName,pw:d.wifiPassword,b:d.bluetooth,g:d.villaInfo,ci:stay.checkIn||'',co:stay.checkOut||'',fa:stay.facilities||'',m:stay.mapInfo||'',nt:stay.notices||'',t:d.transportInfo,f:d.foodInfo,wl:d.wellnessInfo,tr:d.toursInfo,o:d.otherServices},x:places,e:d.activities.map(a=>({i:a.id||'',n:a.title||'',c:a.category||'activity',d:Array.isArray(a.days)?a.days:[],s:a.startTime||'',z:a.endTime||'',t:a.note||'',p:a.price||'',b:a.booking||'',en:a.enabled!==false}))};
+  const pr={...WELCOME_DEFAULT_UNIT.presentation,...(d.presentation||{})};return {v:4,s:PAPA_GOLF_WELCOME_SCHEMA_VERSION,p:{n:d.propertyName,d:d.developer,u:d.unitName,a:d.address,la:d.lat,lo:d.lng,h:d.host,e:d.emergency,w:d.wifiName,pw:d.wifiPassword,b:d.bluetooth,g:d.villaInfo,ci:stay.checkIn||'',co:stay.checkOut||'',fa:stay.facilities||'',m:stay.mapInfo||'',nt:stay.notices||'',t:d.transportInfo,f:d.foodInfo,wl:d.wellnessInfo,tr:d.toursInfo,o:d.otherServices},y:{g:pr.villaGuide?.published!==false,s:pr.stayDetails?.published!==false,e:pr.whatsOn?.published!==false,n:pr.nearby?.published!==false,f:pr.food?.published!==false,w:pr.wellness?.published!==false,t:pr.tours?.published!==false,r:pr.transport?.published!==false,o:pr.other?.published!==false,h:true},x:places,e:d.activities.map(a=>({i:a.id||'',n:a.title||'',c:a.category||'activity',d:Array.isArray(a.days)?a.days:[],s:a.startTime||'',z:a.endTime||'',t:a.note||'',p:a.price||'',b:a.booking||'',en:a.enabled!==false}))};
 }
 function welcomePublicUrl(){
   const url=new URL('welcome.html',location.href);
@@ -4646,6 +4685,7 @@ function initWelcomeModule(){
   [['overrideWelcomeHost','welcomeUnitHost'],['overrideWelcomeEmergency','welcomeUnitEmergency']].forEach(([a,b])=>{
     document.getElementById(a)?.addEventListener('change',()=>welcomeToggle(a,b));
   });
+  document.getElementById('welcomeModule')?.addEventListener('click',event=>{const btn=event.target.closest('[data-clear-welcome]');if(btn)clearWelcomeCategory(btn.dataset.clearWelcome)});
 
   document.getElementById('saveWelcomePropertyBtn')?.addEventListener('click',event=>{saveWelcomeProperty();finishWelcomeEdit(event.currentTarget,'Property information saved. Guest preview updated.')});
   document.getElementById('saveWelcomeUnitBtn')?.addEventListener('click',event=>{saveWelcomeUnit();finishWelcomeEdit(event.currentTarget,'Villa information saved. Guest preview updated.')});

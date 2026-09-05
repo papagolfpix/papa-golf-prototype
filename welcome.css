@@ -49,3 +49,11 @@
 /* v0.36.0 stay details */
 .arrival-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .arrival-grid>div{padding:12px 14px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.035)}
+
+/* v0.36.1 permanent Help entry + emergency routing scaffold */
+.public-top-actions{display:flex;justify-content:flex-end;margin:0 0 4px}
+.public-help-btn{min-height:40px;padding:8px 14px;border:0;border-radius:999px;background:#b92d2d;color:#fff;font:inherit;font-size:15px;font-weight:800;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.system-menu-tile{border-color:rgba(185,45,45,.32)!important}
+.help-route-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.help-route{display:flex;align-items:center;gap:9px;min-height:58px;padding:11px;border-radius:13px;background:#f7f7f7;border:1px solid #dedede;color:#1d1d1d}
+.help-route span{font-size:22px}.help-route strong{font-size:14px;line-height:1.25}

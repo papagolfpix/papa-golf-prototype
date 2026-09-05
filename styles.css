@@ -1582,3 +1582,20 @@ body.welcome-admin-mode main{padding-top:max(10px,env(safe-area-inset-top))}
 .welcome-arrival-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .welcome-arrival-grid>div{padding:12px 14px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.035)}
 @media(max-width:520px){.welcome-arrival-grid{grid-template-columns:1fr 1fr}}
+
+/* v0.36.1 owner publishing + permanent Help controls */
+.welcome-publish-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0 16px;padding:12px 14px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.04)}
+.welcome-publish-controls label{display:flex;align-items:center;gap:10px;margin:0;font-weight:700;line-height:1.3}
+.welcome-publish-controls input[type="checkbox"]{width:22px;height:22px;flex:0 0 auto}
+.welcome-publish-controls.compact{margin:8px 0 0;padding:9px 10px}
+.welcome-clear-btn{min-height:40px;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,140,140,.35);background:transparent;color:#ffd0d0;font-weight:700}
+.welcome-service-editor-block{padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(0,0,0,.12)}
+.welcome-service-editor-block + .welcome-service-editor-block{margin-top:12px}
+.pg-section-status.is-hidden{color:#ffd37a;border-color:rgba(255,211,122,.35);background:rgba(255,211,122,.08)}
+.welcome-guest-topbar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.guest-top-help{min-height:40px;padding:8px 13px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:#b92d2d;color:white;font-weight:800;font-size:15px;white-space:nowrap}
+.guest-system-tile{border-color:rgba(255,112,112,.36)!important}
+.guest-help-route-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.guest-help-route{display:flex;align-items:center;gap:9px;min-height:58px;padding:11px;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
+.guest-help-route span{font-size:22px}.guest-help-route strong{font-size:14px;line-height:1.25}
+@media(max-width:430px){.welcome-publish-controls{align-items:flex-start;flex-direction:column}.welcome-publish-controls.compact{flex-direction:row;align-items:center}.guest-help-route-grid{grid-template-columns:1fr 1fr}}

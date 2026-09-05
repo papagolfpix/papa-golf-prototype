@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111111">
   <title>Papa Golf Villa Welcome</title>
-  <link rel="stylesheet" href="welcome.css?v=0.36.0">
+  <link rel="stylesheet" href="welcome.css?v=0.36.1">
 </head>
 <body>
   <main class="public-welcome-shell">
+    <div class="public-top-actions"><button id="publicHelpBtn" class="public-help-btn" type="button" data-panel="emergencyPanel">🆘 Help</button></div>
     <header class="public-brand">
       <img src="magic-dragon-villa-logo.png" alt="Villa logo">
       <div id="publicDeveloper" class="developer"></div>
@@ -40,7 +41,7 @@
         <button id="wellnessTile" data-panel="wellnessPanel"><span>🌺</span><strong>Wellness</strong><small>Massage, spa & treatments</small></button>
         <button id="toursTile" data-panel="toursPanel"><span>⛵</span><strong>Tours & Experiences</strong><small>Trips, excursions & things to do</small></button>
         <button id="transportTile" data-panel="transportPanel"><span>🛵</span><strong>Transport</strong><small>Getting around</small></button>
-        <button data-panel="emergencyPanel"><span>🆘</span><strong>Help & Emergency</strong><small>Important contacts</small></button>
+        <button class="system-menu-tile" data-panel="emergencyPanel"><span>🆘</span><strong>Help & Emergency</strong><small>Always available</small></button>
       </nav>
     </section>
 
@@ -53,12 +54,12 @@
     <section id="wellnessPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>🌺 Wellness</h2><div id="wellnessInfo" class="info-card"></div></section>
     <section id="toursPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>⛵ Tours & Experiences</h2><div id="toursInfo" class="info-card"></div><div id="tourList" class="place-list"></div></section>
     <section id="transportPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>🛵 Transport</h2><div id="transportInfo" class="info-card"></div><div id="otherServices" class="info-card"></div></section>
-    <section id="emergencyPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>🆘 Help & Emergency</h2><div id="emergencyInfo" class="info-card"></div></section>
+    <section id="emergencyPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>🆘 Help & Emergency</h2><p class="muted">Choose the kind of help you need. Local service routing will expand as Papa Golf moves to the shared platform.</p><div class="help-route-grid"><div class="help-route"><span>🚑</span><strong>Medical / Health</strong></div><div class="help-route"><span>🔥</span><strong>Fire / Property Emergency</strong></div><div class="help-route"><span>👮</span><strong>Police / Security</strong></div><div class="help-route"><span>☎️</span><strong>Host / Property Help</strong></div></div><div id="emergencyInfo" class="info-card"></div><div id="emergencyHost" class="info-card"></div></section>
 
     <section id="invalidWelcome" class="info-card hidden"><h2>Welcome link unavailable</h2><p>This Welcome link is missing its villa information. Please scan the current QR card again or ask your host for the latest link.</p></section>
 
     <footer>Powered by Papa Golf</footer>
   </main>
-  <script src="welcome.js?v=0.36.0" defer></script>
+  <script src="welcome.js?v=0.36.1" defer></script>
 </body>
 </html>

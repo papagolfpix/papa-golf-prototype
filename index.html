@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.36.0" />
+<link rel="stylesheet" href="styles.css?v=0.36.1" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.36.0</div>
+      <div class="eyebrow">PAPA GOLF · V0.36.1</div>
       <h1>Papa Golf Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -166,6 +166,7 @@
       <label>Wi-Fi password<input id="welcomeWifiPassword" type="text" placeholder="Wi-Fi password"></label>
       <label>Bluetooth / entertainment<textarea id="welcomeBluetooth" rows="3" placeholder="Speaker, TV, streaming or Bluetooth instructions"></textarea></label>
       <label>Villa Guide<textarea id="welcomeVillaInfo" rows="5" placeholder="Check-in/out, rubbish, air-con, appliances, housekeeping, pool, gates, etc."></textarea></label>
+      <div class="welcome-publish-controls"><label><input id="showWelcomeVillaGuide" type="checkbox"> Show Villa Guide to guests</label><button type="button" class="welcome-clear-btn" data-clear-welcome="villaGuide">Clear Villa Guide</button></div>
 
       <div class="inheritance-box">
         <strong>Property inheritance</strong>
@@ -185,6 +186,7 @@
         <label>Facilities & opening hours<textarea id="welcomeFacilities" rows="4" placeholder="Pool 07:00–20:00, breakfast 07:00–10:30, gym, restaurant, reception, housekeeping, etc."></textarea></label>
         <label>Property map / wayfinding<textarea id="welcomeMapInfo" rows="3" placeholder="How to find reception, pool, parking, beach access, villa zones or other useful orientation"></textarea></label>
         <label>Important notices<textarea id="welcomeNotices" rows="4" placeholder="Quiet hours, safety information, access rules, local restrictions or temporary notices"></textarea></label>
+        <div class="welcome-publish-controls"><label><input id="showWelcomeStayDetails" type="checkbox"> Show Stay Details to guests</label><button type="button" class="welcome-clear-btn" data-clear-welcome="stayDetails">Clear Stay Details</button></div>
         <button id="saveWelcomeStayDetailsBtn" class="primary-btn" type="button">Save Stay Details</button>
       </div>
     </article>
@@ -193,11 +195,11 @@
       <h3>Guest services</h3>
       <p class="muted">Add only what this property actually offers or recommends. Empty services stay hidden from guests.</p>
       <div class="welcome-service-editor">
-        <label>🍽 Food / room service / delivery<textarea id="welcomeFoodInfo" rows="3" placeholder="Breakfast, room service, delivery, restaurant partner or ordering instructions"></textarea></label>
-        <label>🛵 Transport / scooter / car hire<textarea id="welcomeTransportInfo" rows="3" placeholder="Taxi, airport transfer, scooter/car hire, contact or booking instructions"></textarea></label>
-        <label>🌺 Wellness / massage / spa<textarea id="welcomeWellnessInfo" rows="3" placeholder="Massage, spa, treatments, opening hours, prices or booking instructions"></textarea></label>
-        <label>⛵ Tours / experiences<textarea id="welcomeToursInfo" rows="3" placeholder="Tours, excursions, pickup details, booking point or guest advice"></textarea></label>
-        <label>🧺 Other guest services<textarea id="welcomeOtherServices" rows="3" placeholder="Laundry, housekeeping or another useful service"></textarea></label>
+        <div class="welcome-service-editor-block"><label>🍽 Food / room service / delivery<textarea id="welcomeFoodInfo" rows="3" placeholder="Breakfast, room service, delivery, restaurant partner or ordering instructions"></textarea></label><div class="welcome-publish-controls compact"><label><input id="showWelcomeFood" type="checkbox"> Show to guests</label><button type="button" class="welcome-clear-btn" data-clear-welcome="food">Clear</button></div></div>
+        <div class="welcome-service-editor-block"><label>🛵 Transport / scooter / car hire<textarea id="welcomeTransportInfo" rows="3" placeholder="Taxi, airport transfer, scooter/car hire, contact or booking instructions"></textarea></label><div class="welcome-publish-controls compact"><label><input id="showWelcomeTransport" type="checkbox"> Show to guests</label><button type="button" class="welcome-clear-btn" data-clear-welcome="transport">Clear</button></div></div>
+        <div class="welcome-service-editor-block"><label>🌺 Wellness / massage / spa<textarea id="welcomeWellnessInfo" rows="3" placeholder="Massage, spa, treatments, opening hours, prices or booking instructions"></textarea></label><div class="welcome-publish-controls compact"><label><input id="showWelcomeWellness" type="checkbox"> Show to guests</label><button type="button" class="welcome-clear-btn" data-clear-welcome="wellness">Clear</button></div></div>
+        <div class="welcome-service-editor-block"><label>⛵ Tours / experiences<textarea id="welcomeToursInfo" rows="3" placeholder="Tours, excursions, pickup details, booking point or guest advice"></textarea></label><div class="welcome-publish-controls compact"><label><input id="showWelcomeTours" type="checkbox"> Show to guests</label><button type="button" class="welcome-clear-btn" data-clear-welcome="tours">Clear</button></div></div>
+        <div class="welcome-service-editor-block"><label>🧺 Other guest services<textarea id="welcomeOtherServices" rows="3" placeholder="Laundry, housekeeping or another useful service"></textarea></label><div class="welcome-publish-controls compact"><label><input id="showWelcomeOther" type="checkbox"> Show to guests</label><button type="button" class="welcome-clear-btn" data-clear-welcome="other">Clear</button></div></div>
       </div>
       <button id="saveWelcomeServicesBtn" class="primary-btn" type="button">Save Guest Services</button>
     </article>
@@ -217,12 +219,14 @@
         <button id="addWelcomeActivityBtn" class="primary-btn" type="button">+ Add Activity</button>
       </div>
       <div id="welcomeActivityList" class="welcome-activity-admin-list"></div>
+      <div class="welcome-publish-controls"><label><input id="showWelcomeWhatsOn" type="checkbox"> Show What’s On to guests</label><button type="button" class="welcome-clear-btn" data-clear-welcome="schedule">Clear schedule</button></div>
     </article>
 
     <article class="panel welcome-categories-panel pg-nav-section" data-pg-section="categories" data-pg-label="Explore Nearby" data-pg-summary="Choose which nearby categories guests can discover">
       <h3>Explore Nearby categories</h3>
       <p class="muted">You decide what guests are allowed to discover. Utility categories can later use live nearby search; commercial categories can be restricted to your approved partners.</p>
       <div id="welcomeCategoryEditor" class="welcome-category-editor"></div>
+      <div class="welcome-publish-controls"><label><input id="showWelcomeNearby" type="checkbox"> Show Explore Nearby to guests</label><span class="small muted">Places stay saved when hidden.</span></div>
       <button id="saveWelcomeCategoriesBtn" class="primary-btn">Save Categories</button>
     </article>
 
@@ -404,6 +408,7 @@
 <section id="welcomeGuestPreview" class="screen hidden">
   <div class="welcome-guest-topbar">
     <button id="welcomeGuestBackBtn" class="secondary-btn">← Edit Welcome</button>
+    <button id="guestTopHelpBtn" class="guest-top-help" type="button" data-welcome-panel="guestEmergencyPanel">🆘 Help</button>
   </div>
 
   <div class="guest-welcome-shell">
@@ -438,7 +443,7 @@
         <button id="guestWellnessTile" class="guest-menu-tile" type="button" data-welcome-panel="guestWellnessPanel"><span>🌺</span><strong>Wellness</strong><small>Massage, spa & treatments</small></button>
         <button id="guestToursTile" class="guest-menu-tile" type="button" data-welcome-panel="guestToursPanel"><span>⛵</span><strong>Tours & Experiences</strong><small>Trips, excursions & things to do</small></button>
         <button id="guestTransportTile" class="guest-menu-tile" type="button" data-welcome-panel="guestTransportPanel"><span>🛵</span><strong>Transport</strong><small>Getting around</small></button>
-        <button id="guestEmergencyTile" class="guest-menu-tile" type="button" data-welcome-panel="guestEmergencyPanel"><span>🆘</span><strong>Help & Emergency</strong><small>Important contacts</small></button>
+        <button id="guestEmergencyTile" class="guest-menu-tile guest-system-tile" type="button" data-welcome-panel="guestEmergencyPanel"><span>🆘</span><strong>Help & Emergency</strong><small>Always available</small></button>
       </div>
     </div>
 
@@ -525,7 +530,10 @@
     <section id="guestEmergencyPanel" class="guest-welcome-panel hidden">
       <button class="guest-panel-back" type="button">← Welcome menu</button>
       <h2>🆘 Help & Emergency</h2>
+      <p class="muted">Important help stays available even when guests customize other parts of their Welcome.</p>
+      <div class="guest-help-route-grid"><div class="guest-help-route"><span>🚑</span><strong>Medical / Health</strong></div><div class="guest-help-route"><span>🔥</span><strong>Fire / Property Emergency</strong></div><div class="guest-help-route"><span>👮</span><strong>Police / Security</strong></div><div class="guest-help-route"><span>☎️</span><strong>Host / Property Help</strong></div></div>
       <div id="guestEmergencyInfo" class="guest-info-card"></div>
+      <div id="guestEmergencyHost" class="guest-info-card"></div>
     </section>
 
     <div class="guest-welcome-footer">Powered by Papa Golf</div>
@@ -708,6 +716,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.36.0" defer></script>
+  <script src="app.js?v=0.36.1" defer></script>
 </body>
 </html>
