@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.33.3';
+const RUNTIME_VERSION = '0.34.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2695,7 +2695,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.33.3', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.34.0', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3240,25 +3240,36 @@ function welcomeShow(target){
 }
 function welcomeSetupStatus(){
   const p=getWelcomeProperty(),u=getWelcomeUnit();
-  const checks=[
-    ['Villa identity',!!String(p.name||u.name||'').trim()],
-    ['Villa location',Number.isFinite(Number(p.lat))&&Number.isFinite(Number(p.lng))],
-    ['Wi-Fi',!!String(u.wifiName||'').trim()&&!!String(u.wifiPassword||'').trim()],
-    ['Host contact',!!String((u.overrideHost?u.host:p.host)||'').trim()],
-    ['Emergency information',!!String((u.overrideEmergency?u.emergency:p.emergency)||'').trim()],
-    ['Villa guide',!!String(u.villaInfo||'').trim()]
+  const core=[
+    {name:'Villa identity',ok:!!String(p.name||u.name||'').trim(),section:'property'},
+    {name:'Villa location',ok:Number.isFinite(Number(p.lat))&&Number.isFinite(Number(p.lng)),section:'property'},
+    {name:'Wi-Fi',ok:!!String(u.wifiName||'').trim()&&!!String(u.wifiPassword||'').trim(),section:'guest-info'},
+    {name:'Host contact',ok:!!String((u.overrideHost?u.host:p.host)||'').trim(),section:'property'},
+    {name:'Emergency information',ok:!!String((u.overrideEmergency?u.emergency:p.emergency)||'').trim(),section:'property'},
+    {name:'Villa guide',ok:!!String(u.villaInfo||'').trim(),section:'guest-info'}
   ];
-  const complete=checks.filter(([,ok])=>ok).length;
-  return {checks,complete,total:checks.length,missing:checks.filter(([,ok])=>!ok).map(([name])=>name)};
+  const partners=getWelcomePartners();
+  const enhancements=[
+    {name:'Food',ok:!!String(u.foodInfo||'').trim()||partners.some(x=>['restaurant','bar','cafe'].includes(x.category)),section:'services'},
+    {name:'Transport',ok:!!String(u.transportInfo||'').trim()||partners.some(x=>x.category==='transport'),section:'services'},
+    {name:'Wellness',ok:!!String(u.wellnessInfo||'').trim()||partners.some(x=>x.category==='spa'),section:'services'},
+    {name:'Tours',ok:!!String(u.toursInfo||'').trim()||partners.some(x=>['activity','tour','attraction'].includes(x.category)),section:'services'},
+    {name:"What's On",ok:Array.isArray(u.activities)&&u.activities.some(x=>x&&x.enabled!==false&&x.title),section:'schedule'}
+  ];
+  const complete=core.filter(x=>x.ok).length,enhanced=enhancements.filter(x=>x.ok).length;
+  return {core,enhancements,complete,total:core.length,enhanced,enhancementTotal:enhancements.length,missing:core.filter(x=>!x.ok),next:core.find(x=>!x.ok)||enhancements.find(x=>!x.ok)||null};
 }
 function renderWelcomeReadiness(){
   const status=welcomeSetupStatus();
   const title=document.getElementById('welcomeReadinessTitle');
   const text=document.getElementById('welcomeReadinessText');
   const card=document.getElementById('welcomeReadinessCard');
-  if(title)title.textContent=status.complete===status.total?'Guest essentials ready':`${status.complete} of ${status.total} essentials ready`;
-  if(text)text.textContent=status.missing.length?`Still useful to add: ${status.missing.join(', ')}.`:'The core villa welcome information is complete. Preview it before printing the A5 card.';
-  if(card)card.classList.toggle('is-ready',status.complete===status.total);
+  const continueBtn=document.getElementById('welcomeContinueSetupBtn');
+  const ready=status.complete===status.total;
+  if(title)title.textContent=ready?'Guest essentials ready':`${status.complete} of ${status.total} essentials ready`;
+  if(text)text.textContent=!ready?`Next: ${status.missing[0]?.name||'finish setup'}.`:`Core ready · ${status.enhanced} of ${status.enhancementTotal} optional guest sections populated.`;
+  if(card)card.classList.toggle('is-ready',ready);
+  if(continueBtn){continueBtn.textContent=ready&&status.next?'Add more guest content':ready?'Review setup':'Continue setup';continueBtn.dataset.targetSection=status.next?.section||'guest-info';}
 }
 function finishWelcomeEdit(button,message){
   const section=button?.closest?.('.pg-nav-section');
@@ -4478,6 +4489,8 @@ function initWelcomeModule(){
 
   document.getElementById('saveWelcomePropertyBtn')?.addEventListener('click',event=>{saveWelcomeProperty();finishWelcomeEdit(event.currentTarget,'Property information saved. Guest preview updated.')});
   document.getElementById('saveWelcomeUnitBtn')?.addEventListener('click',event=>{saveWelcomeUnit();finishWelcomeEdit(event.currentTarget,'Villa information saved. Guest preview updated.')});
+  document.getElementById('saveWelcomeServicesBtn')?.addEventListener('click',event=>{saveWelcomeUnit();renderGuestWelcome();finishWelcomeEdit(event.currentTarget,'Guest services saved. Empty services remain hidden from guests.')});
+  document.getElementById('welcomeContinueSetupBtn')?.addEventListener('click',event=>{const id=event.currentTarget.dataset.targetSection||welcomeSetupStatus().next?.section||'guest-info';window.papaGolfOpenAdminSection?.(id,{scroll:true})});
   document.getElementById('addWelcomeActivityBtn')?.addEventListener('click',addWelcomeActivity);
   document.getElementById('welcomeActivityList')?.addEventListener('click',event=>{const b=event.target.closest('[data-remove-welcome-activity]');if(b)removeWelcomeActivity(b.getAttribute('data-remove-welcome-activity'))});
   document.getElementById('welcomeSaveGooglePlacesKey')?.addEventListener('click',()=>{

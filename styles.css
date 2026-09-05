@@ -1531,3 +1531,8 @@ body.welcome-admin-mode main{padding-top:max(10px,env(safe-area-inset-top))}
 /* v0.33.3 quieter guest welcome heading */
 .guest-welcome-intro h1{font-size:18px;line-height:1.2;font-weight:800;margin:0}
 @media(max-width:600px){.guest-welcome-intro h1{font-size:17px}}
+
+/* v0.34.0 Welcome minimum-complete-product setup flow */
+.welcome-readiness-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.welcome-readiness-actions button{min-height:46px}
+.welcome-services-panel .welcome-service-editor{display:grid;gap:14px;margin-top:12px}.welcome-services-panel .welcome-service-editor label{margin:0}
+@media(max-width:600px){.welcome-readiness-card{align-items:stretch}.welcome-readiness-actions{width:100%}.welcome-readiness-actions button{flex:1 1 100%;width:100%}}

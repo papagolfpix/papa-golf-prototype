@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.33.3" />
+<link rel="stylesheet" href="styles.css?v=0.34.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.33.3</div>
+      <div class="eyebrow">PAPA GOLF · V0.34.0</div>
       <h1>Papa Golf Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -112,7 +112,7 @@
       <strong id="welcomeReadinessTitle">Checking setup…</strong>
       <div id="welcomeReadinessText" class="small muted"></div>
     </div>
-    <button id="welcomeReadinessPreviewBtn" class="secondary-btn" type="button">Preview guest view</button>
+    <div class="welcome-readiness-actions"><button id="welcomeContinueSetupBtn" class="primary-btn" type="button">Continue setup</button><button id="welcomeReadinessPreviewBtn" class="secondary-btn" type="button">Preview guest view</button></div>
   </div>
 
   <div class="welcome-grid">
@@ -166,16 +166,6 @@
       <label>Bluetooth / entertainment<textarea id="welcomeBluetooth" rows="3" placeholder="Speaker, TV, streaming or Bluetooth instructions"></textarea></label>
       <label>Villa Guide<textarea id="welcomeVillaInfo" rows="5" placeholder="Check-in/out, rubbish, air-con, appliances, housekeeping, pool, gates, etc."></textarea></label>
 
-      <div class="welcome-service-editor">
-        <strong>Guest services</strong>
-        <p class="small muted">Keep these practical. Guests see them only when they open the relevant section.</p>
-        <label>Transport / scooter / car hire<textarea id="welcomeTransportInfo" rows="3" placeholder="Recommended taxi, airport transfer, scooter/car hire, contact or booking instructions"></textarea></label>
-        <label>Food / room service / delivery<textarea id="welcomeFoodInfo" rows="3" placeholder="Room service, delivery, breakfast, restaurant partner or ordering instructions"></textarea></label>
-        <label>Wellness / massage / spa<textarea id="welcomeWellnessInfo" rows="3" placeholder="Massage, spa, treatments, opening hours, prices or booking instructions"></textarea></label>
-        <label>Tours / experiences<textarea id="welcomeToursInfo" rows="3" placeholder="Recommended tours, excursions, booking point, pickup details or guest advice"></textarea></label>
-        <label>Other guest services<textarea id="welcomeOtherServices" rows="3" placeholder="Laundry, housekeeping or other useful services"></textarea></label>
-      </div>
-
       <div class="inheritance-box">
         <strong>Property inheritance</strong>
         <p class="muted">Shared information comes from the property unless this accommodation unit overrides it.</p>
@@ -186,6 +176,19 @@
       </div>
 
       <button id="saveWelcomeUnitBtn" class="primary-btn">Save Villa</button>
+    </article>
+
+    <article class="panel welcome-services-panel pg-nav-section" data-pg-section="services" data-pg-label="Guest Services" data-pg-summary="Food, transport, wellness, tours and practical services">
+      <h3>Guest services</h3>
+      <p class="muted">Add only what this property actually offers or recommends. Empty services stay hidden from guests.</p>
+      <div class="welcome-service-editor">
+        <label>🍽 Food / room service / delivery<textarea id="welcomeFoodInfo" rows="3" placeholder="Breakfast, room service, delivery, restaurant partner or ordering instructions"></textarea></label>
+        <label>🛵 Transport / scooter / car hire<textarea id="welcomeTransportInfo" rows="3" placeholder="Taxi, airport transfer, scooter/car hire, contact or booking instructions"></textarea></label>
+        <label>🌺 Wellness / massage / spa<textarea id="welcomeWellnessInfo" rows="3" placeholder="Massage, spa, treatments, opening hours, prices or booking instructions"></textarea></label>
+        <label>⛵ Tours / experiences<textarea id="welcomeToursInfo" rows="3" placeholder="Tours, excursions, pickup details, booking point or guest advice"></textarea></label>
+        <label>🧺 Other guest services<textarea id="welcomeOtherServices" rows="3" placeholder="Laundry, housekeeping or another useful service"></textarea></label>
+      </div>
+      <button id="saveWelcomeServicesBtn" class="primary-btn" type="button">Save Guest Services</button>
     </article>
 
     <article class="panel welcome-schedule-panel pg-nav-section" data-pg-section="schedule" data-pg-label="What's On" data-pg-summary="Recurring activities, events and guest programme">
@@ -683,6 +686,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.33.3" defer></script>
+  <script src="app.js?v=0.34.0" defer></script>
 </body>
 </html>
