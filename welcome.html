@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111111">
+  <title>Papa Golf Villa Welcome</title>
+  <link rel="stylesheet" href="welcome.css?v=0.33.0">
+</head>
+<body>
+  <main class="public-welcome-shell">
+    <header class="public-brand">
+      <img src="magic-dragon-villa-logo.png" alt="Villa logo">
+      <div id="publicDeveloper" class="developer"></div>
+      <div id="publicAddress" class="address"></div>
+    </header>
+
+    <section id="publicHome">
+      <div class="intro">
+        <h1 id="publicHeading">Welcome</h1>
+        <p>Everything you need during your stay, all in one place.</p>
+      </div>
+
+      <section class="quick-card">
+        <div class="section-title"><strong>Quick essentials</strong></div>
+        <button class="quick-action" data-panel="wifiPanel"><span>📶</span><div><strong>Wi-Fi</strong><small id="quickWifi">Open network details</small></div></button>
+        <a id="quickDirections" class="quick-action" href="#" target="_blank" rel="noopener"><span>📍</span><div><strong>Villa location</strong><small>Open directions</small></div></a>
+        <button class="quick-action" data-panel="villaPanel"><span>☎️</span><div><strong>Host / manager</strong><small id="quickHost">Contact information</small></div></button>
+      </section>
+
+      <nav class="menu-grid" aria-label="Villa welcome menu">
+        <button data-panel="villaPanel"><span>🏠</span><strong>Villa Guide</strong><small>House info & contacts</small></button>
+        <button data-panel="nearbyPanel"><span>🗺</span><strong>Explore Nearby</strong><small>Useful places & directions</small></button>
+        <button id="whatsOnTile" data-panel="whatsOnPanel"><span>📅</span><strong>What’s On</strong><small id="whatsOnSummary">Today & weekly activities</small></button>
+        <button id="foodTile" data-panel="foodPanel"><span>🍽</span><strong>Food & Drink</strong><small>Food, delivery & approved places</small></button>
+        <button id="wellnessTile" data-panel="wellnessPanel"><span>🌺</span><strong>Wellness</strong><small>Massage, spa & treatments</small></button>
+        <button id="toursTile" data-panel="toursPanel"><span>⛵</span><strong>Tours & Experiences</strong><small>Trips, excursions & things to do</small></button>
+        <button id="transportTile" data-panel="transportPanel"><span>🛵</span><strong>Transport</strong><small>Getting around</small></button>
+        <button data-panel="emergencyPanel"><span>🆘</span><strong>Help & Emergency</strong><small>Important contacts</small></button>
+      </nav>
+    </section>
+
+    <section id="villaPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>🏠 Villa Guide</h2><div id="villaInfo" class="info-card"></div><div id="hostInfo" class="info-card"></div></section>
+    <section id="wifiPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>📶 Wi-Fi & Technology</h2><div id="wifiInfo" class="info-card"></div><div id="bluetoothInfo" class="info-card"></div></section>
+    <section id="nearbyPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>🗺 Explore Nearby</h2><p class="muted">Villa-approved places and useful directions.</p><div id="nearbyList" class="place-list"></div></section>
+    <section id="whatsOnPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>📅 What’s On</h2><div id="todayActivities"></div><h3 class="subheading">Weekly programme</h3><div id="weeklyActivities"></div></section>
+    <section id="foodPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>🍽 Food & Drink</h2><div id="foodInfo" class="info-card"></div><div id="foodList" class="place-list"></div></section>
+    <section id="wellnessPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>🌺 Wellness</h2><div id="wellnessInfo" class="info-card"></div></section>
+    <section id="toursPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>⛵ Tours & Experiences</h2><div id="toursInfo" class="info-card"></div><div id="tourList" class="place-list"></div></section>
+    <section id="transportPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>🛵 Transport</h2><div id="transportInfo" class="info-card"></div><div id="otherServices" class="info-card"></div></section>
+    <section id="emergencyPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>🆘 Help & Emergency</h2><div id="emergencyInfo" class="info-card"></div></section>
+
+    <section id="invalidWelcome" class="info-card hidden"><h2>Welcome link unavailable</h2><p>This Welcome link is missing its villa information. Please scan the current QR card again or ask your host for the latest link.</p></section>
+
+    <footer>Powered by Papa Golf</footer>
+  </main>
+  <script src="welcome.js?v=0.33.0" defer></script>
+</body>
+</html>

@@ -1,3 +1,12 @@
+
+## v0.33.0 — Welcome Minimum Complete Product, first expansion
+- Adds structured **What’s On / Activity Schedule** to Villa Welcome. Owners can add recurring activities by day/time with category, guest note, price and booking details.
+- Guest preview and cross-device public Welcome now automatically show **today’s activities** plus the full weekly programme.
+- Adds dedicated **Wellness** and **Tours & Experiences** guest information, instead of burying these inside a generic services box.
+- Public Welcome payload upgraded to v2 while remaining backward-compatible with older links.
+- Empty guest sections remain hidden to preserve the progressive-disclosure, iPhone-first interface.
+- Preserves local IndexedDB photo data, Welcome localStorage data, Safari Blob hardening, Brand Kit assets and the existing backup path.
+- Fixes a duplicate variable declaration in the curated-place remove handler discovered during this development pass.
 # Papa Golf Platform Prototype — v0.18
 
 
@@ -773,9 +782,21 @@ Adds a manual GitHub Actions workflow at `.github/workflows/loyverse-sandbox-tes
 - Added `scripts/validate-update.js` and wired validation into future Apply Papa Golf Update runs. The validator checks required files, version/cache consistency, key Welcome DOM/runtime hooks, photo Blob hardening, no bulk IndexedDB/localStorage deletion, and Brand Kit asset/backup protections.
 
 
-## v0.31.1 — Villa guest services pass
+## v0.32.0 — Villa guest services pass
 - Added practical owner-editable Transport, Food/Delivery and Other Guest Services fields.
 - Connected those fields to the existing guest Food & Drink and Transport panels.
 - Preserved the progressive collapsed Welcome editor and existing local data.
 - Updated sample documentation references from Millie to Pauly Gee.
 - Expanded automated validation to cover the new Welcome service fields and guest render targets.
+
+## v0.32.0 — public Villa Welcome + navigation cleanup
+- Added standalone `welcome.html` public guest page for cross-device Villa Welcome testing.
+- Owner can create/copy a public Welcome link containing guest-facing villa data and approved places only.
+- A5 Welcome QR now uses the same public Villa Welcome URL.
+- Public payload is stored in the URL fragment so it is not sent to GitHub Pages as a query string; Google Places API key and admin data are excluded.
+- Local Guest Preview now hides the Papa Golf admin header/navigation to better represent the real guest experience.
+- Removed the duplicate Wi-Fi menu tile because Wi-Fi already appears in Quick Essentials.
+- Food and Transport tiles hide when there is no corresponding guest-facing content.
+- Welcome edit saves now collapse the edited section and return the owner to the readiness summary instead of showing blocking alerts.
+- Added a narrow migration from the old demo label `Millie` to `Pauly Gee` without changing unrelated/custom host details.
+- Automated validator expanded to cover the standalone public Welcome files, public-data path and guest navigation cleanup.

@@ -7,13 +7,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.31.1" />
+<link rel="stylesheet" href="styles.css?v=0.33.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.31.1</div>
-      <h1>Photo Upload Prototype</h1>
+      <div class="eyebrow">PAPA GOLF · V0.33.0</div>
+      <h1>Papa Golf Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
   </header>
@@ -171,7 +171,9 @@
         <p class="small muted">Keep these practical. Guests see them only when they open the relevant section.</p>
         <label>Transport / scooter / car hire<textarea id="welcomeTransportInfo" rows="3" placeholder="Recommended taxi, airport transfer, scooter/car hire, contact or booking instructions"></textarea></label>
         <label>Food / room service / delivery<textarea id="welcomeFoodInfo" rows="3" placeholder="Room service, delivery, breakfast, restaurant partner or ordering instructions"></textarea></label>
-        <label>Other guest services<textarea id="welcomeOtherServices" rows="3" placeholder="Laundry, massage, tours, housekeeping or other useful services"></textarea></label>
+        <label>Wellness / massage / spa<textarea id="welcomeWellnessInfo" rows="3" placeholder="Massage, spa, treatments, opening hours, prices or booking instructions"></textarea></label>
+        <label>Tours / experiences<textarea id="welcomeToursInfo" rows="3" placeholder="Recommended tours, excursions, booking point, pickup details or guest advice"></textarea></label>
+        <label>Other guest services<textarea id="welcomeOtherServices" rows="3" placeholder="Laundry, housekeeping or other useful services"></textarea></label>
       </div>
 
       <div class="inheritance-box">
@@ -184,6 +186,23 @@
       </div>
 
       <button id="saveWelcomeUnitBtn" class="primary-btn">Save Villa</button>
+    </article>
+
+    <article class="panel welcome-schedule-panel pg-nav-section" data-pg-section="schedule" data-pg-label="What's On" data-pg-summary="Recurring activities, events and guest programme">
+      <h3>What’s On / Activity Schedule</h3>
+      <p class="muted">Add recurring activities or events once. Guests will automatically see what is happening today, with the full weekly programme available underneath.</p>
+      <div class="welcome-schedule-form">
+        <label>Activity / event name<input id="welcomeActivityTitle" type="text" placeholder="e.g. Yoga, Thai cooking, live music"></label>
+        <label>Category<select id="welcomeActivityCategory"><option value="activity">Activity</option><option value="wellness">Wellness</option><option value="food">Food / Cooking</option><option value="sport">Sport</option><option value="music">Music / Entertainment</option><option value="tour">Tour / Excursion</option><option value="other">Other</option></select></label>
+        <fieldset class="welcome-days"><legend>Days</legend><div id="welcomeActivityDays">
+          <label><input type="checkbox" value="1">Mon</label><label><input type="checkbox" value="2">Tue</label><label><input type="checkbox" value="3">Wed</label><label><input type="checkbox" value="4">Thu</label><label><input type="checkbox" value="5">Fri</label><label><input type="checkbox" value="6">Sat</label><label><input type="checkbox" value="0">Sun</label>
+        </div></fieldset>
+        <div class="welcome-time-grid"><label>Start time<input id="welcomeActivityStart" type="time"></label><label>End time<input id="welcomeActivityEnd" type="time"></label></div>
+        <label>Guest note<textarea id="welcomeActivityNote" rows="2" placeholder="Meeting point, what to bring, booking advice, etc."></textarea></label>
+        <div class="welcome-time-grid"><label>Price / cost<input id="welcomeActivityPrice" type="text" placeholder="Free / ฿500 / Included"></label><label>Booking / contact<input id="welcomeActivityBooking" type="text" placeholder="Reception / WhatsApp / booking desk"></label></div>
+        <button id="addWelcomeActivityBtn" class="primary-btn" type="button">+ Add Activity</button>
+      </div>
+      <div id="welcomeActivityList" class="welcome-activity-admin-list"></div>
     </article>
 
     <article class="panel welcome-categories-panel pg-nav-section" data-pg-section="categories" data-pg-label="Explore Nearby" data-pg-summary="Choose which nearby categories guests can discover">
@@ -327,9 +346,10 @@
     <div class="welcome-a5-actions">
       <button id="previewWelcomeA5Btn" class="primary-btn" type="button">Preview A5 Welcome Card</button>
       <button id="printWelcomeA5Btn" class="secondary-btn" type="button">Print / Save as PDF</button>
-      <a class="secondary-btn pg-public-demo-link" href="gateway-demo.html" target="_blank" rel="noopener">Open Public Gateway Demo</a>
+      <button id="createPublicWelcomeLinkBtn" class="secondary-btn" type="button">Create Public Welcome Link</button>
     </div>
-    <p class="small muted pg-public-demo-note">This public demo is stored in the website itself, so it can be opened on another phone without using your iPhone's local Papa Golf data.</p>
+    <div id="publicWelcomeLinkBox" class="welcome-public-link hidden" aria-live="polite"></div>
+    <p class="small muted pg-public-demo-note">The public link contains only guest-facing villa information and approved places. It works on another phone without access to this admin browser.</p>
   </article>
 
   <div class="welcome-preview-action">
@@ -394,12 +414,14 @@
         </div>
       </div>
       <div class="guest-menu-grid">
-        <button class="guest-menu-tile" type="button" data-welcome-panel="guestVillaPanel"><span>🏠</span><strong>Villa Guide</strong><small>House information & help</small></button>
-        <button class="guest-menu-tile" type="button" data-welcome-panel="guestWifiPanel"><span>📶</span><strong>Wi-Fi</strong><small>Network & technology</small></button>
-        <button class="guest-menu-tile guest-menu-featured" type="button" data-welcome-panel="guestExplorePanel"><span>🗺</span><strong>Explore Nearby</strong><small>Map, essentials & partners</small></button>
-        <button class="guest-menu-tile" type="button" data-welcome-panel="guestFoodPanel"><span>🍽</span><strong>Food & Drink</strong><small>Our approved places</small></button>
-        <button class="guest-menu-tile" type="button" data-welcome-panel="guestTransportPanel"><span>🛵</span><strong>Transport</strong><small>Getting around Samui</small></button>
-        <button class="guest-menu-tile" type="button" data-welcome-panel="guestEmergencyPanel"><span>🆘</span><strong>Help & Emergency</strong><small>Contacts & important info</small></button>
+        <button id="guestVillaTile" class="guest-menu-tile" type="button" data-welcome-panel="guestVillaPanel"><span>🏠</span><strong>Villa Guide</strong><small>House info & contacts</small></button>
+        <button id="guestExploreTile" class="guest-menu-tile guest-menu-featured" type="button" data-welcome-panel="guestExplorePanel"><span>🗺</span><strong>Explore Nearby</strong><small>Useful places & directions</small></button>
+        <button id="guestWhatsOnTile" class="guest-menu-tile" type="button" data-welcome-panel="guestWhatsOnPanel"><span>📅</span><strong>What’s On</strong><small id="guestWhatsOnSummary">Today & weekly activities</small></button>
+        <button id="guestFoodTile" class="guest-menu-tile" type="button" data-welcome-panel="guestFoodPanel"><span>🍽</span><strong>Food & Drink</strong><small>Food, delivery & approved places</small></button>
+        <button id="guestWellnessTile" class="guest-menu-tile" type="button" data-welcome-panel="guestWellnessPanel"><span>🌺</span><strong>Wellness</strong><small>Massage, spa & treatments</small></button>
+        <button id="guestToursTile" class="guest-menu-tile" type="button" data-welcome-panel="guestToursPanel"><span>⛵</span><strong>Tours & Experiences</strong><small>Trips, excursions & things to do</small></button>
+        <button id="guestTransportTile" class="guest-menu-tile" type="button" data-welcome-panel="guestTransportPanel"><span>🛵</span><strong>Transport</strong><small>Getting around</small></button>
+        <button id="guestEmergencyTile" class="guest-menu-tile" type="button" data-welcome-panel="guestEmergencyPanel"><span>🆘</span><strong>Help & Emergency</strong><small>Important contacts</small></button>
       </div>
     </div>
 
@@ -439,12 +461,32 @@
       <div id="welcomeNearbyList" class="welcome-nearby-list"></div>
     </section>
 
+    <section id="guestWhatsOnPanel" class="guest-welcome-panel hidden">
+      <button class="guest-panel-back" type="button">← Welcome menu</button>
+      <h2>📅 What’s On</h2>
+      <div id="guestTodayActivities"></div>
+      <h3 class="welcome-preview-subheading">Weekly programme</h3>
+      <div id="guestWeeklyActivities"></div>
+    </section>
+
     <section id="guestFoodPanel" class="guest-welcome-panel hidden">
       <button class="guest-panel-back" type="button">← Welcome menu</button>
       <h2>🍽 Food & Drink</h2>
       <p class="muted">Only Papa Golf / property-approved restaurants and bars are shown here.</p>
       <div id="guestFoodServiceInfo" class="guest-info-card hidden"></div>
       <div id="guestFoodList" class="welcome-nearby-list"></div>
+    </section>
+
+    <section id="guestWellnessPanel" class="guest-welcome-panel hidden">
+      <button class="guest-panel-back" type="button">← Welcome menu</button>
+      <h2>🌺 Wellness</h2>
+      <div id="guestWellnessInfo" class="guest-info-card"></div>
+    </section>
+
+    <section id="guestToursPanel" class="guest-welcome-panel hidden">
+      <button class="guest-panel-back" type="button">← Welcome menu</button>
+      <h2>⛵ Tours & Experiences</h2>
+      <div id="guestToursInfo" class="guest-info-card"></div>
     </section>
 
     <section id="guestTransportPanel" class="guest-welcome-panel hidden">
@@ -640,6 +682,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.31.1" defer></script>
+  <script src="app.js?v=0.33.0" defer></script>
 </body>
 </html>

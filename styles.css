@@ -1472,6 +1472,41 @@ input,textarea,select{font-size:16px}
 @media (max-width:560px){.welcome-readiness-card{align-items:flex-start;flex-direction:column}.welcome-readiness-card button{width:100%}}
 .guest-wifi-line{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.7rem 0;border-bottom:1px solid rgba(255,255,255,.08)}.guest-wifi-line:last-child{border-bottom:0}.guest-wifi-line div{min-width:0}.guest-wifi-line span,.guest-wifi-line strong{display:block}.guest-wifi-line span{font-size:13px;color:#aaa49a;margin-bottom:.2rem}.guest-wifi-line strong{font-size:17px;overflow-wrap:anywhere}.guest-copy-btn{flex:0 0 auto;min-width:76px}
 
-/* v0.31.1 Welcome guest services */
+/* v0.32.0 Welcome guest services */
 .welcome-service-editor{margin:1rem 0;padding:1rem;border:1px solid rgba(224,188,102,.2);border-radius:16px;background:rgba(224,188,102,.035)}
 .welcome-service-editor>strong{display:block;font-size:17px;margin-bottom:.15rem}
+
+/* v0.32.0 guest/public cleanup */
+body.guest-preview-mode .app-header,
+body.guest-preview-mode .view-tabs,
+body.guest-preview-mode .library-tools,
+body.welcome-a5-mode .app-header,
+body.welcome-a5-mode .view-tabs,
+body.welcome-a5-mode .library-tools{display:none!important}
+body.guest-preview-mode main,
+body.welcome-a5-mode main{padding-top:max(10px,env(safe-area-inset-top))}
+body.guest-preview-mode .welcome-guest-topbar{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:50;padding:4px 0 8px;background:linear-gradient(#0e0e0e 70%,rgba(14,14,14,0))}
+body.guest-preview-mode .welcome-guest-topbar .secondary-btn{border-radius:999px;padding:.65rem .9rem}
+.guest-panel-back{position:sticky;top:max(8px,env(safe-area-inset-top));z-index:40;border-radius:999px!important}
+.welcome-public-link{margin-top:12px;padding:14px;border:1px solid rgba(224,188,102,.3);border-radius:14px;background:rgba(224,188,102,.055)}
+.welcome-public-link>strong{display:block;font-size:17px;margin-bottom:4px}.welcome-public-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.welcome-public-actions>*{flex:1 1 180px;text-align:center}
+body.welcome-admin-mode .app-header,
+body.welcome-admin-mode .view-tabs,
+body.welcome-admin-mode .library-tools{display:none!important}
+body.welcome-admin-mode main{padding-top:max(10px,env(safe-area-inset-top))}
+
+/* v0.33.0 Welcome schedule editor */
+.welcome-schedule-form{display:grid;gap:14px;margin-top:12px}
+.welcome-days{border:1px solid var(--line,#d8d8d8);border-radius:14px;padding:12px}
+.welcome-days legend{font-weight:700;padding:0 6px}
+#welcomeActivityDays{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+#welcomeActivityDays label{display:flex;align-items:center;gap:6px;min-height:40px;margin:0}
+.welcome-time-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.welcome-activity-admin-list{display:grid;gap:10px;margin-top:18px}
+.welcome-activity-admin-card{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border:1px solid var(--line,#ddd);border-radius:14px;padding:14px;background:#fff}
+@media(max-width:520px){#welcomeActivityDays{grid-template-columns:repeat(2,minmax(0,1fr))}.welcome-time-grid{grid-template-columns:1fr}.welcome-activity-admin-card{flex-direction:column}.welcome-activity-admin-card .secondary-btn{width:100%}}
+.welcome-preview-subheading{margin:26px 0 10px;font-size:1.08rem}
+.welcome-preview-today-label{font-weight:800;margin:4px 0 10px}
+.welcome-preview-activity-card{background:#fff;border:1px solid var(--line,#ddd);border-radius:14px;padding:14px;margin:10px 0}
+.welcome-preview-activity-head{display:flex;justify-content:space-between;gap:10px}.welcome-preview-activity-head span,.welcome-preview-activity-time{font-weight:800}.welcome-preview-activity-card p{line-height:1.45}
+.welcome-preview-day-group{margin:18px 0}.welcome-preview-day-group h4{margin:0 0 7px;padding-bottom:6px;border-bottom:1px solid var(--line,#ddd)}
