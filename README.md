@@ -1,4 +1,4 @@
-## v0.33.2 — Compact guest arrival header
+## v0.33.3 — Compact guest arrival header
 
 - Guest Preview now welcomes by property name, not unit/floor.
 - Unit/floor is secondary metadata only.
@@ -815,3 +815,7 @@ Adds a manual GitHub Actions workflow at `.github/workflows/loyverse-sandbox-tes
 - Welcome edit saves now collapse the edited section and return the owner to the readiness summary instead of showing blocking alerts.
 - Added a narrow migration from the old demo label `Millie` to `Pauly Gee` without changing unrelated/custom host details.
 - Automated validator expanded to cover the standalone public Welcome files, public-data path and guest navigation cleanup.
+
+### v0.33.3
+- Reduced the guest/public Welcome heading to a compact utility-sized title so property branding no longer crowds the first iPhone screen.
+- Kept the property identity, unit badge, Quick Essentials and existing public publishing behaviour unchanged.
