@@ -1577,3 +1577,8 @@ body.welcome-admin-mode main{padding-top:max(10px,env(safe-area-inset-top))}
 .welcome-activity-admin-card .muted,
 .welcome-preview-activity-card p{color:#bdb8af}
 .welcome-preview-day-group h4{border-bottom-color:rgba(255,255,255,.14)}
+
+/* v0.36.0 — backend-ready Welcome content structure */
+.welcome-arrival-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.welcome-arrival-grid>div{padding:12px 14px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.035)}
+@media(max-width:520px){.welcome-arrival-grid{grid-template-columns:1fr 1fr}}

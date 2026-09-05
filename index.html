@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.35.2" />
+<link rel="stylesheet" href="styles.css?v=0.36.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.35.2</div>
+      <div class="eyebrow">PAPA GOLF · V0.36.0</div>
       <h1>Papa Golf Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -177,6 +177,16 @@
       </div>
 
       <button id="saveWelcomeUnitBtn" class="primary-btn">Save Villa</button>
+    </article>
+
+    <article class="panel welcome-stay-panel pg-nav-section" data-pg-section="stay-details" data-pg-label="Stay Details" data-pg-summary="Arrival, facility hours, property map and important notices">
+      <div class="pg-section-content">
+        <div class="welcome-time-grid"><label>Check-in time<input id="welcomeCheckIn" type="time"></label><label>Check-out time<input id="welcomeCheckOut" type="time"></label></div>
+        <label>Facilities & opening hours<textarea id="welcomeFacilities" rows="4" placeholder="Pool 07:00–20:00, breakfast 07:00–10:30, gym, restaurant, reception, housekeeping, etc."></textarea></label>
+        <label>Property map / wayfinding<textarea id="welcomeMapInfo" rows="3" placeholder="How to find reception, pool, parking, beach access, villa zones or other useful orientation"></textarea></label>
+        <label>Important notices<textarea id="welcomeNotices" rows="4" placeholder="Quiet hours, safety information, access rules, local restrictions or temporary notices"></textarea></label>
+        <button id="saveWelcomeStayDetailsBtn" class="primary-btn" type="button">Save Stay Details</button>
+      </div>
     </article>
 
     <article class="panel welcome-services-panel pg-nav-section" data-pg-section="services" data-pg-label="Guest Services" data-pg-summary="Food, transport, wellness, tours and practical services">
@@ -422,6 +432,7 @@
       <div class="guest-menu-grid">
         <button id="guestVillaTile" class="guest-menu-tile" type="button" data-welcome-panel="guestVillaPanel"><span>🏠</span><strong>Villa Guide</strong><small>House info & contacts</small></button>
         <button id="guestExploreTile" class="guest-menu-tile guest-menu-featured" type="button" data-welcome-panel="guestExplorePanel"><span>🗺</span><strong>Explore Nearby</strong><small>Useful places & directions</small></button>
+        <button id="guestStayTile" class="guest-menu-tile" type="button" data-welcome-panel="guestStayPanel"><span>🕒</span><strong>Stay Details</strong><small>Arrival, facilities & notices</small></button>
         <button id="guestWhatsOnTile" class="guest-menu-tile" type="button" data-welcome-panel="guestWhatsOnPanel"><span>📅</span><strong>What’s On</strong><small id="guestWhatsOnSummary">Today & weekly activities</small></button>
         <button id="guestFoodTile" class="guest-menu-tile" type="button" data-welcome-panel="guestFoodPanel"><span>🍽</span><strong>Food & Drink</strong><small>Food, delivery & approved places</small></button>
         <button id="guestWellnessTile" class="guest-menu-tile" type="button" data-welcome-panel="guestWellnessPanel"><span>🌺</span><strong>Wellness</strong><small>Massage, spa & treatments</small></button>
@@ -465,6 +476,15 @@
         <div id="welcomeNearbyStatus" class="small muted"></div>
       </div>
       <div id="welcomeNearbyList" class="welcome-nearby-list"></div>
+    </section>
+
+    <section id="guestStayPanel" class="guest-welcome-panel hidden">
+      <button class="guest-panel-back" type="button">← Welcome menu</button>
+      <h2>🕒 Stay Details</h2>
+      <div id="guestArrivalInfo" class="guest-info-card hidden"></div>
+      <div id="guestFacilitiesInfo" class="guest-info-card hidden"></div>
+      <div id="guestMapInfo" class="guest-info-card hidden"></div>
+      <div id="guestNoticesInfo" class="guest-info-card hidden"></div>
     </section>
 
     <section id="guestWhatsOnPanel" class="guest-welcome-panel hidden">
@@ -688,6 +708,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.35.2" defer></script>
+  <script src="app.js?v=0.36.0" defer></script>
 </body>
 </html>

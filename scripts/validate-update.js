@@ -15,8 +15,8 @@ if(v){
   check(html.toUpperCase().includes(`V${v}`.toUpperCase()),'visible header version matches runtime');
   check(sw.includes(`v${v.replace(/\./g,'')}`)||sw.includes(`v${v.replace(/\./g,'')}-`), 'service-worker cache version matches runtime');
 }
-for(const id of ['welcomeReadinessCard','welcomeReadinessPreviewBtn','guestQuickEssentials','guestQuickWifiName','guestQuickDirections','guestQuickHostText','welcomeTransportInfo','welcomeFoodInfo','welcomeOtherServices','welcomeWellnessInfo','welcomeToursInfo','welcomeActivityTitle','welcomeActivityList','guestTransportInfo','guestFoodServiceInfo','guestOtherServices','guestWhatsOnTile','guestWellnessTile','guestToursTile','guestTodayActivities','guestWeeklyActivities','createPublicWelcomeLinkBtn','publicWelcomeLinkBox','guestFoodTile','guestTransportTile']) check(html.includes(`id="${id}"`),`Welcome UI id present: ${id}`);
-for(const id of ['welcomeReadinessCard','welcomeReadinessPreviewBtn','guestQuickWifiName','guestQuickDirections','guestQuickHostText','welcomeTransportInfo','welcomeFoodInfo','welcomeOtherServices','welcomeWellnessInfo','welcomeToursInfo','welcomeActivityTitle','welcomeActivityList','guestTransportInfo','guestFoodServiceInfo','guestOtherServices','guestWhatsOnTile','guestWellnessTile','guestToursTile','guestTodayActivities','guestWeeklyActivities','createPublicWelcomeLinkBtn','publicWelcomeLinkBox','guestFoodTile','guestTransportTile']) check(app.includes(id),`Welcome runtime references: ${id}`);
+for(const id of ['welcomeReadinessCard','welcomeReadinessPreviewBtn','guestQuickEssentials','guestQuickWifiName','guestQuickDirections','guestQuickHostText','welcomeTransportInfo','welcomeFoodInfo','welcomeOtherServices','welcomeWellnessInfo','welcomeToursInfo','welcomeActivityTitle','welcomeActivityList','guestTransportInfo','guestFoodServiceInfo','guestOtherServices','guestWhatsOnTile','guestWellnessTile','guestToursTile','guestTodayActivities','guestWeeklyActivities','createPublicWelcomeLinkBtn','publicWelcomeLinkBox','guestFoodTile','guestTransportTile','welcomeCheckIn','welcomeCheckOut','welcomeFacilities','welcomeMapInfo','welcomeNotices','saveWelcomeStayDetailsBtn','guestStayTile','guestArrivalInfo','guestFacilitiesInfo','guestMapInfo','guestNoticesInfo']) check(html.includes(`id="${id}"`),`Welcome UI id present: ${id}`);
+for(const id of ['welcomeReadinessCard','welcomeReadinessPreviewBtn','guestQuickWifiName','guestQuickDirections','guestQuickHostText','welcomeTransportInfo','welcomeFoodInfo','welcomeOtherServices','welcomeWellnessInfo','welcomeToursInfo','welcomeActivityTitle','welcomeActivityList','guestTransportInfo','guestFoodServiceInfo','guestOtherServices','guestWhatsOnTile','guestWellnessTile','guestToursTile','guestTodayActivities','guestWeeklyActivities','createPublicWelcomeLinkBtn','publicWelcomeLinkBox','guestFoodTile','guestTransportTile','welcomeCheckIn','welcomeCheckOut','welcomeFacilities','welcomeMapInfo','welcomeNotices','saveWelcomeStayDetailsBtn','guestStayTile','guestArrivalInfo','guestFacilitiesInfo','guestMapInfo','guestNoticesInfo']) check(app.includes(id),`Welcome runtime references: ${id}`);
 check(app.includes('materializeSafeRelatedPhotos'),'Safari related-photo Blob hardening retained');
 check(!/indexedDB\.deleteDatabase\s*\(/.test(app),'no IndexedDB database deletion in app runtime');
 check(!/localStorage\.clear\s*\(/.test(app),'no localStorage.clear in app runtime');
@@ -37,6 +37,12 @@ for(const file of ['index.html','welcome.html','gateway-demo.html','promotion.ht
 check(app.includes("body.classList.toggle('guest-preview-mode'"),'local guest preview hides admin chrome');
 check(app.includes("body.classList.toggle('welcome-admin-mode'"),'Welcome owner screen uses dedicated clean navigation mode');
 check(app.includes('finishWelcomeEdit'),'Welcome save flow returns to compact owner view');
+check(app.includes('PAPA_GOLF_WELCOME_SCHEMA_VERSION'),'canonical Welcome schema version declared');
+check(app.includes('buildCanonicalWelcomeModel'),'backend-ready canonical Welcome model builder retained');
+check(app.includes('ensureWelcomeModelIdentity'),'stable property/unit identity migration retained');
+check(app.includes('version: 9'),'backup format v9 includes consolidated Welcome model');
+check(app.includes('v:3,s:PAPA_GOLF_WELCOME_SCHEMA_VERSION'),'public Welcome payload v3 carries schema version');
+check(publicWelcome.includes('stayPanel')&&publicWelcome.includes('arrivalInfo'),'standalone public Welcome supports structured stay details');
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');
   for(const x of fail) console.error('✗',x);

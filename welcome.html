@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111111">
   <title>Papa Golf Villa Welcome</title>
-  <link rel="stylesheet" href="welcome.css?v=0.35.2">
+  <link rel="stylesheet" href="welcome.css?v=0.36.0">
 </head>
 <body>
   <main class="public-welcome-shell">
@@ -34,6 +34,7 @@
       <nav class="menu-grid" aria-label="Villa welcome menu">
         <button data-panel="villaPanel"><span>🏠</span><strong>Villa Guide</strong><small>House info & contacts</small></button>
         <button data-panel="nearbyPanel"><span>🗺</span><strong>Explore Nearby</strong><small>Useful places & directions</small></button>
+        <button id="stayTile" data-panel="stayPanel"><span>🕒</span><strong>Stay Details</strong><small>Arrival, facilities & notices</small></button>
         <button id="whatsOnTile" data-panel="whatsOnPanel"><span>📅</span><strong>What’s On</strong><small id="whatsOnSummary">Today & weekly activities</small></button>
         <button id="foodTile" data-panel="foodPanel"><span>🍽</span><strong>Food & Drink</strong><small>Food, delivery & approved places</small></button>
         <button id="wellnessTile" data-panel="wellnessPanel"><span>🌺</span><strong>Wellness</strong><small>Massage, spa & treatments</small></button>
@@ -46,6 +47,7 @@
     <section id="villaPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>🏠 Villa Guide</h2><div id="villaInfo" class="info-card"></div><div id="hostInfo" class="info-card"></div></section>
     <section id="wifiPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>📶 Wi-Fi & Technology</h2><div id="wifiInfo" class="info-card"></div><div id="bluetoothInfo" class="info-card"></div></section>
     <section id="nearbyPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>🗺 Explore Nearby</h2><p class="muted">Villa-approved places and useful directions.</p><div id="nearbyList" class="place-list"></div></section>
+    <section id="stayPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>🕒 Stay Details</h2><div id="arrivalInfo" class="info-card hidden"></div><div id="facilitiesInfo" class="info-card hidden"></div><div id="mapInfo" class="info-card hidden"></div><div id="noticesInfo" class="info-card hidden"></div></section>
     <section id="whatsOnPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>📅 What’s On</h2><div id="todayActivities"></div><h3 class="subheading">Weekly programme</h3><div id="weeklyActivities"></div></section>
     <section id="foodPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>🍽 Food & Drink</h2><div id="foodInfo" class="info-card"></div><div id="foodList" class="place-list"></div></section>
     <section id="wellnessPanel" class="detail-panel hidden"><button class="back-btn">← Welcome</button><h2>🌺 Wellness</h2><div id="wellnessInfo" class="info-card"></div></section>
@@ -57,6 +59,6 @@
 
     <footer>Powered by Papa Golf</footer>
   </main>
-  <script src="welcome.js?v=0.35.2" defer></script>
+  <script src="welcome.js?v=0.36.0" defer></script>
 </body>
 </html>
