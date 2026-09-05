@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.36.1';
+const RUNTIME_VERSION = '0.37.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2695,7 +2695,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.36.1', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.37.0', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3361,6 +3361,11 @@ function welcomeSectionSetupState(id){
   if(id==='affiliates'){
     const a=getPapaGolfAffiliateProfile();
     return has(a.businessName)?{state:'ready',label:'Profile saved'}:{state:'optional',label:'Optional'};
+  }
+  if(id==='shared-data'){
+    const cfg=getSharedBackendConfig(),st=getSharedPublishState();
+    if(st.lastPublishedAt&&st.projectId===cfg.projectId)return {state:'ready',label:'Shared'};
+    return cfg.projectId&&cfg.apiKey?{state:'more',label:'Ready to publish'}:{state:'more',label:'Connect backend'};
   }
   if(id==='gateways'){
     const count=getPapaGolfGateways().filter(g=>g&&g.enabled!==false).length;
@@ -4444,6 +4449,7 @@ function welcomePublicPayload(){
   const pr={...WELCOME_DEFAULT_UNIT.presentation,...(d.presentation||{})};return {v:4,s:PAPA_GOLF_WELCOME_SCHEMA_VERSION,p:{n:d.propertyName,d:d.developer,u:d.unitName,a:d.address,la:d.lat,lo:d.lng,h:d.host,e:d.emergency,w:d.wifiName,pw:d.wifiPassword,b:d.bluetooth,g:d.villaInfo,ci:stay.checkIn||'',co:stay.checkOut||'',fa:stay.facilities||'',m:stay.mapInfo||'',nt:stay.notices||'',t:d.transportInfo,f:d.foodInfo,wl:d.wellnessInfo,tr:d.toursInfo,o:d.otherServices},y:{g:pr.villaGuide?.published!==false,s:pr.stayDetails?.published!==false,e:pr.whatsOn?.published!==false,n:pr.nearby?.published!==false,f:pr.food?.published!==false,w:pr.wellness?.published!==false,t:pr.tours?.published!==false,r:pr.transport?.published!==false,o:pr.other?.published!==false,h:true},x:places,e:d.activities.map(a=>({i:a.id||'',n:a.title||'',c:a.category||'activity',d:Array.isArray(a.days)?a.days:[],s:a.startTime||'',z:a.endTime||'',t:a.note||'',p:a.price||'',b:a.booking||'',en:a.enabled!==false}))};
 }
 function welcomePublicUrl(){
+  if(sharedBackendCanUseStableLink())return sharedPermanentWelcomeUrl();
   const url=new URL('welcome.html',location.href);
   url.hash='d='+encodeWelcomePublicPayload(welcomePublicPayload());
   return url.href;
@@ -4452,7 +4458,7 @@ function renderPublicWelcomeLink(){
   const host=document.getElementById('publicWelcomeLinkBox');if(!host)return;
   const url=welcomePublicUrl();host.classList.remove('hidden');
   const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=420x420&margin=16&format=png&data=${encodeURIComponent(url)}`;
-  host.innerHTML=`<strong>Public Villa Welcome</strong><p class="small muted">Scan this QR on another device, or use the buttons below. Recreate it after changing villa information.</p><div class="welcome-public-qr"><img src="${escapeHtml(qrUrl)}" alt="QR code for this Public Villa Welcome"></div><div class="welcome-public-actions"><a class="welcome-public-open-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener">Open Public Welcome</a><button id="copyPublicWelcomeLinkBtn" class="secondary-btn" type="button">Copy Link</button></div>`;
+  host.innerHTML=`<strong>Public Villa Welcome</strong><p class="small muted">Scan this QR on another device, or use the buttons below. Shared mode keeps the same QR after future updates; Local Alpha links are snapshots.</p><div class="welcome-public-qr"><img src="${escapeHtml(qrUrl)}" alt="QR code for this Public Villa Welcome"></div><div class="welcome-public-actions"><a class="welcome-public-open-btn" href="${escapeHtml(url)}" target="_blank" rel="noopener">Open Public Welcome</a><button id="copyPublicWelcomeLinkBtn" class="secondary-btn" type="button">Copy Link</button></div>`;
   document.getElementById('copyPublicWelcomeLinkBtn')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(url);host.querySelector('p').textContent='Public Welcome link copied.'}catch{host.querySelector('p').textContent='Open the public page and copy its Safari address.'}});
 }
 function renderWelcomeA5(){
@@ -4480,6 +4486,91 @@ function printWelcomeA5(){
   setTimeout(()=>window.print(),80);
 }
 
+
+
+const PAPA_GOLF_SHARED_BACKEND_KEY='papaGolfSharedBackendV1';
+const PAPA_GOLF_SHARED_AUTH_KEY='papaGolfSharedFirebaseAuthV1';
+const PAPA_GOLF_SHARED_STATE_KEY='papaGolfSharedPublishStateV1';
+function getSharedBackendConfig(){return readWelcomeJson(PAPA_GOLF_SHARED_BACKEND_KEY,{projectId:'',apiKey:''})||{projectId:'',apiKey:''}}
+function getSharedPublishState(){return readWelcomeJson(PAPA_GOLF_SHARED_STATE_KEY,{lastPublishedAt:'',gatewayId:'',projectId:'',ownerUid:''})||{}}
+function sharedGateway(){return ensureDefaultPropertyGateway().find(g=>g.type==='property')||ensureDefaultPropertyGateway()[0]}
+function sharedPermanentWelcomeUrl(){
+  const cfg=getSharedBackendConfig(),g=sharedGateway();
+  if(!cfg.projectId||!g?.id)return '';
+  const url=new URL('welcome.html',location.href);
+  url.hash=`g=${encodeURIComponent(g.id)}&p=${encodeURIComponent(cfg.projectId)}`;
+  return url.href;
+}
+function sharedBackendCanUseStableLink(){
+  const cfg=getSharedBackendConfig(),st=getSharedPublishState(),g=sharedGateway();
+  return !!(cfg.projectId&&g?.id&&st.lastPublishedAt&&st.gatewayId===g.id&&st.projectId===cfg.projectId);
+}
+function renderSharedDataSection(){
+  const cfg=getSharedBackendConfig(),st=getSharedPublishState(),g=sharedGateway();
+  const project=document.getElementById('sharedFirebaseProjectId'),key=document.getElementById('sharedFirebaseApiKey');
+  if(project&&document.activeElement!==project)project.value=cfg.projectId||'';
+  if(key&&document.activeElement!==key)key.value=cfg.apiKey||'';
+  const id=document.getElementById('sharedDataGatewayId');if(id)id.textContent=g?.id||'—';
+  const mode=document.getElementById('sharedDataMode');if(mode)mode.textContent=sharedBackendCanUseStableLink()?'Shared Beta':'Local Alpha';
+  const last=document.getElementById('sharedDataLastPublished');if(last)last.textContent=st.lastPublishedAt?new Date(st.lastPublishedAt).toLocaleString():'Not published';
+  const copy=document.getElementById('copyPermanentWelcomeBtn');if(copy)copy.disabled=!sharedBackendCanUseStableLink();
+  const publish=document.getElementById('publishSharedWelcomeBtn');if(publish)publish.disabled=!(cfg.projectId&&cfg.apiKey);
+  renderWelcomeSectionStatuses();
+}
+function saveSharedBackendSettings(){
+  const projectId=document.getElementById('sharedFirebaseProjectId')?.value?.trim()||'';
+  const apiKey=document.getElementById('sharedFirebaseApiKey')?.value?.trim()||'';
+  localStorage.setItem(PAPA_GOLF_SHARED_BACKEND_KEY,JSON.stringify({projectId,apiKey}));
+  const status=document.getElementById('sharedBackendTestStatus');if(status)status.textContent=projectId&&apiKey?'Settings saved on this device.':'Enter both values to connect.';
+  renderSharedDataSection();
+}
+async function getSharedFirebaseAuth({force=false}={}){
+  const cfg=getSharedBackendConfig();if(!cfg.apiKey)throw new Error('Firebase Web API key is missing.');
+  let auth=readWelcomeJson(PAPA_GOLF_SHARED_AUTH_KEY,null);
+  const now=Math.floor(Date.now()/1000);
+  if(!force&&auth?.idToken&&Number(auth.expiresAt||0)>now+120)return auth;
+  if(auth?.refreshToken&&!force){
+    const body=new URLSearchParams({grant_type:'refresh_token',refresh_token:auth.refreshToken});
+    const r=await fetch(`https://securetoken.googleapis.com/v1/token?key=${encodeURIComponent(cfg.apiKey)}`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+    if(r.ok){const x=await r.json();auth={idToken:x.id_token,refreshToken:x.refresh_token,localId:x.user_id,expiresAt:now+Number(x.expires_in||3600)};localStorage.setItem(PAPA_GOLF_SHARED_AUTH_KEY,JSON.stringify(auth));return auth}
+  }
+  const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${encodeURIComponent(cfg.apiKey)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({returnSecureToken:true})});
+  if(!r.ok){const x=await r.json().catch(()=>({}));throw new Error(x?.error?.message||`Firebase sign-in failed (${r.status}). Enable Anonymous Authentication in Firebase.`)}
+  const x=await r.json();auth={idToken:x.idToken,refreshToken:x.refreshToken,localId:x.localId,expiresAt:now+Number(x.expiresIn||3600)};localStorage.setItem(PAPA_GOLF_SHARED_AUTH_KEY,JSON.stringify(auth));return auth;
+}
+function sharedFirestoreDocumentUrl(projectId,gatewayId){return `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/databases/(default)/documents/papaGolfGateways/${encodeURIComponent(gatewayId)}`}
+async function testSharedBackend(){
+  saveSharedBackendSettings();const status=document.getElementById('sharedBackendTestStatus'),cfg=getSharedBackendConfig();
+  if(status)status.textContent='Testing Firebase connection…';
+  try{
+    if(!cfg.projectId)throw new Error('Firebase project ID is missing.');
+    const auth=await getSharedFirebaseAuth();
+    const r=await fetch(sharedFirestoreDocumentUrl(cfg.projectId,sharedGateway()?.id||'test'),{headers:{Authorization:`Bearer ${auth.idToken}`}});
+    if(![200,403,404].includes(r.status))throw new Error(`Firestore returned ${r.status}. Check the project ID and Firestore setup.`);
+    if(status)status.textContent=`Connected as owner ${auth.localId.slice(0,8)}… · Firestore ${r.status===403?'rules still need setup':r.status===404?'ready; no Welcome published yet':'reachable'}.`;
+  }catch(err){if(status)status.textContent=`Connection not ready: ${err.message}`}
+  renderSharedDataSection();
+}
+async function publishSharedWelcome(){
+  saveWelcomeProperty();saveWelcomeUnit();saveWelcomeCategories();
+  const cfg=getSharedBackendConfig(),g=sharedGateway(),status=document.getElementById('sharedDataStatus');
+  if(!cfg.projectId||!cfg.apiKey||!g?.id){if(status)status.textContent='Backend settings are incomplete.';return}
+  if(status)status.textContent='Publishing current Welcome to shared data…';
+  try{
+    const auth=await getSharedFirebaseAuth();
+    const payload=welcomePublicPayload();
+    const body={fields:{payload:{stringValue:JSON.stringify(payload)},ownerUid:{stringValue:auth.localId},published:{booleanValue:true},gatewayId:{stringValue:g.id},propertyName:{stringValue:String(payload?.p?.n||'')},schemaVersion:{integerValue:String(PAPA_GOLF_WELCOME_SCHEMA_VERSION)},updatedAt:{timestampValue:new Date().toISOString()}}};
+    const r=await fetch(sharedFirestoreDocumentUrl(cfg.projectId,g.id),{method:'PATCH',headers:{Authorization:`Bearer ${auth.idToken}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok){const x=await r.json().catch(()=>({}));throw new Error(x?.error?.message||`Publish failed (${r.status}). Check Firestore security rules.`)}
+    const publishedAt=new Date().toISOString();localStorage.setItem(PAPA_GOLF_SHARED_STATE_KEY,JSON.stringify({lastPublishedAt:publishedAt,gatewayId:g.id,projectId:cfg.projectId,ownerUid:auth.localId}));
+    if(status)status.textContent='Published. This Gateway now has a permanent shared link; future updates can use the same QR.';
+    renderSharedDataSection();renderPublicWelcomeLink();renderWelcomeA5();
+  }catch(err){if(status)status.textContent=`Publish failed: ${err.message}`}
+}
+async function copyPermanentWelcomeLink(){
+  const url=sharedPermanentWelcomeUrl(),status=document.getElementById('sharedDataStatus');if(!url||!sharedBackendCanUseStableLink()){if(status)status.textContent='Publish this Welcome to shared data first.';return}
+  try{await navigator.clipboard.writeText(url);if(status)status.textContent='Permanent Welcome link copied.'}catch{if(status)status.textContent='Open the public Welcome and copy its Safari address.'}
+}
 
 const PAPA_GOLF_NAV_SECTION_KEY='papaGolfAdminSectionV1';
 function setupPapaGolfProgressiveSections(){
@@ -4781,6 +4872,11 @@ function initWelcomeModule(){
   });
   document.getElementById('welcomeA5BackBtn')?.addEventListener('click',()=>welcomeShow(page));
   document.getElementById('welcomeA5PrintBtn')?.addEventListener('click',printWelcomeA5);
+  document.getElementById('saveSharedBackendBtn')?.addEventListener('click',saveSharedBackendSettings);
+  document.getElementById('testSharedBackendBtn')?.addEventListener('click',testSharedBackend);
+  document.getElementById('publishSharedWelcomeBtn')?.addEventListener('click',publishSharedWelcome);
+  document.getElementById('copyPermanentWelcomeBtn')?.addEventListener('click',copyPermanentWelcomeLink);
+  renderSharedDataSection();
   document.getElementById('createPublicWelcomeLinkBtn')?.addEventListener('click',()=>{document.getElementById('gatewayEditPanel')?.classList.add('hidden');renderPublicWelcomeLink();setTimeout(()=>document.getElementById('publicWelcomeLinkBox')?.scrollIntoView({behavior:'smooth',block:'center'}),40)});
 
   document.getElementById('welcomeNearbyList')?.addEventListener('click',event=>{

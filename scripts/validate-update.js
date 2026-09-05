@@ -28,6 +28,12 @@ check(app.includes("url.hash='d='"),'public Welcome data is carried in URL fragm
 check(!app.includes("getPapaGolfGooglePlacesKey()"+";return {v:1"),'Google Places key excluded from public Welcome payload');
 check(publicWelcome.includes('publicHome')&&publicWelcome.includes('quickDirections'),'standalone public Welcome essentials present');
 check(publicWelcomeJs.includes('decodePayload')&&publicWelcomeJs.includes('showPanel'),'standalone public Welcome navigation runtime present');
+check(html.includes('id="sharedDataGatewayId"')&&html.includes('id="publishSharedWelcomeBtn"'),'Shared Data owner controls present');
+check(app.includes('publishSharedWelcome')&&app.includes('sharedPermanentWelcomeUrl'),'shared backend publish bridge present');
+check(app.includes('papaGolfGateways')&&app.includes('identitytoolkit.googleapis.com'),'Firebase owner/auth bridge present');
+check(publicWelcomeJs.includes('loadSharedWelcome')&&publicWelcomeJs.includes('firestore.googleapis.com'),'public Welcome can resolve stable shared Gateway');
+check(fs.existsSync(path.join(root,'FIREBASE_SETUP.md')),'Firebase setup guide included');
+
 check((()=>{try{new Function(publicWelcomeJs);return true}catch{return false}})(),'standalone public Welcome JavaScript parses');
 for(const file of ['index.html','welcome.html','gateway-demo.html','promotion.html']){
   const body=read(file);

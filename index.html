@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.36.1" />
+<link rel="stylesheet" href="styles.css?v=0.37.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.36.1</div>
+      <div class="eyebrow">PAPA GOLF · V0.37.0</div>
       <h1>Papa Golf Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -344,6 +344,27 @@
     <canvas id="affiliateCreativeCanvas" class="affiliate-creative-canvas" width="1080" height="1080" aria-label="Branded promotion preview"></canvas>
     <div id="affiliateCreativeStatus" class="small muted">Create the structured promotion above to generate artwork.</div>
     <div class="affiliate-studio-actions"><button id="downloadAffiliateCreativeBtn" class="primary-btn" type="button">Download Promotion PNG</button><button id="createPublicPromoLinkBtn" class="secondary-btn" type="button">Create Public Test Link</button></div><div id="affiliatePublicPromoLink" class="affiliate-public-link hidden"></div>
+  </article>
+
+  <article class="panel pg-nav-section" data-pg-section="shared-data" data-pg-label="Shared Data" data-pg-summary="Permanent QR and live cross-device publishing">
+    <div class="eyebrow">PAPA GOLF SHARED DATA · BETA</div>
+    <h3>Permanent Welcome link</h3>
+    <p class="muted">This is the bridge from the local Alpha to a shared Papa Golf backend. Until a backend is connected, your current snapshot QR continues to work exactly as before.</p>
+    <div class="shared-data-status-card">
+      <div><span class="small muted">Current mode</span><strong id="sharedDataMode">Local Alpha</strong></div>
+      <div><span class="small muted">Gateway ID</span><strong id="sharedDataGatewayId">—</strong></div>
+      <div><span class="small muted">Last shared publish</span><strong id="sharedDataLastPublished">Not published</strong></div>
+    </div>
+    <details class="shared-data-config">
+      <summary>Backend connection settings</summary>
+      <p class="small muted">For the first shared-data test we will use Firebase. These are web-app connection values only; never enter a private key or service-account credential here.</p>
+      <label>Firebase project ID<input id="sharedFirebaseProjectId" type="text" autocomplete="off" placeholder="your-project-id"></label>
+      <label>Firebase Web API key<input id="sharedFirebaseApiKey" type="text" autocomplete="off" placeholder="AIza…"></label>
+      <div class="shared-data-actions"><button id="saveSharedBackendBtn" class="secondary-btn" type="button">Save settings</button><button id="testSharedBackendBtn" class="secondary-btn" type="button">Test connection</button></div>
+      <div id="sharedBackendTestStatus" class="small muted" aria-live="polite"></div>
+    </details>
+    <div class="shared-data-actions"><button id="publishSharedWelcomeBtn" class="primary-btn" type="button">Publish Current Welcome</button><button id="copyPermanentWelcomeBtn" class="secondary-btn" type="button">Copy Permanent Link</button></div>
+    <div id="sharedDataStatus" class="small muted" aria-live="polite">Connect the backend when you are ready. Nothing local is changed until you publish.</div>
   </article>
 
   <article class="panel welcome-a5-panel pg-nav-section" data-pg-section="gateways" data-pg-label="Gateways & A5 / QR" data-pg-summary="QR entry points, Gateway settings and A5 cards">
@@ -716,6 +737,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.36.1" defer></script>
+  <script src="app.js?v=0.37.0" defer></script>
 </body>
 </html>
