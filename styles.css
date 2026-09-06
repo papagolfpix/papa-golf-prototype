@@ -865,7 +865,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .welcome-partner-row button{flex:0 0 auto}
 .welcome-preview-action{display:flex;justify-content:center;padding:1rem 0 2rem}
 .welcome-preview-action button{min-height:54px;min-width:min(100%,360px)}
-.welcome-guest-topbar{max-width:760px;margin:0 auto;padding:8px 0 10px}
 .guest-property-brand{text-align:center;padding:10px 8px 4px}
 .guest-property-brand img{display:block;width:100%;max-width:650px;max-height:220px;object-fit:contain;margin:0 auto;background:#050505;border-radius:18px}
 .guest-developer{margin-top:9px;color:#e0bc66;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
@@ -880,7 +879,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .guest-menu-tile small{margin-top:.35rem;color:#979188;font-size:12px}
 .guest-menu-featured{border-color:rgba(224,188,102,.48);background:linear-gradient(145deg,rgba(224,188,102,.12),rgba(255,255,255,.025))}
 .guest-welcome-panel{padding-bottom:1rem}
-.guest-panel-back{margin-bottom:1rem;border:0;background:none;color:#e0bc66;font:700 14px inherit;padding:0}
 .guest-panel-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
 .guest-info-card{padding:1rem;margin:.7rem 0;border:1px solid rgba(255,255,255,.11);border-radius:16px;background:rgba(255,255,255,.03)}
 .guest-info-card p:first-child{margin-top:0}.guest-info-card p:last-child{margin-bottom:0}
@@ -1485,9 +1483,6 @@ body.welcome-a5-mode .view-tabs,
 body.welcome-a5-mode .library-tools{display:none!important}
 body.guest-preview-mode main,
 body.welcome-a5-mode main{padding-top:max(10px,env(safe-area-inset-top))}
-body.guest-preview-mode .welcome-guest-topbar{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:50;padding:4px 0 8px;background:linear-gradient(#0e0e0e 70%,rgba(14,14,14,0))}
-body.guest-preview-mode .welcome-guest-topbar .secondary-btn{border-radius:999px;padding:.65rem .9rem}
-.guest-panel-back{position:sticky;top:max(8px,env(safe-area-inset-top));z-index:40;border-radius:999px!important}
 .welcome-public-link{margin-top:12px;padding:14px;border:1px solid rgba(224,188,102,.3);border-radius:14px;background:rgba(224,188,102,.055)}
 .welcome-public-link>strong{display:block;font-size:17px;margin-bottom:4px}.welcome-public-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.welcome-public-actions>*{flex:1 1 180px;text-align:center}
 body.welcome-admin-mode .app-header,
@@ -1525,7 +1520,6 @@ body.welcome-admin-mode main{padding-top:max(10px,env(safe-area-inset-top))}
 .guest-welcome-intro{padding:.65rem .6rem .7rem}
 .guest-welcome-intro h1{font-size:clamp(24px,6.2vw,32px);line-height:1.08}
 .guest-welcome-intro p{margin:.3rem 0 0;font-size:14px;line-height:1.35}
-.welcome-guest-topbar{padding:4px 0 6px}
 @media(max-width:600px){.guest-property-brand img{max-height:120px}.guest-welcome-intro h1{font-size:26px}}
 
 /* v0.33.3 quieter guest welcome heading */
@@ -1592,8 +1586,6 @@ body.welcome-admin-mode main{padding-top:max(10px,env(safe-area-inset-top))}
 .welcome-service-editor-block{padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(0,0,0,.12)}
 .welcome-service-editor-block + .welcome-service-editor-block{margin-top:12px}
 .pg-section-status.is-hidden{color:#ffd37a;border-color:rgba(255,211,122,.35);background:rgba(255,211,122,.08)}
-.welcome-guest-topbar{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.guest-top-help{min-height:40px;padding:8px 13px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:#b92d2d;color:white;font-weight:800;font-size:15px;white-space:nowrap}
 .guest-system-tile{border-color:rgba(255,112,112,.36)!important}
 .guest-help-route-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
 .guest-help-route{display:flex;align-items:center;gap:9px;min-height:58px;padding:11px;border-radius:13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
@@ -1689,16 +1681,7 @@ body.welcome-menu-dragging .guest-menu-grid{isolation:isolate}
 .qr-touchpoint-mode.shared{background:#173322;color:#9fd8af}
 .qr-touchpoint-mode.snapshot{background:#302b1d;color:#ddc884}
 
-/* v0.41.1 contextual navigation continuity + Quick Essentials density */
-.welcome-guest-topbar{position:sticky;top:max(8px,env(safe-area-inset-top));z-index:90;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:.4rem;pointer-events:none}
-.welcome-guest-topbar>*{pointer-events:auto}
-.pg-preview-nav{display:flex;align-items:center;gap:8px}
-.pg-round-nav-btn{display:grid;place-items:center;width:46px;height:46px;min-width:46px;min-height:46px;padding:0;border-radius:999px;border:1px solid rgba(224,188,102,.42);background:rgba(22,22,20,.95);color:#f1cf72;box-shadow:0 8px 22px rgba(0,0,0,.28);font:800 30px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent}
-.pg-round-nav-btn:active{transform:scale(.96);background:#242016}
-#welcomeGuestHomeBtn{font-size:24px;padding-bottom:3px}
-.guest-top-help{box-shadow:0 8px 22px rgba(0,0,0,.28)}
-.guest-preview-mode .guest-panel-back{display:none!important}
-
+/* v0.41.1 Quick Essentials density */
 .guest-quick-essentials{margin-bottom:.72rem;padding:.72rem .75rem;border-radius:16px}
 .guest-essential-head{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:baseline;column-gap:.55rem;margin:0 0 .5rem .05rem}
 .guest-essential-head strong{font-size:17px}
@@ -1712,14 +1695,8 @@ body.welcome-menu-dragging .guest-menu-grid{isolation:isolate}
 .guest-essential-action::after{content:'›';font-size:25px;line-height:1;color:#e0bc66;text-align:center}
 @media(max-width:390px){.pg-round-nav-btn{width:44px;height:44px;min-width:44px;min-height:44px}.guest-essential-head{grid-template-columns:1fr}.guest-essential-head span{margin-top:.08rem}.guest-essential-action{min-height:54px}}
 
-/* v0.41.1 Home remains reversible: show a compact Back control on the landing screen only when Papa Golf has a route to return to. */
-.app-header-left{display:flex;align-items:center;gap:10px;min-width:0}
-.pg-home-return-back{flex:0 0 auto;width:44px;height:44px;min-width:44px;min-height:44px;font-size:29px}
-@media(max-width:420px){.app-header-left{gap:8px}.pg-home-return-back{width:42px;height:42px;min-width:42px;min-height:42px}.app-header h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
-
 /* v0.42.0 app-wide navigation + property audit photo/report */
-.pg-screen-header{display:flex;align-items:flex-start;gap:.8rem;margin-bottom:.8rem}
-.pg-screen-nav{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.pg-screen-header{display:block;margin-bottom:.8rem}
 .pg-home-btn{font-size:24px!important;padding-bottom:3px!important}
 .welcome-a5-toolbar{align-items:center}
 .qr-touchpoint-photo-field{grid-column:1/-1;display:flex;flex-direction:column;gap:.45rem;padding:.7rem;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:#161616}
@@ -1748,19 +1725,31 @@ body.welcome-menu-dragging .guest-menu-grid{isolation:isolate}
 @media(max-width:620px){.pg-screen-header{align-items:flex-start}.qr-report-item{grid-template-columns:30px minmax(0,1fr) 74px}.qr-report-photo-wrap{grid-column:1/-1;grid-row:2}.qr-report-photo,.qr-report-photo-empty{width:100%;height:180px}.qr-report-copy{grid-column:2/3}.qr-report-qr{width:74px;height:74px}.qr-touchpoint-photo-field{grid-column:auto}}
 @media print{body>*:not(main),.no-print{display:none!important}.qr-audit-report-dialog{position:static!important;display:block!important;width:auto!important;max-height:none!important;border:0!important;background:#fff!important;color:#111!important}.qr-audit-report-content{padding:0!important}.qr-report-item{break-inside:avoid;background:#fff!important;border-color:#bbb!important}.qr-report-copy p,.qr-report-copy span,.qr-report-copy small,.qr-report-head p{color:#333!important}.qr-report-summary{background:#fff!important;border-color:#bbb!important}.qr-report-photo-empty{background:#eee!important;color:#555!important}.qr-audit-report-content footer{color:#555!important}}
 
-
-/* v0.42.1 deep navigation audit — one global internal navigation control for every page-level Papa Golf route. */
-.pg-global-nav{position:fixed;top:max(10px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));z-index:3000;display:flex;align-items:center;gap:8px}
+/* v0.43.0 unified internal header/navigation — one source of truth, no overlapping local controls. */
+:root{--pg-appbar-top:max(8px,env(safe-area-inset-top));--pg-appbar-side:max(10px,env(safe-area-inset-left));--pg-appbar-height:48px;--pg-appbar-clearance:64px}
+.pg-global-nav{position:fixed;top:var(--pg-appbar-top);left:var(--pg-appbar-side);z-index:3000;display:flex;align-items:center;gap:7px;height:var(--pg-appbar-height)}
 .pg-global-nav.hidden{display:none!important}
-.pg-global-nav .pg-round-nav-btn{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-/* Local copies are retained as harmless fallbacks in markup, but one global control is the visible source of truth. */
-.pg-screen-nav,.pg-preview-nav,.pg-home-return-back{display:none!important}
-body.pg-global-nav-visible:not(.welcome-admin-mode):not(.guest-preview-mode):not(.welcome-a5-mode) .app-header-left{padding-left:108px}
-body.welcome-admin-mode .screen-header{padding-top:56px}
-body.guest-preview-mode .welcome-guest-topbar{padding-top:0}
-body.guest-preview-mode #welcomeGuestPreview{padding-top:54px}
-body.welcome-a5-mode .welcome-a5-toolbar{padding-top:56px}
+.pg-global-nav .pg-round-nav-btn{display:grid;place-items:center;width:46px;height:46px;min-width:46px;min-height:46px;padding:0;border-radius:999px;border:1px solid rgba(224,188,102,.42);background:rgba(22,22,20,.96);color:#f1cf72;box-shadow:0 8px 22px rgba(0,0,0,.28);font:800 30px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);-webkit-tap-highlight-color:transparent}
+.pg-global-nav .pg-round-nav-btn:active{transform:scale(.96);background:#242016}
+.pg-global-nav .pg-home-btn{font-size:24px!important;padding-bottom:3px!important}
+
+/* Emergency Help shares the same app-bar row in owner Guest Preview, but remains a separate protected action. */
+body.guest-preview-mode .welcome-guest-topbar{position:fixed;top:var(--pg-appbar-top);right:max(10px,env(safe-area-inset-right));z-index:3000;width:auto;height:var(--pg-appbar-height);margin:0;padding:0;background:none;display:flex;align-items:center;justify-content:flex-end;pointer-events:none}
+body.guest-preview-mode .welcome-guest-topbar>*{pointer-events:auto}
+body.guest-preview-mode .guest-top-help{min-height:46px;height:46px;padding:0 15px;border-radius:999px;box-shadow:0 8px 22px rgba(0,0,0,.28);white-space:nowrap}
+
+/* Page content always clears the fixed controls; navigation never floats over titles, branding or QR tools. */
+body.welcome-admin-mode #welcomeModule,
+body.guest-preview-mode #welcomeGuestPreview,
+body.welcome-a5-mode #welcomeA5Preview{padding-top:var(--pg-appbar-clearance)}
+body.welcome-admin-mode .screen-header,
+body.welcome-a5-mode .welcome-a5-toolbar{padding-top:0}
+body.pg-global-nav-visible:not(.welcome-admin-mode):not(.guest-preview-mode):not(.welcome-a5-mode) .app-header-left{padding-left:104px}
+
+/* Legacy local navigation controls were removed in v0.43.0. Modal Close/Cancel controls remain local by design. */
 @media(max-width:420px){
-  .pg-global-nav{top:max(8px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));gap:7px}
-  body.pg-global-nav-visible:not(.welcome-admin-mode):not(.guest-preview-mode):not(.welcome-a5-mode) .app-header-left{padding-left:100px}
+  :root{--pg-appbar-height:46px;--pg-appbar-clearance:60px}
+  .pg-global-nav .pg-round-nav-btn{width:44px;height:44px;min-width:44px;min-height:44px}
+  body.guest-preview-mode .guest-top-help{height:44px;min-height:44px;padding:0 13px}
+  body.pg-global-nav-visible:not(.welcome-admin-mode):not(.guest-preview-mode):not(.welcome-a5-mode) .app-header-left{padding-left:98px}
 }

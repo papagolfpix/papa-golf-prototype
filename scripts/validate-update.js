@@ -92,25 +92,15 @@ check(publicWelcomeJs.includes("sharedHashParams().get('s')"),'public Welcome re
 check(read('styles.css').includes('.qr-touchpoint-card')&&read('styles.css').includes('.qr-touchpoint-qr'),'QR touchpoint audit has mobile card and QR styling');
 check(app.includes("Permanent shared QR")&&app.includes("Local snapshot QR"),'touchpoint cards distinguish permanent shared QR from Local Alpha snapshot');
 
-// v0.41.0 contextual navigation + Quick Essentials density
-check(html.includes('id="welcomeGuestBackBtn" class="pg-round-nav-btn"')&&html.includes('id="welcomeGuestHomeBtn" class="pg-round-nav-btn"'),'owner Guest Preview has compact round Back and Home controls');
-check(app.includes("PG_NAV_HISTORY_KEY = 'papaGolfNavHistoryV1'")&&app.includes('sessionStorage'),'Papa Golf route history is session-scoped and contains no persistent guest data');
+// v0.43.0 navigation/UI cleanup + Quick Essentials density
+check(app.includes("PG_NAV_HISTORY_KEY = 'papaGolfNavHistoryV1'")&&app.includes('sessionStorage'),'Papa Golf route history remains session-scoped');
 check(app.includes('function papaGolfGoBack()')&&app.includes('function papaGolfGoHome()')&&app.includes('guest-panel:'),'Back/Home navigation supports guest detail history');
-check(app.includes("papaGolfCurrentRoute==='photos-home' && preview")&&app.includes("applyPapaGolfRoute('welcome-admin')"),'Safari-restored Guest Preview has a safe Back fallback');
-check(!publicWelcome.includes('welcomeGuestHomeBtn')&&!publicWelcome.includes('pg-round-nav-btn'),'public Welcome does not expose owner/admin navigation controls');
-check(read('styles.css').includes('.pg-round-nav-btn')&&read('styles.css').includes('min-width:46px'),'owner Back/Home controls retain comfortable touch targets');
-check(read('styles.css').includes('.guest-essential-action{display:grid;grid-template-columns:38px')&&read('welcome.css').includes('.quick-action{display:grid;grid-template-columns:38px'),'Quick Essentials is compacted consistently in preview and public Welcome');
-
-// v0.41.1 Home return continuity
-check(html.includes('id="homeReturnBackBtn"')&&html.includes('pg-home-return-back hidden'),'Home landing includes a normally-hidden round return Back control');
-check(app.includes('function syncPapaGolfHomeReturnNav()')&&app.includes("papaGolfCurrentRoute==='photos-home' && readPapaGolfNavHistory().length>0"),'Home return Back appears only when an in-app route exists');
-check(app.includes("document.getElementById('homeReturnBackBtn')?.addEventListener('click',papaGolfGoBack)"),'Home return Back uses the same Papa Golf navigation stack');
-check(read('styles.css').includes('.pg-home-return-back')&&read('styles.css').includes('min-width:44px'),'Home return Back retains a comfortable touch target');
-
+check(app.includes("papaGolfCurrentRoute==='photos-home' && preview")&&app.includes("applyPapaGolfRoute('welcome-admin')"),'Safari-restored Guest Preview retains safe Back fallback');
+check(!publicWelcome.includes('pgGlobalNav')&&!publicWelcome.includes('pg-round-nav-btn'),'public Welcome does not expose owner/admin navigation controls');
+check(read('styles.css').includes('.guest-essential-action{display:grid;grid-template-columns:38px')&&read('welcome.css').includes('.quick-action{display:grid;grid-template-columns:38px'),'Quick Essentials remains compact in preview and public Welcome');
 
 // v0.42.0 navigation normalization + audit photos/reports
-check(html.includes('id="welcomeHomeBtn" class="pg-round-nav-btn')&&html.includes('id="welcomeA5HomeBtn" class="pg-round-nav-btn'),'Welcome admin and A5 preview use standard round Home controls');
-check(!html.includes('id="welcomeBackBtn" class="secondary-btn"')&&!html.includes('id="welcomeA5BackBtn" class="secondary-btn"'),'legacy large Welcome Back buttons removed');
+check(!html.includes('id="welcomeBackBtn"')&&!html.includes('id="welcomeHomeBtn"')&&!html.includes('id="welcomeA5BackBtn"')&&!html.includes('id="welcomeA5HomeBtn"'),'obsolete per-screen Welcome navigation controls removed');
 for(const id of ['qrTouchpointCameraInput','qrTouchpointPhotoInput','clearQrTouchpointPhotoBtn','previewQrAuditReportBtn','printQrAuditReportBtn','qrAuditReportDialog']) check(html.includes(`id="${id}"`),`audit photo/report UI present: ${id}`);
 check(app.includes("PAPA_GOLF_AUDIT_ASSET_DB='papa-golf-audit-assets-v01'")&&app.includes('prepareAuditPhoto'),'private audit photo asset store and compression present');
 check(app.includes('auditPhotoAssets:')&&app.includes('welcome.auditPhotoAssets'),'backup and restore include audit photo assets');
@@ -120,12 +110,15 @@ check(app.includes("pushPapaGolfRoute(id==='photosTabBtn'?'photos-home':id==='ma
 check(read('styles.css').includes('.qr-audit-report-dialog')&&read('styles.css').includes('.qr-touchpoint-photo-preview'),'audit report and photo capture have responsive styling');
 
 
-// v0.42.1 deep navigation audit
+// v0.43.0 unified header / redundant navigation cleanup
 check(html.includes('id="pgGlobalNav"')&&html.includes('id="pgGlobalBackBtn"')&&html.includes('id="pgGlobalHomeBtn"'),'single global Back/Home navigation cluster exists');
 check(app.includes('function syncPapaGolfGlobalNav()')&&app.includes("home.classList.toggle('hidden',isHome)"),'global navigation is route-aware');
 check(app.includes("document.getElementById('pgGlobalBackBtn')?.addEventListener('click',papaGolfGoBack)")&&app.includes("document.getElementById('pgGlobalHomeBtn')?.addEventListener('click',papaGolfGoHome)"),'global Back/Home controls use Papa Golf route stack');
-check(styles.includes('.pg-global-nav{position:fixed')&&styles.includes('z-index:3000'),'global navigation is fixed above internal screens');
-check(styles.includes('.pg-screen-nav,.pg-preview-nav,.pg-home-return-back{display:none!important}'),'fragmented local navigation copies are visually retired');
+check(styles.includes('/* v0.43.0 unified internal header/navigation')&&styles.includes('--pg-appbar-clearance:64px'),'one authoritative app-bar layout reserves safe content clearance');
+check(styles.includes('body.guest-preview-mode .welcome-guest-topbar{position:fixed')&&styles.includes('right:max(10px,env(safe-area-inset-right))'),'Guest Preview Help shares the app-bar row without overlapping Back/Home');
+for(const legacy of ['welcomeGuestBackBtn','welcomeGuestHomeBtn','homeReturnBackBtn','welcomeBackBtn','welcomeHomeBtn','welcomeA5BackBtn','welcomeA5HomeBtn','guestExploreBackBtn']) check(!html.includes(`id="${legacy}"`),`obsolete navigation id removed: ${legacy}`);
+check(!html.includes('guest-panel-back'),'legacy per-panel Back buttons removed from owner preview');
+check(!app.includes('syncPapaGolfHomeReturnNav')&&!app.includes("closest('.guest-panel-back')"),'obsolete navigation runtime removed');
 check(!publicWelcome.includes('pgGlobalNav')&&!publicWelcome.includes('pgGlobalBackBtn'),'public Welcome does not expose owner/admin global navigation');
 
 if(fail.length){

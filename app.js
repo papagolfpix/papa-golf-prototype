@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.42.1';
+const RUNTIME_VERSION = '0.43.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2701,7 +2701,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.42.1', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.43.0', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3384,12 +3384,6 @@ function papaGolfGoBack(){
   papaGolfCurrentRoute='photos-home';applyPapaGolfRoute('photos-home');
 }
 function papaGolfGoHome(){pushPapaGolfRoute('photos-home')}
-function syncPapaGolfHomeReturnNav(){
-  const btn=document.getElementById('homeReturnBackBtn');
-  if(!btn)return;
-  const canReturn=papaGolfCurrentRoute==='photos-home' && readPapaGolfNavHistory().length>0;
-  btn.classList.toggle('hidden',!canReturn);
-}
 function syncPapaGolfGlobalNav(){
   const nav=document.getElementById('pgGlobalNav');
   const back=document.getElementById('pgGlobalBackBtn');
@@ -3404,7 +3398,6 @@ function syncPapaGolfGlobalNav(){
   document.body.classList.toggle('pg-global-nav-visible',show);
 }
 function applyPapaGolfRoute(route){
-  syncPapaGolfHomeReturnNav();
   syncPapaGolfGlobalNav();
   const page=document.getElementById('welcomeModule'),preview=document.getElementById('welcomeGuestPreview'),a5=document.getElementById('welcomeA5Preview');
   if(route==='photos-home'){
@@ -5021,11 +5014,6 @@ function initWelcomeModule(){
 
   document.getElementById('pgGlobalBackBtn')?.addEventListener('click',papaGolfGoBack);
   document.getElementById('pgGlobalHomeBtn')?.addEventListener('click',papaGolfGoHome);
-  document.getElementById('welcomeBackBtn')?.addEventListener('click',papaGolfGoBack);
-  document.getElementById('welcomeHomeBtn')?.addEventListener('click',papaGolfGoHome);
-  document.getElementById('homeReturnBackBtn')?.addEventListener('click',papaGolfGoBack);
-  document.getElementById('welcomeGuestBackBtn')?.addEventListener('click',papaGolfGoBack);
-  document.getElementById('welcomeGuestHomeBtn')?.addEventListener('click',papaGolfGoHome);
 
   [['overrideWelcomeHost','welcomeUnitHost'],['overrideWelcomeEmergency','welcomeUnitEmergency']].forEach(([a,b])=>{
     document.getElementById(a)?.addEventListener('change',()=>welcomeToggle(a,b));
@@ -5139,7 +5127,6 @@ function initWelcomeModule(){
     pushPapaGolfRoute('welcome-a5');
     setTimeout(()=>printWelcomeA5(),120);
   });
-  document.getElementById('welcomeA5BackBtn')?.addEventListener('click',papaGolfGoBack);
   document.getElementById('welcomeA5HomeBtn')?.addEventListener('click',papaGolfGoHome);
   document.getElementById('welcomeA5PrintBtn')?.addEventListener('click',printWelcomeA5);
   document.getElementById('saveSharedBackendBtn')?.addEventListener('click',saveSharedBackendSettings);
@@ -5195,7 +5182,6 @@ function initWelcomeModule(){
     }
     const tile=event.target.closest('[data-welcome-panel]');
     if(tile){pushPapaGolfRoute('guest-panel:'+tile.dataset.welcomePanel);return}
-    if(event.target.closest('.guest-panel-back')){papaGolfGoBack();return}
     const filter=event.target.closest('[data-welcome-filter]');
     if(filter){
       welcomeActiveFilter=filter.dataset.welcomeFilter;

@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.42.1" />
+<link rel="stylesheet" href="styles.css?v=0.43.0" />
 </head>
 <body>
   <div id="pgGlobalNav" class="pg-global-nav hidden" aria-label="Papa Golf navigation">
@@ -16,9 +16,8 @@
   </div>
   <header class="app-header">
     <div class="app-header-left">
-      <button id="homeReturnBackBtn" class="pg-round-nav-btn pg-home-return-back hidden" type="button" aria-label="Return to previous Papa Golf screen" title="Back">‹</button>
       <div>
-        <div class="eyebrow">PAPA GOLF · V0.42.1</div>
+        <div class="eyebrow">PAPA GOLF · V0.43.0</div>
         <h1>Papa Golf Prototype</h1>
       </div>
     </div>
@@ -109,10 +108,6 @@
 
 <section id="welcomeModule" class="screen hidden">
   <div class="screen-header pg-screen-header">
-    <div class="pg-screen-nav" aria-label="Papa Golf navigation">
-      <button id="welcomeBackBtn" class="pg-round-nav-btn" type="button" aria-label="Back" title="Back">‹</button>
-      <button id="welcomeHomeBtn" class="pg-round-nav-btn pg-home-btn" type="button" aria-label="Papa Golf home" title="Papa Golf home">⌂</button>
-    </div>
     <div><h2>Welcome / Gateways</h2><p class="muted">Choose a section. Only the section you are using stays open.</p></div>
   </div>
 
@@ -487,10 +482,6 @@
 
 <section id="welcomeA5Preview" class="screen hidden">
   <div class="welcome-a5-toolbar">
-    <div class="pg-screen-nav" aria-label="Papa Golf navigation">
-      <button id="welcomeA5BackBtn" class="pg-round-nav-btn" type="button" aria-label="Back" title="Back">‹</button>
-      <button id="welcomeA5HomeBtn" class="pg-round-nav-btn pg-home-btn" type="button" aria-label="Papa Golf home" title="Papa Golf home">⌂</button>
-    </div>
     <button id="welcomeA5PrintBtn" class="primary-btn">Print / Save PDF</button>
   </div>
 
@@ -528,10 +519,6 @@
 
 <section id="welcomeGuestPreview" class="screen hidden">
   <div class="welcome-guest-topbar">
-    <div class="pg-preview-nav" aria-label="Papa Golf navigation">
-      <button id="welcomeGuestBackBtn" class="pg-round-nav-btn" type="button" aria-label="Back" title="Back">‹</button>
-      <button id="welcomeGuestHomeBtn" class="pg-round-nav-btn" type="button" aria-label="Papa Golf home" title="Papa Golf home">⌂</button>
-    </div>
     <button id="guestTopHelpBtn" class="guest-top-help" type="button" data-welcome-panel="guestEmergencyPanel">🆘 Help</button>
   </div>
 
@@ -572,14 +559,12 @@
     </div>
 
     <section id="guestVillaPanel" class="guest-welcome-panel hidden">
-      <button class="guest-panel-back" type="button">← Welcome menu</button>
       <h2>🏠 Villa Guide</h2>
       <div id="guestVillaInfo" class="guest-info-card"></div>
       <div id="guestHostInfo" class="guest-info-card"></div>
     </section>
 
     <section id="guestWifiPanel" class="guest-welcome-panel hidden">
-      <button class="guest-panel-back" type="button">← Welcome menu</button>
       <h2>📶 Wi-Fi & Technology</h2>
       <div id="guestWifiInfo" class="guest-info-card"></div>
       <div id="guestBluetoothInfo" class="guest-info-card"></div>
@@ -587,7 +572,6 @@
 
     <section id="guestExplorePanel" class="guest-welcome-panel guest-explore-focused hidden">
       <div class="guest-explore-compact-header">
-        <button id="guestExploreBackBtn" class="guest-explore-back guest-panel-back" type="button">← Main menu</button>
         <img id="guestExploreLogo" src="magic-dragon-villa-logo.png" alt="Villa logo">
         <select id="welcomeLanguageSelect" class="welcome-language-select" aria-label="Language">
           <option value="auto">🌐 Auto</option>
@@ -608,7 +592,6 @@
     </section>
 
     <section id="guestStayPanel" class="guest-welcome-panel hidden">
-      <button class="guest-panel-back" type="button">← Welcome menu</button>
       <h2>🕒 Stay Details</h2>
       <div id="guestArrivalInfo" class="guest-info-card hidden"></div>
       <div id="guestFacilitiesInfo" class="guest-info-card hidden"></div>
@@ -617,7 +600,6 @@
     </section>
 
     <section id="guestWhatsOnPanel" class="guest-welcome-panel hidden">
-      <button class="guest-panel-back" type="button">← Welcome menu</button>
       <h2>📅 What’s On</h2>
       <div id="guestTodayActivities"></div>
       <h3 class="welcome-preview-subheading">Weekly programme</h3>
@@ -625,7 +607,6 @@
     </section>
 
     <section id="guestFoodPanel" class="guest-welcome-panel hidden">
-      <button class="guest-panel-back" type="button">← Welcome menu</button>
       <h2>🍽 Food & Drink</h2>
       <p class="muted">Only Papa Golf / property-approved restaurants and bars are shown here.</p>
       <div id="guestFoodServiceInfo" class="guest-info-card hidden"></div>
@@ -633,26 +614,22 @@
     </section>
 
     <section id="guestWellnessPanel" class="guest-welcome-panel hidden">
-      <button class="guest-panel-back" type="button">← Welcome menu</button>
       <h2>🌺 Wellness</h2>
       <div id="guestWellnessInfo" class="guest-info-card"></div>
     </section>
 
     <section id="guestToursPanel" class="guest-welcome-panel hidden">
-      <button class="guest-panel-back" type="button">← Welcome menu</button>
       <h2>⛵ Tours & Experiences</h2>
       <div id="guestToursInfo" class="guest-info-card"></div>
     </section>
 
     <section id="guestTransportPanel" class="guest-welcome-panel hidden">
-      <button class="guest-panel-back" type="button">← Welcome menu</button>
       <h2>🛵 Transport</h2>
       <div id="guestTransportInfo" class="guest-info-card"></div>
       <div id="guestOtherServices" class="guest-info-card hidden"></div>
     </section>
 
     <section id="guestEmergencyPanel" class="guest-welcome-panel hidden">
-      <button class="guest-panel-back" type="button">← Welcome menu</button>
       <h2>🆘 Help & Emergency</h2>
       <p class="muted">Important help stays available even when guests customize other parts of their Welcome.</p>
       <div class="guest-help-route-grid"><div class="guest-help-route"><span>🚑</span><strong>Medical / Health</strong></div><div class="guest-help-route"><span>🔥</span><strong>Fire / Property Emergency</strong></div><div class="guest-help-route"><span>👮</span><strong>Police / Security</strong></div><div class="guest-help-route"><span>☎️</span><strong>Host / Property Help</strong></div></div>
@@ -840,6 +817,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.42.1" defer></script>
+  <script src="app.js?v=0.43.0" defer></script>
 </body>
 </html>

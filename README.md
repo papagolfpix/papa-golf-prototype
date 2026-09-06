@@ -1,3 +1,12 @@
+## v0.43.0 — UI cleanup / unified app bar
+
+- Consolidates owner/admin page navigation into one global Back/Home route control; removes obsolete per-screen and per-panel copies.
+- Guest Preview emergency Help now shares the same safe-area-aware top row on the right, eliminating overlap with Back/Home.
+- Adds consistent top clearance so fixed controls do not cover property branding, screen titles or A5 controls.
+- Removes redundant navigation listeners and the old Home-return helper while preserving the same session route stack and Safari fallback.
+- Keeps modal Close/Cancel controls local by design and keeps all owner/admin navigation out of the public Welcome page.
+- No IndexedDB/localStorage clearing; backup v11, audit photos, Firebase bridge and Safari Blob hardening are unchanged.
+
 ## v0.42.1 — Deep navigation audit / global route controls
 
 - Replaces fragmented screen-specific Back/Home controls with one fixed internal Papa Golf navigation cluster.
