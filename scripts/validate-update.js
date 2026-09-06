@@ -105,7 +105,7 @@ for(const id of ['qrTouchpointCameraInput','qrTouchpointPhotoInput','clearQrTouc
 check(app.includes("PAPA_GOLF_AUDIT_ASSET_DB='papa-golf-audit-assets-v01'")&&app.includes('prepareAuditPhoto'),'private audit photo asset store and compression present');
 check(app.includes('auditPhotoAssets:')&&app.includes('welcome.auditPhotoAssets'),'backup and restore include audit photo assets');
 check(app.includes('version: 11'),'backup format advanced to v11');
-check(app.includes('function buildQrAuditReport()')&&app.includes('View demonstration'),'manager-facing audit report includes demonstration destination');
+check(app.includes('function buildQrAuditReport()')&&app.includes('View full recommendation'),'manager-facing audit report includes expanded recommendation destination');
 check(app.includes("pushPapaGolfRoute(id==='photosTabBtn'?'photos-home':id==='mapTabBtn'?'map-view':'areas-view')"),'main tabs participate in Papa Golf navigation history');
 check(read('styles.css').includes('.qr-audit-report-dialog')&&read('styles.css').includes('.qr-touchpoint-photo-preview'),'audit report and photo capture have responsive styling');
 
@@ -149,9 +149,16 @@ check(styles.includes('v0.44.2 field audit workflow'), 'field audit workflow sty
 
 // v0.44.3 manager proposal / PDF presentation
 check(app.includes('DEMONSTRATION PROPOSAL')&&app.includes('How to review this proposal'),'manager report clearly labels pre-sale/sample destinations');
-check(app.includes('qr-report-qr-link')&&app.includes('qr-report-demo-link'),'manager report provides clickable QR and demonstration links');
+check(app.includes('qr-report-qr-link')&&app.includes('qr-report-detail-link'),'manager report provides clickable QR and full recommendation links');
 check(styles.includes('@page{size:A4 portrait')&&styles.includes('break-inside:avoid'),'manager report has A4 print pagination safeguards');
 check(styles.includes('v0.44.3 manager proposal / PDF presentation'),'manager proposal presentation styling present');
+
+
+// v0.45.1 compact audit report / density controls
+check(html.includes('qrAuditZoomInBtn')&&html.includes('qrAuditZoomOutBtn')&&html.includes('qrAuditPrintPanel'),'audit report exposes magnifier density controls and pre-print panel');
+check(app.includes('PAPA_GOLF_AUDIT_DENSITY_KEY')&&app.includes('qrAuditDensityName')&&html.includes('Continue to Print'),'audit density preference maps to 4–6 recommendations per page');
+check(app.includes('qrAuditPageHeader')&&app.includes('qrAuditPageFooter')&&app.includes('View full recommendation'),'compact report has repeated Papa Golf page chrome and expanded-detail link');
+check(styles.includes('v0.45.1 compact manager audit')&&styles.includes('data-density=\"4\"')&&styles.includes('@page{size:A4 portrait;margin:0}'),'deterministic A4 density styling present');
 
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');
@@ -159,3 +166,8 @@ if(fail.length){
   process.exit(1);
 }
 console.log(`\nPapa Golf validation passed for v${v}.`);
+
+
+// v0.45.1 deployment freshness guard
+check(read('app.js').includes('checkPapaGolfBuildVersion')&&read('app.js').includes('papaGolfSwReloaded-${RUNTIME_VERSION}'),'iPhone/PWA shell refresh is version-aware');
+check(read('version.json').includes('0.45.1')&&read('service-worker.js').includes('papa-golf-v0451-shell'),'deployment version manifest and cache key bumped');
