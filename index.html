@@ -7,14 +7,18 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.42.0" />
+<link rel="stylesheet" href="styles.css?v=0.42.1" />
 </head>
 <body>
+  <div id="pgGlobalNav" class="pg-global-nav hidden" aria-label="Papa Golf navigation">
+    <button id="pgGlobalBackBtn" class="pg-round-nav-btn" type="button" aria-label="Back" title="Back">‹</button>
+    <button id="pgGlobalHomeBtn" class="pg-round-nav-btn pg-home-btn" type="button" aria-label="Papa Golf home" title="Papa Golf home">⌂</button>
+  </div>
   <header class="app-header">
     <div class="app-header-left">
       <button id="homeReturnBackBtn" class="pg-round-nav-btn pg-home-return-back hidden" type="button" aria-label="Return to previous Papa Golf screen" title="Back">‹</button>
       <div>
-        <div class="eyebrow">PAPA GOLF · V0.42.0</div>
+        <div class="eyebrow">PAPA GOLF · V0.42.1</div>
         <h1>Papa Golf Prototype</h1>
       </div>
     </div>
@@ -836,6 +840,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.42.0" defer></script>
+  <script src="app.js?v=0.42.1" defer></script>
 </body>
 </html>

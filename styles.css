@@ -1747,3 +1747,20 @@ body.welcome-menu-dragging .guest-menu-grid{isolation:isolate}
 .qr-report-qr{width:90px;height:90px;padding:4px;background:white;border-radius:10px}.qr-audit-report-content footer{margin-top:1rem;padding-top:.7rem;border-top:1px solid rgba(255,255,255,.1);color:#888;font-size:12px;text-align:center}
 @media(max-width:620px){.pg-screen-header{align-items:flex-start}.qr-report-item{grid-template-columns:30px minmax(0,1fr) 74px}.qr-report-photo-wrap{grid-column:1/-1;grid-row:2}.qr-report-photo,.qr-report-photo-empty{width:100%;height:180px}.qr-report-copy{grid-column:2/3}.qr-report-qr{width:74px;height:74px}.qr-touchpoint-photo-field{grid-column:auto}}
 @media print{body>*:not(main),.no-print{display:none!important}.qr-audit-report-dialog{position:static!important;display:block!important;width:auto!important;max-height:none!important;border:0!important;background:#fff!important;color:#111!important}.qr-audit-report-content{padding:0!important}.qr-report-item{break-inside:avoid;background:#fff!important;border-color:#bbb!important}.qr-report-copy p,.qr-report-copy span,.qr-report-copy small,.qr-report-head p{color:#333!important}.qr-report-summary{background:#fff!important;border-color:#bbb!important}.qr-report-photo-empty{background:#eee!important;color:#555!important}.qr-audit-report-content footer{color:#555!important}}
+
+
+/* v0.42.1 deep navigation audit — one global internal navigation control for every page-level Papa Golf route. */
+.pg-global-nav{position:fixed;top:max(10px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));z-index:3000;display:flex;align-items:center;gap:8px}
+.pg-global-nav.hidden{display:none!important}
+.pg-global-nav .pg-round-nav-btn{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+/* Local copies are retained as harmless fallbacks in markup, but one global control is the visible source of truth. */
+.pg-screen-nav,.pg-preview-nav,.pg-home-return-back{display:none!important}
+body.pg-global-nav-visible:not(.welcome-admin-mode):not(.guest-preview-mode):not(.welcome-a5-mode) .app-header-left{padding-left:108px}
+body.welcome-admin-mode .screen-header{padding-top:56px}
+body.guest-preview-mode .welcome-guest-topbar{padding-top:0}
+body.guest-preview-mode #welcomeGuestPreview{padding-top:54px}
+body.welcome-a5-mode .welcome-a5-toolbar{padding-top:56px}
+@media(max-width:420px){
+  .pg-global-nav{top:max(8px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));gap:7px}
+  body.pg-global-nav-visible:not(.welcome-admin-mode):not(.guest-preview-mode):not(.welcome-a5-mode) .app-header-left{padding-left:100px}
+}

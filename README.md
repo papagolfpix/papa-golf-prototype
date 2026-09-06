@@ -1,3 +1,12 @@
+## v0.42.1 — Deep navigation audit / global route controls
+
+- Replaces fragmented screen-specific Back/Home controls with one fixed internal Papa Golf navigation cluster.
+- Back is visible on every non-home page-level route and walks the Papa Golf session route stack; Home always returns to Photos/Home.
+- On Home, Back appears only when there is an in-app route to return to; Home itself is hidden because the user is already there.
+- Covers Photos/Home return, Map, Areas, Welcome admin, Guest Preview home, every Guest Preview detail panel, and A5 preview.
+- Existing modal/dialog workflows keep their explicit Close/Cancel controls; public standalone Welcome pages remain free of owner/admin navigation.
+- Adds layout clearance so the fixed navigation cannot be hidden behind the iPhone safe area, guest Help button, or app header.
+
 ## v0.42.0 — Navigation normalization + Property Audit photos/reports
 
 - Standardizes round Back + Home controls across Welcome admin, Guest Preview and A5 preview.

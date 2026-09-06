@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.42.0';
+const RUNTIME_VERSION = '0.42.1';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2701,7 +2701,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.42.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.42.1', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3390,8 +3390,22 @@ function syncPapaGolfHomeReturnNav(){
   const canReturn=papaGolfCurrentRoute==='photos-home' && readPapaGolfNavHistory().length>0;
   btn.classList.toggle('hidden',!canReturn);
 }
+function syncPapaGolfGlobalNav(){
+  const nav=document.getElementById('pgGlobalNav');
+  const back=document.getElementById('pgGlobalBackBtn');
+  const home=document.getElementById('pgGlobalHomeBtn');
+  if(!nav||!back||!home)return;
+  const isHome=papaGolfCurrentRoute==='photos-home';
+  const hasHistory=readPapaGolfNavHistory().length>0;
+  const show=!isHome||hasHistory;
+  nav.classList.toggle('hidden',!show);
+  back.classList.toggle('hidden',!show);
+  home.classList.toggle('hidden',isHome);
+  document.body.classList.toggle('pg-global-nav-visible',show);
+}
 function applyPapaGolfRoute(route){
   syncPapaGolfHomeReturnNav();
+  syncPapaGolfGlobalNav();
   const page=document.getElementById('welcomeModule'),preview=document.getElementById('welcomeGuestPreview'),a5=document.getElementById('welcomeA5Preview');
   if(route==='photos-home'){
     document.body.classList.remove('welcome-admin-mode','guest-preview-mode','welcome-a5-mode','guest-explore-mode');
@@ -4998,12 +5012,15 @@ function initWelcomeModule(){
   }
 
   ensureWelcomeModelIdentity();
+  syncPapaGolfGlobalNav();
 
   const open=document.getElementById('openWelcomeModuleBtn'),page=document.getElementById('welcomeModule'),preview=document.getElementById('welcomeGuestPreview'),a5=document.getElementById('welcomeA5Preview');
   const googlePlacesInput=document.getElementById('welcomeGooglePlacesApiKey');
   if(googlePlacesInput)googlePlacesInput.value=getPapaGolfGooglePlacesKey();
   open?.addEventListener('click',()=>{loadWelcomeEditor();window.papaGolfCollapseAdminSections?.();pushPapaGolfRoute('welcome-admin')});
 
+  document.getElementById('pgGlobalBackBtn')?.addEventListener('click',papaGolfGoBack);
+  document.getElementById('pgGlobalHomeBtn')?.addEventListener('click',papaGolfGoHome);
   document.getElementById('welcomeBackBtn')?.addEventListener('click',papaGolfGoBack);
   document.getElementById('welcomeHomeBtn')?.addEventListener('click',papaGolfGoHome);
   document.getElementById('homeReturnBackBtn')?.addEventListener('click',papaGolfGoBack);

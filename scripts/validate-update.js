@@ -6,7 +6,7 @@ const fail=[];
 function check(ok,msg){ if(!ok) fail.push(msg); else console.log('✓',msg); }
 const required=['index.html','app.js','styles.css','service-worker.js','gateway-demo.html','gateway-demo.js','gateway-demo.css','promotion.html','promotion.js','promotion.css','welcome.html','welcome.js','welcome.css','magic-dragon-villa-logo.png'];
 for(const f of required) check(fs.existsSync(path.join(root,f)),`required file: ${f}`);
-const html=read('index.html'),app=read('app.js'),sw=read('service-worker.js'),publicWelcome=read('welcome.html'),publicWelcomeJs=read('welcome.js');
+const html=read('index.html'),app=read('app.js'),styles=read('styles.css'),sw=read('service-worker.js'),publicWelcome=read('welcome.html'),publicWelcomeJs=read('welcome.js');
 const v=(app.match(/RUNTIME_VERSION\s*=\s*'([^']+)'/)||[])[1];
 check(!!v,'runtime version declared');
 if(v){
@@ -118,6 +118,15 @@ check(app.includes('version: 11'),'backup format advanced to v11');
 check(app.includes('function buildQrAuditReport()')&&app.includes('Open guest demo'),'manager-facing audit report includes live demo destination');
 check(app.includes("pushPapaGolfRoute(id==='photosTabBtn'?'photos-home':id==='mapTabBtn'?'map-view':'areas-view')"),'main tabs participate in Papa Golf navigation history');
 check(read('styles.css').includes('.qr-audit-report-dialog')&&read('styles.css').includes('.qr-touchpoint-photo-preview'),'audit report and photo capture have responsive styling');
+
+
+// v0.42.1 deep navigation audit
+check(html.includes('id="pgGlobalNav"')&&html.includes('id="pgGlobalBackBtn"')&&html.includes('id="pgGlobalHomeBtn"'),'single global Back/Home navigation cluster exists');
+check(app.includes('function syncPapaGolfGlobalNav()')&&app.includes("home.classList.toggle('hidden',isHome)"),'global navigation is route-aware');
+check(app.includes("document.getElementById('pgGlobalBackBtn')?.addEventListener('click',papaGolfGoBack)")&&app.includes("document.getElementById('pgGlobalHomeBtn')?.addEventListener('click',papaGolfGoHome)"),'global Back/Home controls use Papa Golf route stack');
+check(styles.includes('.pg-global-nav{position:fixed')&&styles.includes('z-index:3000'),'global navigation is fixed above internal screens');
+check(styles.includes('.pg-screen-nav,.pg-preview-nav,.pg-home-return-back{display:none!important}'),'fragmented local navigation copies are visually retired');
+check(!publicWelcome.includes('pgGlobalNav')&&!publicWelcome.includes('pgGlobalBackBtn'),'public Welcome does not expose owner/admin global navigation');
 
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');
