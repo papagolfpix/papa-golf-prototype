@@ -105,7 +105,7 @@ for(const id of ['qrTouchpointCameraInput','qrTouchpointPhotoInput','clearQrTouc
 check(app.includes("PAPA_GOLF_AUDIT_ASSET_DB='papa-golf-audit-assets-v01'")&&app.includes('prepareAuditPhoto'),'private audit photo asset store and compression present');
 check(app.includes('auditPhotoAssets:')&&app.includes('welcome.auditPhotoAssets'),'backup and restore include audit photo assets');
 check(app.includes('version: 11'),'backup format advanced to v11');
-check(app.includes('function buildQrAuditReport()')&&app.includes('Open guest demo'),'manager-facing audit report includes live demo destination');
+check(app.includes('function buildQrAuditReport()')&&app.includes('View demonstration'),'manager-facing audit report includes demonstration destination');
 check(app.includes("pushPapaGolfRoute(id==='photosTabBtn'?'photos-home':id==='mapTabBtn'?'map-view':'areas-view')"),'main tabs participate in Papa Golf navigation history');
 check(read('styles.css').includes('.qr-audit-report-dialog')&&read('styles.css').includes('.qr-touchpoint-photo-preview'),'audit report and photo capture have responsive styling');
 
@@ -146,6 +146,12 @@ check(app.includes('qrTouchpointStatusLabel'), 'QR touchpoints support Proposed 
 check(html.includes('qrTouchpointStatus'), 'walkthrough form exposes touchpoint status');
 check(app.includes('data-edit-touchpoint'), 'touchpoint cards expose Edit action');
 check(styles.includes('v0.44.2 field audit workflow'), 'field audit workflow styling present');
+
+// v0.44.3 manager proposal / PDF presentation
+check(app.includes('DEMONSTRATION PROPOSAL')&&app.includes('How to review this proposal'),'manager report clearly labels pre-sale/sample destinations');
+check(app.includes('qr-report-qr-link')&&app.includes('qr-report-demo-link'),'manager report provides clickable QR and demonstration links');
+check(styles.includes('@page{size:A4 portrait')&&styles.includes('break-inside:avoid'),'manager report has A4 print pagination safeguards');
+check(styles.includes('v0.44.3 manager proposal / PDF presentation'),'manager proposal presentation styling present');
 
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');
