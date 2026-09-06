@@ -1,3 +1,12 @@
+## v0.44.0 — UI consolidation and redundancy audit
+
+- Reduced unnecessary vertical space in the Welcome admin dashboard without shrinking readable text or touch targets.
+- Simplified repeated Welcome guidance to one concise instruction.
+- Kept the single canonical Guest Preview action and tightened its readiness card layout.
+- Removed obsolete navigation remnants left behind by the global navigation migration.
+- Removed several unreferenced legacy helper functions from the runtime to reduce overlapping/dead code.
+- No change to IndexedDB photo storage, backup v11, Firebase/shared-data state, audit photos, QR touchpoints, or public Welcome behavior.
+
 ## v0.43.1 — Welcome action cleanup
 
 - Removed the redundant bottom `Open Guest Welcome Preview` action.

@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.43.1';
+const RUNTIME_VERSION = '0.44.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -1183,11 +1183,6 @@ function getInheritedValue(record, key){
   return record?.[key] ?? '';
 }
 
-function relatedInheritedPlaceholder(record, key, label='Inherited'){
-  const shown = displayInheritedValue(getInheritedValue(record, key));
-  return shown ? `Inherited: ${shown}` : `${label}: no value set`;
-}
-
 function normalizeRelatedPhoto(item, index = 0) {
   if (item instanceof Blob) {
     return {
@@ -1511,15 +1506,6 @@ function renderDetailSupportingGallery(record) {
 
   renderActive();
 }
-async function blobsToDataUrls(items = []) {
-  const result=[];
-  for(const raw of items){
-    const blob=relatedBlob(raw);
-    if(blob instanceof Blob) result.push(await blobToDataUrl(blob));
-  }
-  return result;
-}
-
 if (supportingPhotosInput) {
   supportingPhotosInput.addEventListener('change', async () => {
     const files=Array.from(supportingPhotosInput.files||[]);
@@ -2701,7 +2687,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.43.1', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.44.0', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2810,8 +2796,6 @@ function resolvedWelcomePartner(partner){
     accessDifficulty:place.accessDifficulty||partner.accessDifficulty||'',transport:place.transport||partner.transport||'',
     warnings:place.warnings||partner.warnings||'',rating:place.rating??partner.rating??''};
 }
-function getResolvedWelcomePartners(){return getWelcomePartners().map(resolvedWelcomePartner)}
-
 function papaGolfPlaceDisplayName(place){return place?.name||place?.locationName||place?.areaName||'Unnamed place'}
 function formatCoordinate(value,decimals=6){
   const n=Number(value);
@@ -3194,9 +3178,9 @@ const WELCOME_DEFAULT_UNIT = {
 
 
 const WELCOME_I18N={
-  en:{all:'All',back:'Main menu',refresh:'Refresh Nearby',convenience:'Convenience Stores',supermarket:'Supermarkets',petrol:'Petrol Stations',atm:'ATMs / Banks',pharmacy:'Pharmacies',medical:'Hospitals / Clinics',restaurant:'Restaurants',bar:'Bars',cafe:'Cafés',activity:'Things To Do',transport:'Transport / Rental',spa:'Massage / Spa',away:'km away',navigate:'Navigate with Google Maps',googleNearby:'Google nearby',nearbyUtility:'Nearby utility',approved:'Papa Golf approved',searching:'Searching nearby places…',none:'No places found for this filter yet.',youAreHere:'YOU ARE HERE'},
-  fr:{all:'Tous',back:'Menu principal',refresh:'Actualiser à proximité',convenience:'Supérettes',supermarket:'Supermarchés',petrol:'Stations-service',atm:'Distributeurs / Banques',pharmacy:'Pharmacies',medical:'Hôpitaux / Cliniques',restaurant:'Restaurants',bar:'Bars',cafe:'Cafés',activity:'À faire',transport:'Transport / Location',spa:'Massage / Spa',away:'km',navigate:'Itinéraire avec Google Maps',googleNearby:'Google à proximité',nearbyUtility:'Service à proximité',approved:'Recommandé par Papa Golf',searching:'Recherche de lieux à proximité…',none:'Aucun lieu trouvé pour ce filtre.',youAreHere:'VOUS ÊTES ICI'},
-  th:{all:'ทั้งหมด',back:'เมนูหลัก',refresh:'ค้นหาใกล้เคียงอีกครั้ง',convenience:'ร้านสะดวกซื้อ',supermarket:'ซูเปอร์มาร์เก็ต',petrol:'ปั๊มน้ำมัน',atm:'ATM / ธนาคาร',pharmacy:'ร้านขายยา',medical:'โรงพยาบาล / คลินิก',restaurant:'ร้านอาหาร',bar:'บาร์',cafe:'คาเฟ่',activity:'กิจกรรมน่าสนใจ',transport:'การเดินทาง / รถเช่า',spa:'นวด / สปา',away:'กม.',navigate:'นำทางด้วย Google Maps',googleNearby:'Google ใกล้เคียง',nearbyUtility:'บริการใกล้เคียง',approved:'Papa Golf แนะนำ',searching:'กำลังค้นหาสถานที่ใกล้เคียง…',none:'ไม่พบสถานที่สำหรับตัวกรองนี้',youAreHere:'คุณอยู่ที่นี่'}
+  en:{all:'All',refresh:'Refresh Nearby',convenience:'Convenience Stores',supermarket:'Supermarkets',petrol:'Petrol Stations',atm:'ATMs / Banks',pharmacy:'Pharmacies',medical:'Hospitals / Clinics',restaurant:'Restaurants',bar:'Bars',cafe:'Cafés',activity:'Things To Do',transport:'Transport / Rental',spa:'Massage / Spa',away:'km away',navigate:'Navigate with Google Maps',googleNearby:'Google nearby',nearbyUtility:'Nearby utility',approved:'Papa Golf approved',searching:'Searching nearby places…',none:'No places found for this filter yet.',youAreHere:'YOU ARE HERE'},
+  fr:{all:'Tous',refresh:'Actualiser à proximité',convenience:'Supérettes',supermarket:'Supermarchés',petrol:'Stations-service',atm:'Distributeurs / Banques',pharmacy:'Pharmacies',medical:'Hôpitaux / Cliniques',restaurant:'Restaurants',bar:'Bars',cafe:'Cafés',activity:'À faire',transport:'Transport / Location',spa:'Massage / Spa',away:'km',navigate:'Itinéraire avec Google Maps',googleNearby:'Google à proximité',nearbyUtility:'Service à proximité',approved:'Recommandé par Papa Golf',searching:'Recherche de lieux à proximité…',none:'Aucun lieu trouvé pour ce filtre.',youAreHere:'VOUS ÊTES ICI'},
+  th:{all:'ทั้งหมด',refresh:'ค้นหาใกล้เคียงอีกครั้ง',convenience:'ร้านสะดวกซื้อ',supermarket:'ซูเปอร์มาร์เก็ต',petrol:'ปั๊มน้ำมัน',atm:'ATM / ธนาคาร',pharmacy:'ร้านขายยา',medical:'โรงพยาบาล / คลินิก',restaurant:'ร้านอาหาร',bar:'บาร์',cafe:'คาเฟ่',activity:'กิจกรรมน่าสนใจ',transport:'การเดินทาง / รถเช่า',spa:'นวด / สปา',away:'กม.',navigate:'นำทางด้วย Google Maps',googleNearby:'Google ใกล้เคียง',nearbyUtility:'บริการใกล้เคียง',approved:'Papa Golf แนะนำ',searching:'กำลังค้นหาสถานที่ใกล้เคียง…',none:'ไม่พบสถานที่สำหรับตัวกรองนี้',youAreHere:'คุณอยู่ที่นี่'}
 };
 function welcomeStoredLanguage(){return localStorage.getItem(WELCOME_LANGUAGE_KEY)||'auto'}
 function welcomeDeviceLanguage(){
@@ -3219,8 +3203,6 @@ function welcomeCategoryLabel(cat){return welcomeT(cat?.id)||cat?.label||'Place'
 function applyWelcomeLanguage(){
   const select=document.getElementById('welcomeLanguageSelect');
   if(select)select.value=welcomeStoredLanguage();
-  const back=document.getElementById('guestExploreBackBtn');
-  if(back)back.textContent=`← ${welcomeT('back')}`;
   const refresh=document.getElementById('refreshWelcomeNearbyBtn');
   if(refresh)refresh.textContent=`↻ ${welcomeT('refresh')}`;
   renderWelcomeGuestFilters();
@@ -3369,7 +3351,6 @@ function pushPapaGolfRoute(route){
   papaGolfCurrentRoute=route;
   applyPapaGolfRoute(route);
 }
-function replacePapaGolfRoute(route){papaGolfCurrentRoute=route;applyPapaGolfRoute(route)}
 function papaGolfGoBack(){
   const preview=document.getElementById('welcomeGuestPreview');
   if(papaGolfCurrentRoute==='photos-home' && preview && !preview.classList.contains('hidden')){
@@ -3521,7 +3502,6 @@ function renderWelcomeReadiness(){
   const text=document.getElementById('welcomeReadinessText');
   const card=document.getElementById('welcomeReadinessCard');
   const continueBtn=document.getElementById('welcomeContinueSetupBtn');
-  const hint=document.getElementById('welcomeReadinessHint');
   const ready=status.complete===status.total;
   if(title)title.textContent=ready?'Guest essentials ready':`${status.complete} of ${status.total} essentials ready`;
   if(text)text.textContent=!ready?`Next: ${status.missing[0]?.name||'finish setup'}.`:`Core ready · ${status.enhanced} of ${status.enhancementTotal} optional guest sections populated.`;
@@ -3531,7 +3511,6 @@ function renderWelcomeReadiness(){
     continueBtn.textContent='Continue setup';
     continueBtn.dataset.targetSection=status.next?.section||'guest-info';
   }
-  if(hint)hint.classList.toggle('hidden',!ready);
   renderWelcomeSectionStatuses();
 }
 function finishWelcomeEdit(button,message){
@@ -4146,17 +4125,6 @@ async function fetchWelcomeAutomaticPlaces(force=false){
     renderWelcomeNearbyMap();
   }
 }
-function welcomeEnabledAutomaticCategories(){
-  return new Set(getWelcomeCategories().filter(c=>c.enabled&&c.source==='automatic').map(c=>c.id));
-}
-function welcomeBearingDeg(lat1,lng1,lat2,lng2){
-  const toRad=x=>x*Math.PI/180,toDeg=x=>x*180/Math.PI;
-  const a=toRad(lat1),b=toRad(lat2),dLng=toRad(lng2-lng1);
-  const y=Math.sin(dLng)*Math.cos(b);
-  const x=Math.cos(a)*Math.sin(b)-Math.sin(a)*Math.cos(b)*Math.cos(dLng);
-  return (toDeg(Math.atan2(y,x))+360)%360;
-}
-
 function getPapaGolfGooglePlacesKey(){
   return (localStorage.getItem(WELCOME_GOOGLE_PLACES_KEY)||'').trim();
 }
@@ -4479,14 +4447,6 @@ if(window.visualViewport){
 }
 
 
-
-function welcomePlaceDetailLine(item){
-  const parts=[];
-  if(item.cost)parts.push(item.cost);
-  if(item.accessDifficulty)parts.push(item.accessDifficulty);
-  if(item.suggestedVisit)parts.push(item.suggestedVisit);
-  return parts.join(' · ');
-}
 
 function renderWelcomeNearbyMap(){
   const d=effectiveWelcome();
@@ -5124,7 +5084,6 @@ function initWelcomeModule(){
     pushPapaGolfRoute('welcome-a5');
     setTimeout(()=>printWelcomeA5(),120);
   });
-  document.getElementById('welcomeA5HomeBtn')?.addEventListener('click',papaGolfGoHome);
   document.getElementById('welcomeA5PrintBtn')?.addEventListener('click',printWelcomeA5);
   document.getElementById('saveSharedBackendBtn')?.addEventListener('click',saveSharedBackendSettings);
   document.getElementById('createSharedOwnerBtn')?.addEventListener('click',testSharedBackend);

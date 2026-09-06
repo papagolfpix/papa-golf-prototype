@@ -134,3 +134,9 @@ if(fail.length){
   process.exit(1);
 }
 console.log(`\nPapa Golf validation passed for v${v}.`);
+
+// v0.44.0 UI consolidation / dead-code cleanup
+check(!html.includes('welcomeReadinessHint'),'redundant Welcome readiness hint removed');
+for(const legacy of ['guestExploreBackBtn','welcomeA5HomeBtn']) check(!app.includes(legacy),`obsolete runtime navigation reference removed: ${legacy}`);
+for(const dead of ['relatedInheritedPlaceholder','blobsToDataUrls','getResolvedWelcomePartners','replacePapaGolfRoute','welcomeEnabledAutomaticCategories','welcomeBearingDeg','welcomePlaceDetailLine']) check(!app.includes(`function ${dead}`),`unused legacy helper removed: ${dead}`);
+check(styles.includes('v0.44.0 UI consolidation'),'v0.44.0 compact Welcome admin rules present');
