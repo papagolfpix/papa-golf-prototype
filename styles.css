@@ -1796,14 +1796,15 @@ body.guest-preview-mode .guest-top-help:active{transform:scale(.97);background:#
  .qr-audit-report-content{padding:0!important}.qr-report-cover{padding-top:2mm;border-bottom-color:#8c6d22}.qr-report-demo-badge{color:#725716;border-color:#8c6d22}.qr-report-location,.qr-report-intro,.qr-report-date,.qr-report-summary p,.qr-report-guide span{color:#333!important}.qr-report-summary{background:#f7f4ec!important;border-color:#c8b277!important}.qr-report-summary-lead strong,.qr-report-field strong,.qr-report-demo-link{color:#725716!important}.qr-report-metrics>div{background:#fff!important;border-color:#ccc!important}.qr-report-metrics span,.qr-report-field>span,.qr-report-demo small{color:#555!important}.qr-report-guide{background:#faf7ee!important;border-left-color:#8c6d22}.qr-report-item{break-inside:avoid;page-break-inside:avoid;background:#fff!important;border-color:#aaa!important;margin-bottom:5mm}.qr-report-item-head{border-bottom-color:#ccc!important}.qr-report-flags span{background:#eee!important;color:#222!important}.qr-report-photo-empty{background:#eee!important;color:#555!important}.qr-report-demo-link{font-size:11px}.qr-audit-report-content footer{color:#555!important;border-top-color:#bbb!important}
 }
 
-/* v0.45.1 compact manager audit, readable density controls and deterministic print pages */
+/* v0.45.2 compact manager audit, viewport-centred print controls and deterministic print pages */
 .qr-audit-report-toolbar{min-height:58px;gap:10px;padding:7px 10px}
 .qr-audit-report-toolbar .primary-btn{min-height:42px;padding:.55rem .8rem}
 .qr-report-zoom{display:flex;align-items:center;justify-content:center;gap:7px;min-width:0}
 .qr-report-zoom>span{min-width:72px;text-align:center;color:#d8d2c7;font-size:12px;font-weight:800;white-space:nowrap}
 .qr-report-zoom-btn{display:grid;place-items:center;width:40px;height:40px;min-width:40px;padding:0;border:1px solid rgba(224,188,102,.35);border-radius:999px;background:#1b1b19;color:#efd173;font:800 16px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .qr-report-zoom-btn:disabled{opacity:.35}
-.qr-audit-print-panel{position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.qr-audit-print-panel{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:max(18px,env(safe-area-inset-top)) 18px max(18px,env(safe-area-inset-bottom));background:rgba(0,0,0,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);overflow:auto;overscroll-behavior:contain}
+.qr-audit-print-card{max-height:calc(100dvh - 36px);overflow:auto;-webkit-overflow-scrolling:touch}
 .qr-audit-print-panel.hidden{display:none!important}
 .qr-audit-print-card{width:min(430px,100%);padding:20px;border:1px solid rgba(224,188,102,.42);border-radius:16px;background:#181816;box-shadow:0 18px 50px rgba(0,0,0,.45)}
 .qr-audit-print-card>strong{display:block;font-size:21px;color:#f4f0e8}.qr-audit-print-card>p{margin:8px 0 16px;color:#cfc8bc;line-height:1.45}

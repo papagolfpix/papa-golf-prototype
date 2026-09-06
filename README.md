@@ -1,3 +1,9 @@
+## v0.45.2 — viewport-centred print sizing panel
+
+- Fixes the audit report Print / Save PDF sizing panel on iPhone when the report has been scrolled down.
+- The 4/5/6-per-page selector is now fixed to the visible viewport and opens centred on screen rather than relative to the report's scroll position.
+- Adds safe-area padding and internal overflow protection for smaller iPhone screens.
+
 ## v0.45.1 — compact audit report + eyesight-aware print density
 
 - Rebuilds the Property Information Upgrade report as a compact recognition-and-decision document rather than one large card per page.

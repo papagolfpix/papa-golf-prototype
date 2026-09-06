@@ -154,11 +154,11 @@ check(styles.includes('@page{size:A4 portrait')&&styles.includes('break-inside:a
 check(styles.includes('v0.44.3 manager proposal / PDF presentation'),'manager proposal presentation styling present');
 
 
-// v0.45.1 compact audit report / density controls
+// v0.45.2 compact audit report / density controls
 check(html.includes('qrAuditZoomInBtn')&&html.includes('qrAuditZoomOutBtn')&&html.includes('qrAuditPrintPanel'),'audit report exposes magnifier density controls and pre-print panel');
 check(app.includes('PAPA_GOLF_AUDIT_DENSITY_KEY')&&app.includes('qrAuditDensityName')&&html.includes('Continue to Print'),'audit density preference maps to 4–6 recommendations per page');
 check(app.includes('qrAuditPageHeader')&&app.includes('qrAuditPageFooter')&&app.includes('View full recommendation'),'compact report has repeated Papa Golf page chrome and expanded-detail link');
-check(styles.includes('v0.45.1 compact manager audit')&&styles.includes('data-density=\"4\"')&&styles.includes('@page{size:A4 portrait;margin:0}'),'deterministic A4 density styling present');
+check(styles.includes('v0.45.2 compact manager audit')&&styles.includes('data-density=\"4\"')&&styles.includes('@page{size:A4 portrait;margin:0}'),'deterministic A4 density styling present');
 
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');
@@ -168,6 +168,6 @@ if(fail.length){
 console.log(`\nPapa Golf validation passed for v${v}.`);
 
 
-// v0.45.1 deployment freshness guard
+// v0.45.2 deployment freshness guard
 check(read('app.js').includes('checkPapaGolfBuildVersion')&&read('app.js').includes('papaGolfSwReloaded-${RUNTIME_VERSION}'),'iPhone/PWA shell refresh is version-aware');
-check(read('version.json').includes('0.45.1')&&read('service-worker.js').includes('papa-golf-v0451-shell'),'deployment version manifest and cache key bumped');
+check(read('version.json').includes('0.45.2')&&read('service-worker.js').includes('papa-golf-v0452-shell'),'deployment version manifest and cache key bumped');
