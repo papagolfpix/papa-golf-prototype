@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.45.2';
+const RUNTIME_VERSION = '0.44.3';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2680,34 +2680,19 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = `papaGolfSwReloaded-${RUNTIME_VERSION}`;
+    const key = 'papaGolfSwReloaded0260';
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.45.2', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.44.3', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
     .catch(() => {});
 }
-// Keep long-lived iPhone/PWA sessions on the deployed build instead of silently showing an old shell.
-async function checkPapaGolfBuildVersion(){
-  try{
-    const res=await fetch(`./version.json?ts=${Date.now()}`,{cache:'no-store'});
-    if(!res.ok)return;
-    const deployed=String((await res.json())?.version||'').trim();
-    if(deployed && deployed!==RUNTIME_VERSION){
-      const key=`papaGolfBuildRefresh-${deployed}`;
-      if(!sessionStorage.getItem(key)){sessionStorage.setItem(key,'1');window.location.reload()}
-    }
-  }catch(_){}
-}
-checkPapaGolfBuildVersion();
-setInterval(checkPapaGolfBuildVersion,60000);
-
 renderGallery().catch(error => { backupStatus.textContent = `Storage error: ${error.message || error}`; });
 
 
@@ -2784,42 +2769,18 @@ async function addQrTouchpoint(){
 }
 async function copyQrTouchpointLink(id){const item=getQrTouchpoints().find(x=>x.id===id);if(!item)return;const url=welcomeSectionUrl(item.destination||'home');try{await navigator.clipboard.writeText(url)}catch{}}
 async function removeQrTouchpoint(id){const item=getQrTouchpoints().find(x=>x.id===id);if(item?.photoKey)await deleteAuditAsset(item.photoKey);const items=getQrTouchpoints().filter(x=>x.id!==id);saveQrTouchpoints(items);renderQrTouchpoints()}
-const PAPA_GOLF_AUDIT_DENSITY_KEY='papa-golf-audit-density-v01';
-function getQrAuditDensity(){const n=Number(localStorage.getItem(PAPA_GOLF_AUDIT_DENSITY_KEY)||4);return [4,5,6].includes(n)?n:4}
-function qrAuditDensityName(n=getQrAuditDensity()){return n===4?'Large / Easy Read':n===5?'Standard':'Compact'}
-function updateQrAuditDensityUi(){
-  const n=getQrAuditDensity(),label=document.getElementById('qrAuditDensityLabel'),printLabel=document.getElementById('qrAuditPrintDensityLabel');
-  if(label)label.textContent=`${n} per page`;
-  if(printLabel)printLabel.textContent=`${qrAuditDensityName(n)} · ${n} recommendations per page`;
-  const host=document.getElementById('qrAuditReportContent');if(host)host.dataset.density=String(n);
-  document.getElementById('qrAuditZoomInBtn')?.toggleAttribute('disabled',n===4);
-  document.getElementById('qrAuditPrintZoomInBtn')?.toggleAttribute('disabled',n===4);
-  document.getElementById('qrAuditZoomOutBtn')?.toggleAttribute('disabled',n===6);
-  document.getElementById('qrAuditPrintZoomOutBtn')?.toggleAttribute('disabled',n===6);
-}
-async function setQrAuditDensity(next){
-  const n=Math.max(4,Math.min(6,Number(next)||4));localStorage.setItem(PAPA_GOLF_AUDIT_DENSITY_KEY,String(n));
-  await buildQrAuditReport();updateQrAuditDensityUi();
-}
-function showQrAuditPrintPanel(show=true){document.getElementById('qrAuditPrintPanel')?.classList.toggle('hidden',!show);updateQrAuditDensityUi()}
-function qrAuditPageHeader(d){return `<header class="qr-report-page-header"><strong>PAPA GOLF</strong><span>Property Information Upgrade · ${escapeHtml(d.propertyName||d.name||'Property')}</span></header>`}
-function qrAuditPageFooter(page,total){return `<footer class="qr-report-page-footer"><strong>Papa Golf Platform</strong><span>Demonstration proposal · Page ${page} of ${total}</span></footer>`}
-function qrAuditItemHtml(item,i){
-  const url=welcomeSectionUrl(item.destination||'home'),qr=`https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&format=png&data=${encodeURIComponent(url)}`;
-  return `<article class="qr-report-item"><div class="qr-report-item-head"><div class="qr-report-number">${i+1}</div><div class="qr-report-title"><div class="qr-report-flags"><span class="qr-report-priority ${escapeHtml(item.priority||'medium')}">${escapeHtml(qrTouchpointPriorityLabel(item.priority))}</span><span class="qr-report-status ${escapeHtml(item.status||'proposed')}">${escapeHtml(qrTouchpointStatusLabel(item.status))}</span></div><h2>${escapeHtml(item.location||'Property touchpoint')}</h2></div></div><div class="qr-report-body"><div class="qr-report-photo-wrap">${item.photoKey?`<img class="qr-report-photo" data-report-photo-key="${escapeHtml(item.photoKey)}" alt="${escapeHtml(item.location||'Audit location')}">`:'<div class="qr-report-photo-empty">No audit photo</div>'}</div><div class="qr-report-copy"><div class="qr-report-field"><span>Recognise</span><p>${escapeHtml(item.existing||'Existing guest information')}</p></div><div class="qr-report-field"><span>Suggested upgrade</span><strong>${escapeHtml(QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home')}</strong>${item.note?`<p class="qr-report-note">${escapeHtml(item.note)}</p>`:''}</div><div class="qr-report-field qr-report-wording"><span>Guest prompt</span><p>“${escapeHtml(item.label||'Scan for details')}”</p></div><a class="qr-report-detail-link" href="${escapeHtml(url)}" target="_blank" rel="noopener">View full recommendation →</a></div><div class="qr-report-demo"><a class="qr-report-qr-link" href="${escapeHtml(url)}" target="_blank" rel="noopener" aria-label="Open full recommendation for ${escapeHtml(item.location||'touchpoint')}"><img class="qr-report-qr" src="${escapeHtml(qr)}" alt="Scannable QR link"></a><small>Open details</small></div></div></article>`
-}
 async function buildQrAuditReport(){
   const host=document.getElementById('qrAuditReportContent');if(!host)return;
-  const items=getQrTouchpoints(),d=effectiveWelcome(),density=getQrAuditDensity();
-  const counts={high:items.filter(x=>x.priority==='high').length,approved:items.filter(x=>x.status==='approved').length,installed:items.filter(x=>x.status==='installed').length,photos:items.filter(x=>x.photoKey).length};
-  const prepared=new Date().toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'}),chunks=[];for(let i=0;i<items.length;i+=density)chunks.push(items.slice(i,i+density));
-  const totalPages=1+Math.max(1,chunks.length);
-  const cover=`<section class="qr-report-sheet qr-report-cover-sheet">${qrAuditPageHeader(d)}<div class="qr-report-cover"><div class="qr-report-brand"><div class="eyebrow">PAPA GOLF · PROPERTY INFORMATION UPGRADE</div><div class="qr-report-demo-badge">DEMONSTRATION PROPOSAL</div></div><h1>${escapeHtml(d.propertyName||d.name||'Property walkthrough')}</h1><p class="qr-report-location">${escapeHtml(d.locationLabel||d.address||'')}</p><p class="qr-report-intro">A practical review of existing guest-information touchpoints and opportunities to connect them to useful digital information and services.</p><div class="qr-report-date">Prepared ${escapeHtml(prepared)}</div></div><section class="qr-report-summary"><div class="qr-report-summary-lead"><strong>${items.length}</strong><span>guest-information opportunit${items.length===1?'y':'ies'} identified</span></div><div class="qr-report-metrics"><div><strong>${counts.high}</strong><span>High priority</span></div><div><strong>${counts.approved}</strong><span>Approved</span></div><div><strong>${counts.installed}</strong><span>Installed</span></div><div><strong>${counts.photos}</strong><span>Photographed</span></div></div><p>Existing signs, photographs and printed material can remain in place where suitable. Papa Golf adds a small QR touchpoint that connects guests to richer, updateable information.</p></section><section class="qr-report-guide"><strong>How to review this proposal</strong><span>Each compact result lets a manager quickly recognise the physical item and understand the proposed information-flow upgrade. Tap “View full recommendation” or scan its QR code for the expanded Papa Golf workflow.</span></section>${qrAuditPageFooter(1,totalPages)}</section>`;
-  const resultSheets=(chunks.length?chunks:[[]]).map((chunk,pageIndex)=>`<section class="qr-report-sheet qr-report-results-sheet">${qrAuditPageHeader(d)}<div class="qr-report-page-title"><strong>Audit opportunities</strong><span>${qrAuditDensityName(density)} · up to ${density} per page</span></div><section class="qr-report-items">${chunk.length?chunk.map((item,j)=>qrAuditItemHtml(item,pageIndex*density+j)).join(''):'<div class="qr-report-empty">No audit opportunities have been recorded yet.</div>'}</section>${qrAuditPageFooter(pageIndex+2,totalPages)}</section>`).join('');
-  host.dataset.density=String(density);host.innerHTML=cover+resultSheets;
-  await Promise.all([...host.querySelectorAll('[data-report-photo-key]')].map(async img=>{const a=await getAuditAsset(img.dataset.reportPhotoKey);if(a?.dataUrl)img.src=a.dataUrl}));updateQrAuditDensityUi();
+  const items=getQrTouchpoints(),d=effectiveWelcome();
+  const counts={high:items.filter(x=>x.priority==='high').length,medium:items.filter(x=>(x.priority||'medium')==='medium').length,low:items.filter(x=>x.priority==='low').length,proposed:items.filter(x=>(x.status||'proposed')==='proposed').length,approved:items.filter(x=>x.status==='approved').length,installed:items.filter(x=>x.status==='installed').length,photos:items.filter(x=>x.photoKey).length};
+  const prepared=new Date().toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'});
+  host.innerHTML=`<header class="qr-report-cover"><div class="qr-report-brand"><div class="eyebrow">PAPA GOLF · PROPERTY INFORMATION UPGRADE</div><div class="qr-report-demo-badge">DEMONSTRATION PROPOSAL</div></div><h1>${escapeHtml(d.propertyName||d.name||'Property walkthrough')}</h1><p class="qr-report-location">${escapeHtml(d.locationLabel||d.address||'')}</p><p class="qr-report-intro">A practical review of existing guest-information touchpoints and opportunities to connect them to useful digital information and services.</p><div class="qr-report-date">Prepared ${escapeHtml(prepared)}</div></header>
+  <section class="qr-report-summary"><div class="qr-report-summary-lead"><strong>${items.length}</strong><span>guest-information opportunit${items.length===1?'y':'ies'} identified</span></div><div class="qr-report-metrics"><div><strong>${counts.high}</strong><span>High priority</span></div><div><strong>${counts.approved}</strong><span>Approved</span></div><div><strong>${counts.installed}</strong><span>Installed</span></div><div><strong>${counts.photos}</strong><span>Photographed</span></div></div><p>Existing signs, photographs and printed material can remain in place where suitable. Papa Golf adds a small QR touchpoint that connects guests to richer, updateable information.</p></section>
+  <section class="qr-report-guide"><strong>How to review this proposal</strong><span>Scan a QR code with another phone, or tap the QR / “View demonstration” link in the PDF. These links open sample Papa Golf information for demonstration purposes and are not yet an official property publication.</span></section>
+  <section class="qr-report-items">${items.map((item,i)=>{const url=welcomeSectionUrl(item.destination||'home');const qr=`https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=12&format=png&data=${encodeURIComponent(url)}`;return `<article class="qr-report-item"><div class="qr-report-item-head"><div class="qr-report-number">${i+1}</div><div><div class="qr-report-flags"><span class="qr-report-priority ${escapeHtml(item.priority||'medium')}">${escapeHtml(qrTouchpointPriorityLabel(item.priority))}</span><span class="qr-report-status ${escapeHtml(item.status||'proposed')}">${escapeHtml(qrTouchpointStatusLabel(item.status))}</span></div><h2>${escapeHtml(item.location||'Property touchpoint')}</h2></div></div><div class="qr-report-body"><div class="qr-report-photo-wrap">${item.photoKey?`<img class="qr-report-photo" data-report-photo-key="${escapeHtml(item.photoKey)}" alt="${escapeHtml(item.location||'Audit location')}">`:'<div class="qr-report-photo-empty">No audit photo</div>'}</div><div class="qr-report-copy"><div class="qr-report-field"><span>Existing item</span><p>${escapeHtml(item.existing||'Existing guest information')}</p></div><div class="qr-report-field"><span>Proposed digital destination</span><strong>${escapeHtml(QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home')}</strong></div><div class="qr-report-field"><span>Suggested QR wording</span><p>“${escapeHtml(item.label||'Scan for details')}”</p></div>${item.note?`<div class="qr-report-field"><span>Audit note</span><p>${escapeHtml(item.note)}</p></div>`:''}</div><div class="qr-report-demo"><a class="qr-report-qr-link" href="${escapeHtml(url)}" target="_blank" rel="noopener" aria-label="Open demonstration for ${escapeHtml(item.location||'touchpoint')}"><img class="qr-report-qr" src="${escapeHtml(qr)}" alt="Scannable QR demonstration"></a><a class="qr-report-demo-link" href="${escapeHtml(url)}" target="_blank" rel="noopener">View demonstration</a><small>Sample destination</small></div></div></article>`}).join('')}</section><footer><strong>Papa Golf Platform</strong><span>Property Information Upgrade · Demonstration proposal</span></footer>`;
+  await Promise.all([...host.querySelectorAll('[data-report-photo-key]')].map(async img=>{const a=await getAuditAsset(img.dataset.reportPhotoKey);if(a?.dataUrl)img.src=a.dataUrl}));
 }
-async function openQrAuditReport(showPrintPanel=false){const dialog=document.getElementById('qrAuditReportDialog');if(!dialog)return;await buildQrAuditReport();if(typeof dialog.showModal==='function'&&!dialog.open)dialog.showModal();else dialog.setAttribute('open','');showQrAuditPrintPanel(showPrintPanel)}
+async function openQrAuditReport(printAfter=false){const dialog=document.getElementById('qrAuditReportDialog');if(!dialog)return;await buildQrAuditReport();if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');if(printAfter)setTimeout(()=>window.print(),120)}
 
 
 function getPapaGolfPhotoPlaceLinks(){
@@ -5090,14 +5051,8 @@ function initWelcomeModule(){
   document.getElementById('clearQrTouchpointPhotoBtn')?.addEventListener('click',clearPendingQrTouchpointPhoto);
   document.getElementById('previewQrAuditReportBtn')?.addEventListener('click',()=>openQrAuditReport(false));
   document.getElementById('printQrAuditReportBtn')?.addEventListener('click',()=>openQrAuditReport(true));
-  document.getElementById('qrAuditReportCloseBtn')?.addEventListener('click',()=>{showQrAuditPrintPanel(false);document.getElementById('qrAuditReportDialog')?.close?.()});
-  document.getElementById('qrAuditReportPrintBtn')?.addEventListener('click',()=>showQrAuditPrintPanel(true));
-  document.getElementById('qrAuditZoomInBtn')?.addEventListener('click',()=>setQrAuditDensity(getQrAuditDensity()-1));
-  document.getElementById('qrAuditZoomOutBtn')?.addEventListener('click',()=>setQrAuditDensity(getQrAuditDensity()+1));
-  document.getElementById('qrAuditPrintZoomInBtn')?.addEventListener('click',()=>setQrAuditDensity(getQrAuditDensity()-1));
-  document.getElementById('qrAuditPrintZoomOutBtn')?.addEventListener('click',()=>setQrAuditDensity(getQrAuditDensity()+1));
-  document.getElementById('qrAuditPrintCancelBtn')?.addEventListener('click',()=>showQrAuditPrintPanel(false));
-  document.getElementById('qrAuditPrintConfirmBtn')?.addEventListener('click',()=>{showQrAuditPrintPanel(false);window.print()});
+  document.getElementById('qrAuditReportCloseBtn')?.addEventListener('click',()=>document.getElementById('qrAuditReportDialog')?.close?.());
+  document.getElementById('qrAuditReportPrintBtn')?.addEventListener('click',()=>window.print());
   document.getElementById('qrTouchpointList')?.addEventListener('click',event=>{
     const copy=event.target.closest('[data-copy-touchpoint]');
     if(copy){copyQrTouchpointLink(copy.dataset.copyTouchpoint);const old=copy.textContent;copy.textContent='Copied ✓';setTimeout(()=>copy.textContent=old,1200);return}

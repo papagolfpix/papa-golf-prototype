@@ -1,17 +1,3 @@
-## v0.45.2 — viewport-centred print sizing panel
-
-- Fixes the audit report Print / Save PDF sizing panel on iPhone when the report has been scrolled down.
-- The 4/5/6-per-page selector is now fixed to the visible viewport and opens centred on screen rather than relative to the report's scroll position.
-- Adds safe-area padding and internal overflow protection for smaller iPhone screens.
-
-## v0.45.1 — compact audit report + eyesight-aware print density
-
-- Rebuilds the Property Information Upgrade report as a compact recognition-and-decision document rather than one large card per page.
-- Adds familiar magnifying-glass − / + controls. The preference is remembered on-device and maps automatically to 4 (Large / Easy Read), 5 (Standard), or 6 (Compact) recommendations per A4 page.
-- Adds a pre-print confirmation panel explaining that the current viewing size controls print density; printing is now initiated only by the final user tap to avoid Safari automatic-print blocking.
-- Adds deterministic A4 result sheets with Papa Golf header/footer and page numbering on every page, small recognition photos, brief proposed-upgrade copy, QR, and a clickable “View full recommendation” link.
-- Keeps the mobile report compact: recognition photo, short description and action stay visible without the previous oversized stacked image layout.
-
 ## v0.44.0 — UI consolidation and redundancy audit
 
 - Reduced unnecessary vertical space in the Welcome admin dashboard without shrinking readable text or touch targets.

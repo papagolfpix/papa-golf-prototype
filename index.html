@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.45.2" />
+<link rel="stylesheet" href="styles.css?v=0.44.3" />
 </head>
 <body>
   <div id="pgGlobalNav" class="pg-global-nav hidden" aria-label="Papa Golf navigation">
@@ -17,7 +17,7 @@
   <header class="app-header">
     <div class="app-header-left">
       <div>
-        <div class="eyebrow">PAPA GOLF · V0.45.2</div>
+        <div class="eyebrow">PAPA GOLF · V0.44.3</div>
         <h1>Papa Golf Prototype</h1>
       </div>
     </div>
@@ -515,27 +515,7 @@
 <dialog id="qrAuditReportDialog" class="qr-audit-report-dialog">
   <div class="qr-audit-report-toolbar no-print">
     <button id="qrAuditReportCloseBtn" class="pg-round-nav-btn" type="button" aria-label="Close report" title="Close">‹</button>
-    <div class="qr-report-zoom" aria-label="Report reading size">
-      <button id="qrAuditZoomOutBtn" class="qr-report-zoom-btn" type="button" aria-label="Show more results per page" title="Show more results per page">🔍−</button>
-      <span id="qrAuditDensityLabel">4 per page</span>
-      <button id="qrAuditZoomInBtn" class="qr-report-zoom-btn" type="button" aria-label="Make report larger" title="Make report larger">🔍+</button>
-    </div>
     <button id="qrAuditReportPrintBtn" class="primary-btn" type="button">Print / Save PDF</button>
-  </div>
-  <div id="qrAuditPrintPanel" class="qr-audit-print-panel no-print hidden" role="dialog" aria-modal="true" aria-labelledby="qrAuditPrintPanelTitle">
-    <div class="qr-audit-print-card">
-      <strong id="qrAuditPrintPanelTitle">Print size</strong>
-      <p>Your current viewing size will be used for the printed report. Larger view fits fewer recommendations per page.</p>
-      <div class="qr-report-zoom qr-report-zoom-print">
-        <button id="qrAuditPrintZoomOutBtn" class="qr-report-zoom-btn" type="button" aria-label="Show more results per page">🔍−</button>
-        <span id="qrAuditPrintDensityLabel">4 recommendations per page</span>
-        <button id="qrAuditPrintZoomInBtn" class="qr-report-zoom-btn" type="button" aria-label="Make report larger">🔍+</button>
-      </div>
-      <div class="qr-audit-print-actions">
-        <button id="qrAuditPrintCancelBtn" class="secondary-btn" type="button">Cancel</button>
-        <button id="qrAuditPrintConfirmBtn" class="primary-btn" type="button">Continue to Print</button>
-      </div>
-    </div>
   </div>
   <article id="qrAuditReportContent" class="qr-audit-report-content"></article>
 </dialog>
@@ -840,6 +820,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.45.2" defer></script>
+  <script src="app.js?v=0.44.3" defer></script>
 </body>
 </html>
