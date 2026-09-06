@@ -110,6 +110,13 @@ check(app.includes("pushPapaGolfRoute(id==='photosTabBtn'?'photos-home':id==='ma
 check(read('styles.css').includes('.qr-audit-report-dialog')&&read('styles.css').includes('.qr-touchpoint-photo-preview'),'audit report and photo capture have responsive styling');
 
 
+
+// v0.43.1 Welcome preview action deduplication
+check(html.includes('id="welcomeReadinessPreviewBtn"'),'canonical Welcome preview action present');
+check(!html.includes('id="previewWelcomeGuestBtn"'),'redundant bottom Guest Welcome Preview action removed');
+check(!app.includes("getElementById('previewWelcomeGuestBtn')"),'redundant Guest Preview listener removed');
+check(!styles.includes('.welcome-preview-action'),'obsolete duplicate-preview CSS removed');
+
 // v0.43.0 unified header / redundant navigation cleanup
 check(html.includes('id="pgGlobalNav"')&&html.includes('id="pgGlobalBackBtn"')&&html.includes('id="pgGlobalHomeBtn"'),'single global Back/Home navigation cluster exists');
 check(app.includes('function syncPapaGolfGlobalNav()')&&app.includes("home.classList.toggle('hidden',isHome)"),'global navigation is route-aware');

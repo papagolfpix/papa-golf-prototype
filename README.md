@@ -1,3 +1,11 @@
+## v0.43.1 — Welcome action cleanup
+
+- Removed the redundant bottom `Open Guest Welcome Preview` action.
+- `Preview guest view` in Villa Welcome Status is now the single canonical owner preview action.
+- Canonical preview now saves property, unit and category visibility before rendering.
+- Removed obsolete CSS/event-handler code for the duplicate preview control.
+- Added validator coverage to prevent duplicate Guest Preview actions returning.
+
 ## v0.43.0 — UI cleanup / unified app bar
 
 - Consolidates owner/admin page navigation into one global Back/Home route control; removes obsolete per-screen and per-panel copies.

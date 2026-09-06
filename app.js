@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.43.0';
+const RUNTIME_VERSION = '0.43.1';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2701,7 +2701,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.43.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.43.1', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -5103,10 +5103,7 @@ function initWelcomeModule(){
   });
 
   document.getElementById('welcomeReadinessPreviewBtn')?.addEventListener('click',()=>{
-    saveWelcomeProperty(); saveWelcomeUnit(); renderGuestWelcome(); pushPapaGolfRoute('guest-home');
-  });
-
-  document.getElementById('previewWelcomeGuestBtn')?.addEventListener('click',()=>{
+    // Canonical Welcome preview action. Save all guest-facing setup before rendering.
     saveWelcomeProperty();
     saveWelcomeUnit();
     saveWelcomeCategories();

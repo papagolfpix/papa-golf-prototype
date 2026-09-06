@@ -863,8 +863,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .welcome-partner-list{display:grid;gap:.55rem;margin-top:.8rem}
 .welcome-partner-row{display:flex;gap:.75rem;justify-content:space-between;align-items:center;padding:.75rem;border:1px solid rgba(255,255,255,.1);border-radius:13px}
 .welcome-partner-row button{flex:0 0 auto}
-.welcome-preview-action{display:flex;justify-content:center;padding:1rem 0 2rem}
-.welcome-preview-action button{min-height:54px;min-width:min(100%,360px)}
 .guest-property-brand{text-align:center;padding:10px 8px 4px}
 .guest-property-brand img{display:block;width:100%;max-width:650px;max-height:220px;object-fit:contain;margin:0 auto;background:#050505;border-radius:18px}
 .guest-developer{margin-top:9px;color:#e0bc66;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
@@ -1753,3 +1751,5 @@ body.pg-global-nav-visible:not(.welcome-admin-mode):not(.guest-preview-mode):not
   body.guest-preview-mode .guest-top-help{height:44px;min-height:44px;padding:0 13px}
   body.pg-global-nav-visible:not(.welcome-admin-mode):not(.guest-preview-mode):not(.welcome-a5-mode) .app-header-left{padding-left:98px}
 }
+
+/* v0.43.1 Welcome action cleanup — one canonical Guest Preview entry point in readiness card. */
