@@ -1608,7 +1608,7 @@ body.welcome-admin-mode main{padding-top:max(10px,env(safe-area-inset-top))}
 /* v0.38.0 secure shared-data setup assistant */
 .shared-setup-steps{display:grid;gap:10px;margin:14px 0 18px}.shared-setup-step{display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;align-items:start;padding:11px 12px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:#121212}.shared-setup-step>div{display:flex;flex-direction:column;gap:3px}.shared-step-number{width:30px;height:30px;display:grid;place-items:center;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-weight:800;color:#aaa}.shared-setup-step.is-current{border-color:rgba(215,177,77,.55);background:#18160f}.shared-setup-step.is-current .shared-step-number{border-color:#d7b14d;color:#f1cf72}.shared-setup-step.is-ready{border-color:rgba(91,190,124,.45);background:#111813}.shared-setup-step.is-ready .shared-step-number{border-color:#5bbe7c;background:#1d6b39;color:#fff}.shared-setup-step.is-ready .shared-step-number::before{content:'✓';font-size:.95rem}.shared-setup-step.is-ready .shared-step-number{font-size:0}.shared-owner-card{margin:14px 0;padding:13px 14px;border:1px solid rgba(91,190,124,.38);border-radius:14px;background:#111813;display:flex;flex-direction:column;gap:5px}.shared-owner-card strong{overflow-wrap:anywhere;font-size:.92rem}.shared-rules-box{margin-top:14px;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:#111}.shared-rules-box summary{font-weight:800;cursor:pointer}.shared-rules-box textarea{width:100%;margin-top:12px;min-height:300px;background:#0b0b0b;color:#e7e7e7;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;resize:vertical}.text-btn{align-self:flex-start;border:0;background:transparent;color:#f1cf72;padding:5px 0;font:inherit;font-weight:700}.shared-data-config[open]>summary{margin-bottom:6px}
 
-/* v0.39.0 compact guest navigation + touch reorder */
+/* v0.39.1 compact guest navigation + touch reorder */
 .guest-menu-grid{display:flex;flex-direction:column;gap:.55rem}
 .guest-menu-tile{position:relative;display:grid;grid-template-columns:46px minmax(0,1fr) 24px 34px;align-items:center;gap:.7rem;width:100%;min-height:72px;padding:.7rem .65rem .7rem .75rem;border-radius:15px;overflow:hidden;touch-action:manipulation}
 .guest-menu-tile .guest-menu-icon{display:grid;place-items:center;width:46px;height:46px;margin:0;font-size:27px;filter:grayscale(1);opacity:.62;text-shadow:0 1px 0 rgba(255,255,255,.15),0 -1px 1px rgba(0,0,0,.8)}
@@ -1622,3 +1622,25 @@ body.welcome-admin-mode main{padding-top:max(10px,env(safe-area-inset-top))}
 .guest-system-tile{grid-template-columns:46px minmax(0,1fr) 24px}
 @media(max-width:600px){.guest-menu-grid{display:flex;flex-direction:column}.guest-menu-tile{min-height:70px}}
 @media(max-width:390px){.guest-menu-grid{display:flex;flex-direction:column}.guest-menu-tile{min-height:68px;grid-template-columns:42px minmax(0,1fr) 22px 32px;padding-left:.65rem}.guest-system-tile{grid-template-columns:42px minmax(0,1fr) 22px}}
+
+/* v0.39.1 iPhone density polish — compact without shrinking readable text */
+.guest-menu-grid{gap:.38rem}
+.guest-menu-tile{grid-template-columns:42px minmax(0,1fr) 22px 32px;gap:.58rem;min-height:60px;padding:.48rem .55rem .48rem .65rem;border-radius:14px}
+.guest-menu-tile .guest-menu-icon{width:42px;height:42px;font-size:29px;opacity:.58}
+.guest-menu-tile .guest-menu-copy strong{font-size:17px;line-height:1.15}
+.guest-menu-tile .guest-menu-copy small{margin-top:.12rem;font-size:13px;line-height:1.18}
+.guest-menu-tile .guest-menu-copy small span{font:inherit!important;line-height:inherit!important;margin:0!important;color:inherit!important}
+.guest-menu-chevron{font-size:27px!important}
+.guest-menu-drag{width:32px;height:44px;font-size:24px!important}
+.guest-system-tile{grid-template-columns:42px minmax(0,1fr) 22px}
+@media(max-width:600px){.guest-menu-tile{min-height:58px}}
+@media(max-width:390px){.guest-menu-tile{min-height:58px;grid-template-columns:40px minmax(0,1fr) 21px 30px;padding:.45rem .45rem .45rem .58rem}.guest-menu-tile .guest-menu-icon{width:40px;height:40px;font-size:28px}.guest-system-tile{grid-template-columns:40px minmax(0,1fr) 21px}}
+
+
+/* v0.39.2 tactile lift-and-reflow reorder feedback */
+.guest-menu-placeholder{min-height:58px;border:1px dashed rgba(224,188,102,.48);border-radius:14px;background:rgba(224,188,102,.055);box-shadow:inset 0 0 0 1px rgba(224,188,102,.04)}
+.guest-menu-tile.is-reordering{z-index:1000!important;transform:scale(1.035);transform-origin:center center;border-color:rgba(241,207,114,.92)!important;background:#282318!important;box-shadow:0 18px 42px rgba(0,0,0,.58),0 0 0 2px rgba(224,188,102,.16);cursor:grabbing;will-change:top,left,transform;opacity:.98}
+.guest-menu-tile.is-reordering .guest-menu-drag{color:#f1cf72;transform:scale(1.12)}
+body.welcome-menu-dragging{user-select:none;-webkit-user-select:none}
+body.welcome-menu-dragging .guest-menu-grid{isolation:isolate}
+@media(prefers-reduced-motion:reduce){.guest-menu-tile.is-reordering{transform:none}.guest-menu-placeholder{transition:none}}

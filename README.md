@@ -1,4 +1,22 @@
-## v0.39.0 — Secure shared-data setup assistant
+## v0.39.2 — Tactile Welcome reorder
+
+- Reorder handles now lift the selected Welcome row above the list with a stronger border, subtle enlargement and shadow.
+- The dragged row follows the finger instead of only swapping after release.
+- A visible landing gap moves through the list while neighbouring rows animate smoothly out of the way.
+- Release settles the row into the displayed gap and preserves the existing local guest order.
+- Added gentle edge auto-scroll for longer lists while dragging.
+- Help & Emergency remains a protected system item and cannot be reordered.
+- Same interaction is used in owner Guest Preview and standalone public Welcome.
+- No IndexedDB/localStorage clearing; existing photo, Welcome, Brand Kit and Shared Data protections remain intact.
+
+## v0.39.1 — Welcome slim-list density polish
+### What changed
+- Reduced guest Welcome row height and inter-row spacing by about 20% while keeping 17px titles and 13px secondary text.
+- Normalized the What’s On summary so “1 activity today” uses the same secondary text size as every other row.
+- Preserved separate › open and ≡ reorder controls with 44px drag touch targets.
+- Applied the same density rules to owner Guest Preview and the standalone public Welcome page.
+- No IndexedDB, photo, Welcome, Firebase, or localStorage data is cleared or migrated.
+
 
 This update turns the Firebase bridge into a guided, safer owner workflow while retaining the Local Alpha fallback.
 

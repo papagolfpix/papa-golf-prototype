@@ -65,6 +65,21 @@ check(app.includes('pointerdown') && app.includes('pointermove') && app.includes
 check(publicWelcome.includes('data-reorder-list="welcome"') && publicWelcome.includes('menu-drag'), 'public Welcome has reorderable slim list');
 check(publicWelcomeJs.includes("papaGolfGuestWelcomeOrderV1") && publicWelcomeJs.includes('saveMenuOrder'), 'public Welcome order persistence present');
 check(publicWelcome.includes('system-menu-tile') && !publicWelcome.includes('data-menu-key="help"'), 'Help & Emergency remains protected from reordering');
+check(read('styles.css').includes('.guest-menu-tile .guest-menu-copy small span{font:inherit!important'), 'What’s On summary cannot inherit legacy oversized span styling');
+check(read('styles.css').includes('.guest-menu-drag{width:32px;height:44px'), 'owner preview reorder handle retains 44px touch target');
+check(read('welcome.css').includes('.menu-drag{width:32px;height:44px'), 'public Welcome reorder handle retains 44px touch target');
+check(read('styles.css').includes('min-height:58px') && read('welcome.css').includes('min-height:58px'), 'compact mobile rows use matched density in preview and public Welcome');
+
+// v0.39.2 tactile lift-and-reflow reorder feedback
+check(app.includes("placeholder.className='guest-menu-placeholder'") && app.includes("active.style.position='fixed'"), 'owner preview dragged row lifts into floating layer with landing placeholder');
+check(app.includes('document.elementsFromPoint') && app.includes('row.animate'), 'owner preview detects underlying rows and animates list reflow');
+check(app.includes('autoScroll') && app.includes('window.scrollBy'), 'owner preview supports edge auto-scroll while reordering');
+check(publicWelcomeJs.includes("placeholder.className='menu-placeholder'") && publicWelcomeJs.includes("active.style.position='fixed'"), 'public Welcome dragged row lifts with landing placeholder');
+check(publicWelcomeJs.includes('document.elementsFromPoint') && publicWelcomeJs.includes('row.animate'), 'public Welcome animates neighbouring rows out of the way');
+check(read('styles.css').includes('.guest-menu-tile.is-reordering{z-index:1000') && read('styles.css').includes('transform:scale(1.035)'), 'owner preview selected row has visible raised-state styling');
+check(read('welcome.css').includes('.menu-row.is-reordering{z-index:1000') && read('welcome.css').includes('transform:scale(1.035)'), 'public Welcome selected row has visible raised-state styling');
+check(app.includes("hit.classList.contains('guest-system-tile')") && publicWelcomeJs.includes("hit.classList.contains('system-menu-tile')"), 'protected Help & Emergency remains excluded from reorder targets');
+
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');
   for(const x of fail) console.error('✗',x);
