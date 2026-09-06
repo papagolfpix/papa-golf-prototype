@@ -124,3 +124,6 @@ This update turns the Firebase bridge into a guided, safer owner workflow while 
 - No IndexedDB deletion or `localStorage.clear()` is introduced.
 - Firebase Web API key stays local to the admin browser settings and is not included in Papa Golf backups or public Welcome payloads.
 - Do not clear Safari website data after binding Firestore rules to the temporary Anonymous owner UID. Named Papa Golf accounts are still the production target.
+
+### v0.44.2
+Property Walkthrough field workflow: touchpoints can now be edited after capture and tracked as Proposed, Approved or Installed. Manager reports include status. Existing private audit-photo storage and backup protections are preserved.

@@ -1773,3 +1773,6 @@ body.welcome-admin-mode #welcomeModule>.screen-header p{margin:.1rem 0 .45rem}
 /* v0.44.1 guest-action deduplication + app-bar polish. */
 body.guest-preview-mode .guest-top-help{border:1px solid rgba(255,255,255,.16);background:#c92f2f;color:#fff;font-weight:800;-webkit-appearance:none;appearance:none}
 body.guest-preview-mode .guest-top-help:active{transform:scale(.97);background:#b52828}
+
+/* v0.44.2 field audit workflow */
+.qr-touchpoint-save-actions{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}.qr-touchpoint-status{font-size:11px;padding:.2rem .4rem;border-radius:999px;background:#292929;color:#bbb;text-transform:uppercase;letter-spacing:.04em}.qr-touchpoint-status.approved{background:#173322;color:#9fd8af}.qr-touchpoint-status.installed{background:#183447;color:#a8d8ef}

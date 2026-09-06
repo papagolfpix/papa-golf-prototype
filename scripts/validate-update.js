@@ -140,6 +140,13 @@ check(publicWelcomeJs.includes("strip.classList.toggle('hidden',todayItems.lengt
 check(styles.includes('v0.44.1 guest-action deduplication + app-bar polish'),'explicit Guest Preview app-bar Help styling present');
 check(styles.includes('background:#c92f2f;color:#fff'),'SOS Help retains protected red visual treatment');
 
+// v0.44.2 field audit workflow
+check(app.includes('editingQrTouchpointId'), 'QR touchpoints support in-place editing');
+check(app.includes('qrTouchpointStatusLabel'), 'QR touchpoints support Proposed / Approved / Installed status');
+check(html.includes('qrTouchpointStatus'), 'walkthrough form exposes touchpoint status');
+check(app.includes('data-edit-touchpoint'), 'touchpoint cards expose Edit action');
+check(styles.includes('v0.44.2 field audit workflow'), 'field audit workflow styling present');
+
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');
   for(const x of fail) console.error('✗',x);

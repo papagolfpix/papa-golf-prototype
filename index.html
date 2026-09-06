@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.44.1" />
+<link rel="stylesheet" href="styles.css?v=0.44.2" />
 </head>
 <body>
   <div id="pgGlobalNav" class="pg-global-nav hidden" aria-label="Papa Golf navigation">
@@ -17,7 +17,7 @@
   <header class="app-header">
     <div class="app-header-left">
       <div>
-        <div class="eyebrow">PAPA GOLF · V0.44.1</div>
+        <div class="eyebrow">PAPA GOLF · V0.44.2</div>
         <h1>Papa Golf Prototype</h1>
       </div>
     </div>
@@ -438,6 +438,13 @@
               <option value="low">Low · optional</option>
             </select>
           </label>
+          <label>Status
+            <select id="qrTouchpointStatus">
+              <option value="proposed" selected>Proposed</option>
+              <option value="approved">Approved</option>
+              <option value="installed">Installed</option>
+            </select>
+          </label>
           <label>Walkthrough note<textarea id="qrTouchpointNote" rows="2" placeholder="What the guest needs, missing information, manager comment, etc."></textarea></label>
           <div class="qr-touchpoint-photo-field">
             <span>Quick audit photo</span>
@@ -449,7 +456,7 @@
             <div id="qrTouchpointPhotoPreview" class="qr-touchpoint-photo-preview hidden" aria-live="polite"></div>
             <small class="muted">Private audit photo. It is never published to guests automatically.</small>
           </div>
-          <button id="addQrTouchpointBtn" class="primary-btn" type="button">+ Add Touchpoint</button>
+          <div class="qr-touchpoint-save-actions"><button id="addQrTouchpointBtn" class="primary-btn" type="button">+ Add Touchpoint</button><button id="cancelQrTouchpointEditBtn" class="secondary-btn hidden" type="button">Cancel edit</button></div>
         </div>
         <div class="qr-touchpoint-summary">
           <strong id="qrTouchpointSummary">No touchpoints recorded yet.</strong>
@@ -813,6 +820,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.44.1" defer></script>
+  <script src="app.js?v=0.44.2" defer></script>
 </body>
 </html>
