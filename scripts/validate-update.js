@@ -101,6 +101,12 @@ check(!publicWelcome.includes('welcomeGuestHomeBtn')&&!publicWelcome.includes('p
 check(read('styles.css').includes('.pg-round-nav-btn')&&read('styles.css').includes('min-width:46px'),'owner Back/Home controls retain comfortable touch targets');
 check(read('styles.css').includes('.guest-essential-action{display:grid;grid-template-columns:38px')&&read('welcome.css').includes('.quick-action{display:grid;grid-template-columns:38px'),'Quick Essentials is compacted consistently in preview and public Welcome');
 
+// v0.41.1 Home return continuity
+check(html.includes('id="homeReturnBackBtn"')&&html.includes('pg-home-return-back hidden'),'Home landing includes a normally-hidden round return Back control');
+check(app.includes('function syncPapaGolfHomeReturnNav()')&&app.includes("papaGolfCurrentRoute==='photos-home' && readPapaGolfNavHistory().length>0"),'Home return Back appears only when an in-app route exists');
+check(app.includes("document.getElementById('homeReturnBackBtn')?.addEventListener('click',papaGolfGoBack)"),'Home return Back uses the same Papa Golf navigation stack');
+check(read('styles.css').includes('.pg-home-return-back')&&read('styles.css').includes('min-width:44px'),'Home return Back retains a comfortable touch target');
+
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');
   for(const x of fail) console.error('✗',x);

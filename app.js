@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.41.0';
+const RUNTIME_VERSION = '0.41.1';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2698,7 +2698,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.41.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.41.1', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3417,7 +3417,14 @@ function papaGolfGoBack(){
   papaGolfCurrentRoute='photos-home';applyPapaGolfRoute('photos-home');
 }
 function papaGolfGoHome(){pushPapaGolfRoute('photos-home')}
+function syncPapaGolfHomeReturnNav(){
+  const btn=document.getElementById('homeReturnBackBtn');
+  if(!btn)return;
+  const canReturn=papaGolfCurrentRoute==='photos-home' && readPapaGolfNavHistory().length>0;
+  btn.classList.toggle('hidden',!canReturn);
+}
 function applyPapaGolfRoute(route){
+  syncPapaGolfHomeReturnNav();
   const page=document.getElementById('welcomeModule'),preview=document.getElementById('welcomeGuestPreview'),a5=document.getElementById('welcomeA5Preview');
   if(route==='photos-home'){
     document.body.classList.remove('welcome-admin-mode','guest-preview-mode','welcome-a5-mode','guest-explore-mode');
@@ -5029,6 +5036,7 @@ function initWelcomeModule(){
   open?.addEventListener('click',()=>{loadWelcomeEditor();window.papaGolfCollapseAdminSections?.();pushPapaGolfRoute('welcome-admin')});
 
   document.getElementById('welcomeBackBtn')?.addEventListener('click',papaGolfGoBack);
+  document.getElementById('homeReturnBackBtn')?.addEventListener('click',papaGolfGoBack);
   document.getElementById('welcomeGuestBackBtn')?.addEventListener('click',papaGolfGoBack);
   document.getElementById('welcomeGuestHomeBtn')?.addEventListener('click',papaGolfGoHome);
 

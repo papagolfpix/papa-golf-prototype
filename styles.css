@@ -1689,7 +1689,7 @@ body.welcome-menu-dragging .guest-menu-grid{isolation:isolate}
 .qr-touchpoint-mode.shared{background:#173322;color:#9fd8af}
 .qr-touchpoint-mode.snapshot{background:#302b1d;color:#ddc884}
 
-/* v0.41.0 compact owner-preview navigation + Quick Essentials density */
+/* v0.41.1 contextual navigation continuity + Quick Essentials density */
 .welcome-guest-topbar{position:sticky;top:max(8px,env(safe-area-inset-top));z-index:90;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:.4rem;pointer-events:none}
 .welcome-guest-topbar>*{pointer-events:auto}
 .pg-preview-nav{display:flex;align-items:center;gap:8px}
@@ -1711,3 +1711,8 @@ body.welcome-menu-dragging .guest-menu-grid{isolation:isolate}
 .guest-essential-action small{margin-top:.1rem;font-size:13px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .guest-essential-action::after{content:'›';font-size:25px;line-height:1;color:#e0bc66;text-align:center}
 @media(max-width:390px){.pg-round-nav-btn{width:44px;height:44px;min-width:44px;min-height:44px}.guest-essential-head{grid-template-columns:1fr}.guest-essential-head span{margin-top:.08rem}.guest-essential-action{min-height:54px}}
+
+/* v0.41.1 Home remains reversible: show a compact Back control on the landing screen only when Papa Golf has a route to return to. */
+.app-header-left{display:flex;align-items:center;gap:10px;min-width:0}
+.pg-home-return-back{flex:0 0 auto;width:44px;height:44px;min-width:44px;min-height:44px;font-size:29px}
+@media(max-width:420px){.app-header-left{gap:8px}.pg-home-return-back{width:42px;height:42px;min-width:42px;min-height:42px}.app-header h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}

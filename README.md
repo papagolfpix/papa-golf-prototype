@@ -1,3 +1,10 @@
+## v0.41.1 — Home return navigation fix
+
+- Fixes the navigation continuity bug found in iPhone testing: after using Home, the landing screen now shows a compact round Back button when there is a Papa Golf route to return to.
+- The Home jump remains reversible without relying on Safari browser history.
+- The Back control disappears automatically when there is no in-app history, keeping the true landing state uncluttered.
+- Existing Guest Preview Back/Home controls, public guest separation, reorder behaviour, Shared Data, QR touchpoints and storage protections are unchanged.
+
 ## v0.41.0 — Contextual Back/Home navigation + Welcome density polish
 
 This update fixes the owner Guest Preview navigation dead-end and establishes a reusable Papa Golf navigation foundation.
