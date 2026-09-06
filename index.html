@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.39.2" />
+<link rel="stylesheet" href="styles.css?v=0.40.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.39.2</div>
+      <div class="eyebrow">PAPA GOLF · V0.40.0</div>
       <h1>Papa Golf Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -397,6 +397,54 @@
         <div class="gateway-edit-actions"><label class="gateway-enabled"><input id="gatewayEditEnabled" type="checkbox"><span>Gateway enabled</span></label><button id="gatewayEditSaveBtn" type="button" class="primary-btn">Save Gateway</button></div>
       </div>
     </section>
+
+    <details class="qr-touchpoint-audit">
+      <summary><span>Property walkthrough · QR touchpoints</span><small>Audit existing signs, menus and guest information</small></summary>
+      <div class="qr-touchpoint-body">
+        <div class="qr-touchpoint-intro">
+          <div>
+            <div class="eyebrow">PHYSICAL → DIGITAL</div>
+            <h3>Walk the property and mark upgrade opportunities</h3>
+          </div>
+          <p class="muted">Record where a small Papa Golf QR could upgrade existing information without replacing it. Each touchpoint can open the exact guest section it relates to.</p>
+        </div>
+        <div class="qr-touchpoint-form">
+          <label>Where is it?<input id="qrTouchpointLocation" type="text" placeholder="e.g. Reception wall, lift, pool bar"></label>
+          <label>Existing item / opportunity<input id="qrTouchpointExisting" type="text" placeholder="e.g. Thai Cooking Class poster"></label>
+          <label>QR destination
+            <select id="qrTouchpointDestination">
+              <option value="home">Welcome home</option>
+              <option value="wifi">Wi-Fi</option>
+              <option value="villa">Villa Guide / Host</option>
+              <option value="nearby">Explore Nearby</option>
+              <option value="stay">Stay Details</option>
+              <option value="whats-on">What’s On</option>
+              <option value="food">Food & Drink</option>
+              <option value="wellness">Wellness</option>
+              <option value="tours">Tours & Experiences</option>
+              <option value="transport">Transport</option>
+              <option value="help">Help & Emergency</option>
+            </select>
+          </label>
+          <label>Sticker wording<input id="qrTouchpointLabel" type="text" placeholder="e.g. Scan for details & booking"></label>
+          <label>Priority
+            <select id="qrTouchpointPriority">
+              <option value="high">High · obvious guest value</option>
+              <option value="medium" selected>Medium · useful upgrade</option>
+              <option value="low">Low · optional</option>
+            </select>
+          </label>
+          <label>Walkthrough note<textarea id="qrTouchpointNote" rows="2" placeholder="What the guest needs, missing information, manager comment, etc."></textarea></label>
+          <button id="addQrTouchpointBtn" class="primary-btn" type="button">+ Add Touchpoint</button>
+        </div>
+        <div class="qr-touchpoint-summary">
+          <strong id="qrTouchpointSummary">No touchpoints recorded yet.</strong>
+          <span class="small muted">These audit records stay private to the admin device and are included in Papa Golf backups.</span>
+        </div>
+        <div id="qrTouchpointList" class="qr-touchpoint-list"></div>
+      </div>
+    </details>
+
     <h3>A5 Welcome Card</h3>
     <p class="muted">A standard upright A5 sheet for the clear plastic stand. It uses this villa's branding and Wi-Fi details automatically.</p>
     <div class="welcome-a5-actions">
@@ -754,6 +802,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.39.2" defer></script>
+  <script src="app.js?v=0.40.0" defer></script>
 </body>
 </html>

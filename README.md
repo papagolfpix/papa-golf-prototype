@@ -1,3 +1,13 @@
+## v0.40.0 — Property walkthrough & physical QR touchpoints
+
+- Added a private **Property Walkthrough · QR Touchpoints** tool under Gateways & A5 / QR.
+- During a hotel/villa walkthrough, Papa Golf can now record the physical location, existing sign/menu/poster, intended digital destination, sticker wording, priority and notes.
+- Each touchpoint generates a working QR preview and a deep link to the exact Welcome section: Wi‑Fi, Villa Guide, Nearby, Stay Details, What’s On, Food & Drink, Wellness, Tours, Transport, or Help & Emergency.
+- Public Welcome now understands the `s=` section parameter for direct physical-to-digital entry while retaining the same canonical Welcome data.
+- Touchpoint records are private admin data and are now included in Papa Golf backup **v10**. Firebase credentials/auth remain excluded.
+- Existing photo IndexedDB, Safari Blob hardening, Shared Data, guest ordering, Welcome presentation controls and Help protections remain unchanged.
+- This lays the operational foundation for the planned property-audit workflow: **Property Audit → Physical Touchpoint → QR Origin → Digital Destination → Guest Action → Attribution**.
+
 ## v0.39.2 — Tactile Welcome reorder
 
 - Reorder handles now lift the selected Welcome row above the list with a stronger border, subtle enlargement and shadow.

@@ -33,3 +33,10 @@ For this Beta the owner identity is Firebase Anonymous Authentication stored in 
 4. Save and tap Publish Current Welcome again.
 5. Refresh the **same** permanent link on the other device.
 6. Confirm the value changes without changing the URL or QR.
+
+
+## Physical QR touchpoints
+v0.40.0 can create deep links such as `s=food`, `s=wellness` or `s=help` for property walkthrough QR stickers.
+- Before Shared Data is published, these are Local Alpha **snapshot** links.
+- After the Gateway is published successfully, the same touchpoint generator uses the permanent Gateway URL plus the section destination, so the physical QR can remain in place while the Welcome content changes.
+- Touchpoint audit notes stay private in the admin browser/backup; they are not included in the public Welcome payload.

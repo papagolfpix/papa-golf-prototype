@@ -54,7 +54,7 @@ check(app.includes('finishWelcomeEdit'),'Welcome save flow returns to compact ow
 check(app.includes('PAPA_GOLF_WELCOME_SCHEMA_VERSION'),'canonical Welcome schema version declared');
 check(app.includes('buildCanonicalWelcomeModel'),'backend-ready canonical Welcome model builder retained');
 check(app.includes('ensureWelcomeModelIdentity'),'stable property/unit identity migration retained');
-check(app.includes('version: 9'),'backup format v9 includes consolidated Welcome model');
+check(app.includes('version: 10'),'backup format v10 includes consolidated Welcome model and QR touchpoints');
 check(app.includes('v:4,s:PAPA_GOLF_WELCOME_SCHEMA_VERSION'),'public Welcome payload v4 carries schema version');
 check(publicWelcome.includes('stayPanel')&&publicWelcome.includes('arrivalInfo'),'standalone public Welcome supports structured stay details');
 // v0.39.0 compact guest navigation / personalization foundation
@@ -79,6 +79,18 @@ check(publicWelcomeJs.includes('document.elementsFromPoint') && publicWelcomeJs.
 check(read('styles.css').includes('.guest-menu-tile.is-reordering{z-index:1000') && read('styles.css').includes('transform:scale(1.035)'), 'owner preview selected row has visible raised-state styling');
 check(read('welcome.css').includes('.menu-row.is-reordering{z-index:1000') && read('welcome.css').includes('transform:scale(1.035)'), 'public Welcome selected row has visible raised-state styling');
 check(app.includes("hit.classList.contains('guest-system-tile')") && publicWelcomeJs.includes("hit.classList.contains('system-menu-tile')"), 'protected Help & Emergency remains excluded from reorder targets');
+
+
+// v0.40.0 property walkthrough / physical QR touchpoints
+for(const id of ['qrTouchpointLocation','qrTouchpointExisting','qrTouchpointDestination','qrTouchpointLabel','qrTouchpointPriority','qrTouchpointNote','addQrTouchpointBtn','qrTouchpointList','qrTouchpointSummary']) check(html.includes(`id="${id}"`),`QR touchpoint UI id present: ${id}`);
+check(app.includes("PAPA_GOLF_QR_TOUCHPOINTS_KEY='papaGolfQrTouchpointsV1'"),'private QR touchpoint storage key declared');
+check(app.includes('getQrTouchpoints')&&app.includes('saveQrTouchpoints')&&app.includes('renderQrTouchpoints'),'QR touchpoint audit runtime present');
+check(app.includes('qrTouchpoints: getQrTouchpoints()')&&app.includes('[PAPA_GOLF_QR_TOUCHPOINTS_KEY, welcome.qrTouchpoints]'),'QR touchpoints included in backup and restore');
+check(app.includes('welcomeSectionUrl')&&app.includes("params.set('s'"),'touchpoint links deep-link to exact Welcome section');
+check(publicWelcomeJs.includes('PUBLIC_SECTION_PANELS')&&publicWelcomeJs.includes('openRequestedPublicSection'),'public Welcome supports physical QR section deep links');
+check(publicWelcomeJs.includes("sharedHashParams().get('s')"),'public Welcome reads section destination from URL fragment');
+check(read('styles.css').includes('.qr-touchpoint-card')&&read('styles.css').includes('.qr-touchpoint-qr'),'QR touchpoint audit has mobile card and QR styling');
+check(app.includes("Permanent shared QR")&&app.includes("Local snapshot QR"),'touchpoint cards distinguish permanent shared QR from Local Alpha snapshot');
 
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');

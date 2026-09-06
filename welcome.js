@@ -38,6 +38,15 @@ function mapsUrl(lat,lng){return `https://www.google.com/maps/dir/?api=1&destina
 function distanceKm(a,b,c,d){const R=6371,r=x=>x*Math.PI/180,dl=r(c-a),dn=r(d-b);const q=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)**2;return R*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
 function showHome(){document.getElementById('publicHome')?.classList.remove('hidden');document.querySelectorAll('.detail-panel').forEach(x=>x.classList.add('hidden'));scrollTo(0,0)}
 function showPanel(id){document.getElementById('publicHome')?.classList.add('hidden');document.querySelectorAll('.detail-panel').forEach(x=>x.classList.toggle('hidden',x.id!==id));scrollTo(0,0)}
+const PUBLIC_SECTION_PANELS={home:'',wifi:'wifiPanel',villa:'villaPanel',nearby:'nearbyPanel',stay:'stayPanel','whats-on':'whatsOnPanel',food:'foodPanel',wellness:'wellnessPanel',tours:'toursPanel',transport:'transportPanel',help:'emergencyPanel'};
+function openRequestedPublicSection(){
+  const section=String(sharedHashParams().get('s')||'').trim().toLowerCase();
+  if(!section)return;
+  const panel=PUBLIC_SECTION_PANELS[section];
+  if(section==='home'){showHome();return}
+  if(panel&&document.getElementById(panel))showPanel(panel);
+}
+
 function info(el,text,empty='Information has not been added yet.'){if(!el)return;el.innerHTML=text?`<p>${esc(text).replace(/\n/g,'<br>')}</p>`:`<p class="muted">${esc(empty)}</p>`}
 function renderPlaces(host,items,villa){if(!host)return;if(!items.length){host.innerHTML='<div class="info-card"><p class="muted">No approved places have been added yet.</p></div>';return}host.innerHTML=items.map(x=>{const km=Number.isFinite(villa.lat)&&Number.isFinite(villa.lng)?distanceKm(villa.lat,villa.lng,x.lat,x.lng):null;return `<article class="place-card"><strong>${esc(x.name)}</strong><div class="place-meta">${esc((x.category||'place').replace(/-/g,' '))}${km!=null?' · '+km.toFixed(km<1?2:1)+' km away':''}</div>${x.note?`<div class="place-note">${esc(x.note)}</div>`:''}<a class="map-link" href="${mapsUrl(x.lat,x.lng)}" target="_blank" rel="noopener">Directions</a></article>`}).join('')}
 function dayName(day){return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][Number(day)]||''}
@@ -66,4 +75,5 @@ async function init(){setupMenuReorder();let data=null;try{data=await loadPublic
   const villaTile=document.getElementById('villaTile');if(villaTile)villaTile.classList.toggle('hidden',y.g===false||!v.villaInfo);const nearbyTile=document.getElementById('nearbyTile');if(nearbyTile)nearbyTile.classList.toggle('hidden',y.n===false);document.getElementById('foodTile').classList.toggle('hidden',y.f===false||(!v.foodInfo&&!p.some(x=>['restaurant','bar','cafe'].includes(x.category))));document.getElementById('wellnessTile').classList.toggle('hidden',y.w===false||(!v.wellnessInfo&&!p.some(x=>x.category==='spa')));document.getElementById('toursTile').classList.toggle('hidden',y.t===false||(!v.toursInfo&&!p.some(x=>['activity','tour','attraction'].includes(x.category))));document.getElementById('transportTile').classList.toggle('hidden',y.r===false||(!v.transportInfo&&!(y.o!==false&&v.otherServices)&&!p.some(x=>x.category==='transport')));
   document.addEventListener('click',async e=>{const panel=e.target.closest('[data-panel]');if(panel){showPanel(panel.dataset.panel);return}if(e.target.closest('.back-btn')){showHome();return}const copy=e.target.closest('[data-copy]');if(copy){const val=v[copy.dataset.copy]||'';try{await navigator.clipboard.writeText(val);copy.textContent='Copied'}catch{copy.textContent='Select & copy'}}});
 }
-document.addEventListener('DOMContentLoaded',init);
+document.addEventListener('DOMContentLoaded',async()=>{await init();setTimeout(openRequestedPublicSection,0)});
+window.addEventListener('hashchange',()=>setTimeout(openRequestedPublicSection,0));

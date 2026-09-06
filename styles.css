@@ -1637,10 +1637,54 @@ body.welcome-admin-mode main{padding-top:max(10px,env(safe-area-inset-top))}
 @media(max-width:390px){.guest-menu-tile{min-height:58px;grid-template-columns:40px minmax(0,1fr) 21px 30px;padding:.45rem .45rem .45rem .58rem}.guest-menu-tile .guest-menu-icon{width:40px;height:40px;font-size:28px}.guest-system-tile{grid-template-columns:40px minmax(0,1fr) 21px}}
 
 
-/* v0.39.2 tactile lift-and-reflow reorder feedback */
+/* v0.40.0 tactile lift-and-reflow reorder feedback */
 .guest-menu-placeholder{min-height:58px;border:1px dashed rgba(224,188,102,.48);border-radius:14px;background:rgba(224,188,102,.055);box-shadow:inset 0 0 0 1px rgba(224,188,102,.04)}
 .guest-menu-tile.is-reordering{z-index:1000!important;transform:scale(1.035);transform-origin:center center;border-color:rgba(241,207,114,.92)!important;background:#282318!important;box-shadow:0 18px 42px rgba(0,0,0,.58),0 0 0 2px rgba(224,188,102,.16);cursor:grabbing;will-change:top,left,transform;opacity:.98}
 .guest-menu-tile.is-reordering .guest-menu-drag{color:#f1cf72;transform:scale(1.12)}
 body.welcome-menu-dragging{user-select:none;-webkit-user-select:none}
 body.welcome-menu-dragging .guest-menu-grid{isolation:isolate}
 @media(prefers-reduced-motion:reduce){.guest-menu-tile.is-reordering{transform:none}.guest-menu-placeholder{transition:none}}
+
+
+/* v0.40.0 property walkthrough / QR touchpoint audit */
+.qr-touchpoint-audit{margin:1rem 0 1.15rem;border:1px solid rgba(224,188,102,.34);border-radius:16px;background:#121212;overflow:hidden}
+.qr-touchpoint-audit>summary{display:flex;flex-direction:column;gap:.15rem;cursor:pointer;list-style:none;padding:1rem 1.05rem;font-weight:800}
+.qr-touchpoint-audit>summary::-webkit-details-marker{display:none}
+.qr-touchpoint-audit>summary::after{content:'›';position:absolute;right:1.1rem;font-size:25px;color:#d9b45c;transform:rotate(0deg);transition:transform .16s ease}
+.qr-touchpoint-audit[open]>summary::after{transform:rotate(90deg)}
+.qr-touchpoint-audit>summary{position:relative;padding-right:3rem}
+.qr-touchpoint-audit>summary small{font-weight:500;color:#9f9a91}
+.qr-touchpoint-body{padding:0 1rem 1rem;border-top:1px solid rgba(255,255,255,.08)}
+.qr-touchpoint-intro{padding-top:1rem}
+.qr-touchpoint-intro h3{margin:.2rem 0 .45rem}
+.qr-touchpoint-form{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.8rem}
+.qr-touchpoint-form label{margin:0}
+.qr-touchpoint-form label:nth-of-type(6){grid-column:1/-1}
+.qr-touchpoint-form .primary-btn{grid-column:1/-1}
+.qr-touchpoint-summary{display:flex;flex-direction:column;gap:.2rem;margin:1rem 0 .65rem;padding:.75rem .8rem;border-radius:12px;background:#181818;border:1px solid rgba(255,255,255,.09)}
+.qr-touchpoint-list{display:flex;flex-direction:column;gap:.7rem}
+.qr-touchpoint-empty{padding:.9rem;border:1px dashed rgba(255,255,255,.16);border-radius:12px;color:#9f9a91}
+.qr-touchpoint-card{display:grid;grid-template-columns:minmax(0,1fr) 86px;gap:.75rem;padding:.8rem;border-radius:14px;background:#171717;border:1px solid rgba(255,255,255,.11)}
+.qr-touchpoint-main{min-width:0;display:flex;flex-direction:column;gap:.18rem}
+.qr-touchpoint-main>strong{font-size:16px}
+.qr-touchpoint-main>span,.qr-touchpoint-main>p{color:#aaa49a;margin:0}
+.qr-touchpoint-destination{margin-top:.28rem;color:#e0bc66;font-weight:700;font-size:13px}
+.qr-touchpoint-sticker{align-self:flex-start;margin-top:.42rem;padding:.28rem .5rem;border-radius:999px;border:1px solid rgba(224,188,102,.35);font-size:12px;color:#e8d7a5}
+.qr-touchpoint-priority{align-self:flex-start;font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:.2rem .4rem;border-radius:999px;background:#292929;color:#bbb}
+.qr-touchpoint-priority.high{background:#3a2d13;color:#f1cd70}
+.qr-touchpoint-priority.low{opacity:.72}
+.qr-touchpoint-qr{width:86px;height:86px;border-radius:10px;background:#fff;padding:4px;align-self:center}
+.qr-touchpoint-actions{grid-column:1/-1;display:flex;gap:.45rem;flex-wrap:wrap}
+.qr-touchpoint-actions a,.qr-touchpoint-actions button{min-height:40px;padding:.55rem .7rem;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#202020;color:#eee;text-decoration:none;font:inherit}
+.qr-touchpoint-actions .text-danger{color:#ef9a9a}
+@media(max-width:620px){
+  .qr-touchpoint-form{grid-template-columns:1fr}
+  .qr-touchpoint-form label:nth-of-type(6),.qr-touchpoint-form .primary-btn{grid-column:auto}
+  .qr-touchpoint-card{grid-template-columns:minmax(0,1fr) 74px}
+  .qr-touchpoint-qr{width:74px;height:74px}
+}
+
+.qr-touchpoint-flags{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}
+.qr-touchpoint-mode{font-size:11px;padding:.2rem .4rem;border-radius:999px;background:#242424;color:#aaa}
+.qr-touchpoint-mode.shared{background:#173322;color:#9fd8af}
+.qr-touchpoint-mode.snapshot{background:#302b1d;color:#ddc884}

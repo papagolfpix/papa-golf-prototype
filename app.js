@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.39.2';
+const RUNTIME_VERSION = '0.40.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -254,6 +254,7 @@ function welcomeBackupSnapshot() {
     language: localStorage.getItem(WELCOME_LANGUAGE_KEY)||'auto',
     photoPlaceLinks: readWelcomeJson(PAPA_GOLF_PHOTO_PLACE_LINKS_KEY,{}),
     gateways: getPapaGolfGateways(),
+    qrTouchpoints: getQrTouchpoints(),
     affiliateProfile: getPapaGolfAffiliateProfile(),
     affiliateEvents: readWelcomeJson('papaGolfAffiliateEventsV1', [])
   };
@@ -288,7 +289,7 @@ async function exportBackup() {
 
   const payload = {
     format: 'papa-golf-backup',
-    version: 9,
+    version: 10,
     exportedAt: new Date().toISOString(),
     appVersion: RUNTIME_VERSION,
     customFields,
@@ -370,6 +371,7 @@ async function restoreWelcomeBackup(welcome) {
     [PAPA_GOLF_PLACES_KEY, welcome.sharedPlaces],
     [PAPA_GOLF_PHOTO_PLACE_LINKS_KEY, welcome.photoPlaceLinks],
     [PAPA_GOLF_GATEWAYS_KEY, welcome.gateways],
+    [PAPA_GOLF_QR_TOUCHPOINTS_KEY, welcome.qrTouchpoints],
     [PAPA_GOLF_AFFILIATE_PROFILE_KEY, welcome.affiliateProfile],
     ['papaGolfAffiliateEventsV1', welcome.affiliateEvents]
   ];
@@ -397,7 +399,7 @@ async function importBackupFile(file) {
   try { payload = JSON.parse(text); }
   catch { throw new Error('That file is not valid JSON.'); }
 
-  if (payload?.format !== 'papa-golf-backup' || ![1,2,3,4,5,6,7,8,9].includes(payload?.version) || !Array.isArray(payload.records)) {
+  if (payload?.format !== 'papa-golf-backup' || ![1,2,3,4,5,6,7,8,9,10].includes(payload?.version) || !Array.isArray(payload.records)) {
     throw new Error('That is not a compatible Papa Golf backup file.');
   }
 
@@ -2696,7 +2698,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.39.2', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.40.0', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2726,6 +2728,91 @@ function createGatewayForPlace(placeId,type='other'){const p=getPapaGolfPlace(pl
 function renderPapaGolfGatewayManager(){const host=document.getElementById('gatewayManagerList');if(!host)return;const a=ensureDefaultPropertyGateway();host.innerHTML=a.map(g=>`<article class="gateway-row"><div><div class="gateway-name">${escapeHtml(g.brandName||'Gateway')}</div><div class="small muted">${escapeHtml(PAPA_GOLF_GATEWAY_TYPES.find(x=>x.id===g.type)?.label||'Gateway')}</div><div class="gateway-tile-summary">${(g.tiles||[]).map(t=>`<span>${escapeHtml(t)}</span>`).join('')}</div></div><button type="button" class="secondary-btn" data-edit-gateway="${escapeHtml(g.id)}">Edit Gateway</button></article>`).join('')}
 function openGatewayEditor(id){window.papaGolfOpenAdminSection?.('gateways');const g=getPapaGolfGateways().find(x=>x.id===id),p=document.getElementById('gatewayEditPanel');if(!g||!p)return;p.classList.remove('hidden');p.dataset.gatewayId=id;const set=(x,v)=>{const e=document.getElementById(x);if(e)e.value=v??''};set('gatewayEditName',g.brandName);set('gatewayEditSubtitle',g.subtitle);set('gatewayEditType',g.type);set('gatewayEditTiles',(g.tiles||[]).join(', '));const e=document.getElementById('gatewayEditEnabled');if(e)e.checked=g.enabled!==false;p.scrollIntoView({behavior:'smooth',block:'start'})}
 function saveGatewayEditor(){const p=document.getElementById('gatewayEditPanel'),id=p?.dataset.gatewayId||'',a=getPapaGolfGateways(),i=a.findIndex(x=>x.id===id);if(i<0)return;const v=x=>document.getElementById(x)?.value?.trim?.()||'';a[i]={...a[i],brandName:v('gatewayEditName'),subtitle:v('gatewayEditSubtitle'),type:v('gatewayEditType')||'other',tiles:v('gatewayEditTiles').split(',').map(x=>x.trim()).filter(Boolean),enabled:!!document.getElementById('gatewayEditEnabled')?.checked};savePapaGolfGateways(a);p.classList.add('hidden');renderPapaGolfGatewayManager();renderWelcomeSectionStatuses()}
+
+
+const PAPA_GOLF_QR_TOUCHPOINTS_KEY='papaGolfQrTouchpointsV1';
+const QR_TOUCHPOINT_DESTINATIONS={
+  home:'Welcome home',wifi:'Wi-Fi',villa:'Villa Guide / Host',nearby:'Explore Nearby',stay:'Stay Details',
+  'whats-on':'What’s On',food:'Food & Drink',wellness:'Wellness',tours:'Tours & Experiences',
+  transport:'Transport',help:'Help & Emergency'
+};
+function getQrTouchpoints(){
+  const raw=readWelcomeJson(PAPA_GOLF_QR_TOUCHPOINTS_KEY,[]);
+  return Array.isArray(raw)?raw:[];
+}
+function saveQrTouchpoints(items){localStorage.setItem(PAPA_GOLF_QR_TOUCHPOINTS_KEY,JSON.stringify(Array.isArray(items)?items:[]))}
+function welcomeSectionUrl(section='home'){
+  const base=welcomePublicUrl();
+  try{
+    const u=new URL(base);
+    const hash=u.hash.replace(/^#/,'');
+    const params=new URLSearchParams(hash);
+    params.set('s',section||'home');
+    u.hash=params.toString();
+    return u.href;
+  }catch{return base}
+}
+function qrTouchpointPriorityLabel(priority){return priority==='high'?'High priority':priority==='low'?'Low priority':'Medium priority'}
+function renderQrTouchpoints(){
+  const host=document.getElementById('qrTouchpointList'),summary=document.getElementById('qrTouchpointSummary');
+  if(!host)return;
+  const items=getQrTouchpoints();
+  if(summary){
+    const high=items.filter(x=>x.priority==='high').length;
+    summary.textContent=items.length?`${items.length} touchpoint${items.length===1?'':'s'} recorded${high?` · ${high} high priority`:''}.`:'No touchpoints recorded yet.';
+  }
+  if(!items.length){
+    host.innerHTML='<div class="qr-touchpoint-empty">Walk the property with the manager and add opportunities as you see them.</div>';
+    return;
+  }
+  const shared=sharedBackendCanUseStableLink();
+  host.innerHTML=items.map(item=>{
+    const url=welcomeSectionUrl(item.destination||'home');
+    const qr=`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&format=png&data=${encodeURIComponent(url)}`;
+    return `<article class="qr-touchpoint-card" data-touchpoint-id="${escapeHtml(item.id)}">
+      <div class="qr-touchpoint-main">
+        <div class="qr-touchpoint-flags"><div class="qr-touchpoint-priority ${escapeHtml(item.priority||'medium')}">${escapeHtml(qrTouchpointPriorityLabel(item.priority))}</div><div class="qr-touchpoint-mode ${shared?'shared':'snapshot'}">${shared?'Permanent shared QR':'Local snapshot QR'}</div></div>
+        <strong>${escapeHtml(item.location||'Property touchpoint')}</strong>
+        <span>${escapeHtml(item.existing||'Existing guest information')}</span>
+        <div class="qr-touchpoint-destination">→ ${escapeHtml(QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home')}</div>
+        ${item.note?`<p>${escapeHtml(item.note)}</p>`:''}
+        <div class="qr-touchpoint-sticker">${escapeHtml(item.label||'Scan for details')}</div>
+      </div>
+      <img class="qr-touchpoint-qr" src="${escapeHtml(qr)}" alt="QR preview for ${escapeHtml(item.location||'touchpoint')}">
+      <div class="qr-touchpoint-actions">
+        <a href="${escapeHtml(url)}" target="_blank" rel="noopener">Open destination</a>
+        <button type="button" data-copy-touchpoint="${escapeHtml(item.id)}">Copy link</button>
+        <button type="button" class="text-danger" data-remove-touchpoint="${escapeHtml(item.id)}">Remove</button>
+      </div>
+    </article>`;
+  }).join('');
+}
+function addQrTouchpoint(){
+  const value=id=>document.getElementById(id)?.value?.trim?.()||'';
+  const location=value('qrTouchpointLocation'),existing=value('qrTouchpointExisting');
+  if(!location&&!existing){
+    const el=document.getElementById('qrTouchpointLocation');if(el){el.focus();el.placeholder='Add a location or existing item first';}
+    return;
+  }
+  const item={
+    id:papaGolfStableId('touchpoint'),gatewayId:sharedGateway()?.id||'',
+    location,existing,destination:value('qrTouchpointDestination')||'home',
+    label:value('qrTouchpointLabel')||'Scan for details',
+    priority:value('qrTouchpointPriority')||'medium',note:value('qrTouchpointNote'),
+    createdAt:new Date().toISOString()
+  };
+  const items=getQrTouchpoints();items.unshift(item);saveQrTouchpoints(items);
+  ['qrTouchpointLocation','qrTouchpointExisting','qrTouchpointLabel','qrTouchpointNote'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  renderQrTouchpoints();
+}
+async function copyQrTouchpointLink(id){
+  const item=getQrTouchpoints().find(x=>x.id===id);if(!item)return;
+  const url=welcomeSectionUrl(item.destination||'home');
+  try{await navigator.clipboard.writeText(url)}catch{}
+}
+function removeQrTouchpoint(id){
+  const items=getQrTouchpoints().filter(x=>x.id!==id);saveQrTouchpoints(items);renderQrTouchpoints();
+}
 
 
 function getPapaGolfPhotoPlaceLinks(){
@@ -4956,6 +5043,14 @@ function initWelcomeModule(){
   document.getElementById('gatewayEditCloseBtn')?.addEventListener('click',()=>document.getElementById('gatewayEditPanel')?.classList.add('hidden'));
   document.getElementById('gatewayEditSaveBtn')?.addEventListener('click',saveGatewayEditor);
   renderPapaGolfGatewayManager();
+  renderQrTouchpoints();
+  document.getElementById('addQrTouchpointBtn')?.addEventListener('click',addQrTouchpoint);
+  document.getElementById('qrTouchpointList')?.addEventListener('click',event=>{
+    const copy=event.target.closest('[data-copy-touchpoint]');
+    if(copy){copyQrTouchpointLink(copy.dataset.copyTouchpoint);const old=copy.textContent;copy.textContent='Copied ✓';setTimeout(()=>copy.textContent=old,1200);return}
+    const remove=event.target.closest('[data-remove-touchpoint]');
+    if(remove){removeQrTouchpoint(remove.dataset.removeTouchpoint);return}
+  });
   document.getElementById('welcomeUseExistingPlaceBtn')?.addEventListener('click',()=>{
     const id=document.getElementById('welcomeExistingPlaceSelect')?.value||'';
     if(id)fillCuratedFormFromPlace(getPapaGolfPlace(id));
