@@ -1,3 +1,15 @@
+## v0.42.0 — Navigation normalization + Property Audit photos/reports
+
+- Standardizes round Back + Home controls across Welcome admin, Guest Preview and A5 preview.
+- Main Photos/Map/Areas tab changes now participate in Papa Golf route history.
+- Property Walkthrough touchpoints can capture an iPhone camera photo or choose an existing image.
+- Audit photos are private, compressed locally, stored in a dedicated IndexedDB asset store and never published to guests automatically.
+- Touchpoint cards show their audit photo.
+- Adds a manager-facing Property Information Upgrade report with photo, proposed QR destination, sticker wording, QR and live demo link.
+- Report can be printed/saved as PDF.
+- Backup format v11 includes private audit photo assets; Firebase/API/auth secrets remain excluded.
+- Existing photo DB, Safari Blob hardening, shared Welcome, Firebase security and QR deep links remain intact.
+
 ## v0.41.1 — Home return navigation fix
 
 - Fixes the navigation continuity bug found in iPhone testing: after using Home, the landing screen now shows a compact round Back button when there is a Papa Golf route to return to.

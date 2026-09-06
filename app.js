@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.41.1';
+const RUNTIME_VERSION = '0.42.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -289,11 +289,11 @@ async function exportBackup() {
 
   const payload = {
     format: 'papa-golf-backup',
-    version: 10,
+    version: 11,
     exportedAt: new Date().toISOString(),
     appVersion: RUNTIME_VERSION,
     customFields,
-    welcome: {...welcomeBackupSnapshot(), canonicalModel: buildCanonicalWelcomeModel(), affiliateLogoAsset: await getAffiliateAsset('affiliate-primary-logo')},
+    welcome: {...welcomeBackupSnapshot(), canonicalModel: buildCanonicalWelcomeModel(), affiliateLogoAsset: await getAffiliateAsset('affiliate-primary-logo'), auditPhotoAssets: (await Promise.all(getQrTouchpoints().filter(x=>x.photoKey).map(async x=>await getAuditAsset(x.photoKey)))).filter(Boolean)},
     records: serialized
     // Deliberately excluded:
     // - Google Places API key
@@ -385,6 +385,9 @@ async function restoreWelcomeBackup(welcome) {
   if(welcome.affiliateLogoAsset?.dataUrl){
     await saveAffiliateAsset('affiliate-primary-logo',welcome.affiliateLogoAsset.dataUrl,welcome.affiliateLogoAsset);
     restored=true;
+  }
+  if(Array.isArray(welcome.auditPhotoAssets)){
+    for(const asset of welcome.auditPhotoAssets){if(asset?.key&&asset?.dataUrl){await saveAuditAsset(asset.key,asset.dataUrl,asset);restored=true}}
   }
   if(welcome.language){
     localStorage.setItem(WELCOME_LANGUAGE_KEY,welcome.language);
@@ -2698,7 +2701,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.41.1', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.42.0', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2731,6 +2734,9 @@ function saveGatewayEditor(){const p=document.getElementById('gatewayEditPanel')
 
 
 const PAPA_GOLF_QR_TOUCHPOINTS_KEY='papaGolfQrTouchpointsV1';
+const PAPA_GOLF_AUDIT_ASSET_DB='papa-golf-audit-assets-v01';
+const PAPA_GOLF_AUDIT_ASSET_STORE='touchpointPhotos';
+let pendingQrTouchpointPhoto=null;
 const QR_TOUCHPOINT_DESTINATIONS={
   home:'Welcome home',wifi:'Wi-Fi',villa:'Villa Guide / Host',nearby:'Explore Nearby',stay:'Stay Details',
   'whats-on':'What’s On',food:'Food & Drink',wellness:'Wellness',tours:'Tours & Experiences',
@@ -2741,78 +2747,39 @@ function getQrTouchpoints(){
   return Array.isArray(raw)?raw:[];
 }
 function saveQrTouchpoints(items){localStorage.setItem(PAPA_GOLF_QR_TOUCHPOINTS_KEY,JSON.stringify(Array.isArray(items)?items:[]))}
+function openAuditAssetDb(){return new Promise((resolve,reject)=>{const req=indexedDB.open(PAPA_GOLF_AUDIT_ASSET_DB,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(PAPA_GOLF_AUDIT_ASSET_STORE))req.result.createObjectStore(PAPA_GOLF_AUDIT_ASSET_STORE,{keyPath:'key'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
+async function saveAuditAsset(key,dataUrl,meta={}){const db=await openAuditAssetDb();return new Promise((resolve,reject)=>{const tx=db.transaction(PAPA_GOLF_AUDIT_ASSET_STORE,'readwrite');tx.objectStore(PAPA_GOLF_AUDIT_ASSET_STORE).put({key,dataUrl,...meta,updatedAt:new Date().toISOString()});tx.oncomplete=()=>{db.close();resolve(true)};tx.onerror=()=>{db.close();reject(tx.error)}})}
+async function getAuditAsset(key){try{const db=await openAuditAssetDb();return await new Promise((resolve,reject)=>{const tx=db.transaction(PAPA_GOLF_AUDIT_ASSET_STORE,'readonly'),req=tx.objectStore(PAPA_GOLF_AUDIT_ASSET_STORE).get(key);req.onsuccess=()=>{db.close();resolve(req.result||null)};req.onerror=()=>{db.close();reject(req.error)}})}catch{return null}}
+async function deleteAuditAsset(key){try{const db=await openAuditAssetDb();return await new Promise((resolve,reject)=>{const tx=db.transaction(PAPA_GOLF_AUDIT_ASSET_STORE,'readwrite');tx.objectStore(PAPA_GOLF_AUDIT_ASSET_STORE).delete(key);tx.oncomplete=()=>{db.close();resolve(true)};tx.onerror=()=>{db.close();reject(tx.error)}})}catch{return false}}
+function prepareAuditPhoto(file){return new Promise((resolve,reject)=>{if(!file||!file.type?.startsWith('image/'))return reject(new Error('Choose an image file.'));const reader=new FileReader();reader.onerror=()=>reject(reader.error||new Error('Could not read photo.'));reader.onload=()=>{const img=new Image();img.onerror=()=>reject(new Error('Could not decode photo.'));img.onload=()=>{const max=1280,scale=Math.min(1,max/Math.max(img.naturalWidth||1,img.naturalHeight||1));const w=Math.max(1,Math.round(img.naturalWidth*scale)),h=Math.max(1,Math.round(img.naturalHeight*scale));const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d');ctx.drawImage(img,0,0,w,h);let dataUrl='';try{dataUrl=c.toDataURL('image/webp',.82)}catch{}if(!dataUrl||dataUrl==='data:,')dataUrl=c.toDataURL('image/jpeg',.82);resolve({dataUrl,name:file.name||'audit-photo.jpg',width:w,height:h,originalBytes:file.size||0})};img.src=String(reader.result||'')};reader.readAsDataURL(file)})}
+function renderPendingQrTouchpointPhoto(){const host=document.getElementById('qrTouchpointPhotoPreview'),clear=document.getElementById('clearQrTouchpointPhotoBtn');if(!host)return;host.classList.toggle('hidden',!pendingQrTouchpointPhoto);clear?.classList.toggle('hidden',!pendingQrTouchpointPhoto);host.innerHTML=pendingQrTouchpointPhoto?`<img src="${escapeHtml(pendingQrTouchpointPhoto.dataUrl)}" alt="Audit photo preview"><span>${escapeHtml(pendingQrTouchpointPhoto.name||'Audit photo ready')}</span>`:''}
+async function selectQrTouchpointPhoto(file){if(!file)return;const host=document.getElementById('qrTouchpointPhotoPreview');if(host){host.classList.remove('hidden');host.textContent='Preparing photo…'}try{pendingQrTouchpointPhoto=await prepareAuditPhoto(file);renderPendingQrTouchpointPhoto()}catch(error){pendingQrTouchpointPhoto=null;if(host)host.textContent=`Photo could not be prepared: ${error.message||error}`}}
+function clearPendingQrTouchpointPhoto(){pendingQrTouchpointPhoto=null;['qrTouchpointCameraInput','qrTouchpointPhotoInput'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});renderPendingQrTouchpointPhoto()}
 function welcomeSectionUrl(section='home'){
   const base=welcomePublicUrl();
-  try{
-    const u=new URL(base);
-    const hash=u.hash.replace(/^#/,'');
-    const params=new URLSearchParams(hash);
-    params.set('s',section||'home');
-    u.hash=params.toString();
-    return u.href;
-  }catch{return base}
+  try{const u=new URL(base);const hash=u.hash.replace(/^#/,'');const params=new URLSearchParams(hash);params.set('s',section||'home');u.hash=params.toString();return u.href}catch{return base}
 }
 function qrTouchpointPriorityLabel(priority){return priority==='high'?'High priority':priority==='low'?'Low priority':'Medium priority'}
+async function hydrateQrTouchpointPhotos(){const cards=[...document.querySelectorAll('#qrTouchpointList [data-touchpoint-photo-key]')];await Promise.all(cards.map(async el=>{const key=el.dataset.touchpointPhotoKey;if(!key)return;const asset=await getAuditAsset(key);if(asset?.dataUrl){el.src=asset.dataUrl;el.classList.remove('hidden')}}))}
 function renderQrTouchpoints(){
-  const host=document.getElementById('qrTouchpointList'),summary=document.getElementById('qrTouchpointSummary');
-  if(!host)return;
-  const items=getQrTouchpoints();
-  if(summary){
-    const high=items.filter(x=>x.priority==='high').length;
-    summary.textContent=items.length?`${items.length} touchpoint${items.length===1?'':'s'} recorded${high?` · ${high} high priority`:''}.`:'No touchpoints recorded yet.';
-  }
-  if(!items.length){
-    host.innerHTML='<div class="qr-touchpoint-empty">Walk the property with the manager and add opportunities as you see them.</div>';
-    return;
-  }
-  const shared=sharedBackendCanUseStableLink();
-  host.innerHTML=items.map(item=>{
-    const url=welcomeSectionUrl(item.destination||'home');
-    const qr=`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&format=png&data=${encodeURIComponent(url)}`;
-    return `<article class="qr-touchpoint-card" data-touchpoint-id="${escapeHtml(item.id)}">
-      <div class="qr-touchpoint-main">
-        <div class="qr-touchpoint-flags"><div class="qr-touchpoint-priority ${escapeHtml(item.priority||'medium')}">${escapeHtml(qrTouchpointPriorityLabel(item.priority))}</div><div class="qr-touchpoint-mode ${shared?'shared':'snapshot'}">${shared?'Permanent shared QR':'Local snapshot QR'}</div></div>
-        <strong>${escapeHtml(item.location||'Property touchpoint')}</strong>
-        <span>${escapeHtml(item.existing||'Existing guest information')}</span>
-        <div class="qr-touchpoint-destination">→ ${escapeHtml(QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home')}</div>
-        ${item.note?`<p>${escapeHtml(item.note)}</p>`:''}
-        <div class="qr-touchpoint-sticker">${escapeHtml(item.label||'Scan for details')}</div>
-      </div>
-      <img class="qr-touchpoint-qr" src="${escapeHtml(qr)}" alt="QR preview for ${escapeHtml(item.location||'touchpoint')}">
-      <div class="qr-touchpoint-actions">
-        <a href="${escapeHtml(url)}" target="_blank" rel="noopener">Open destination</a>
-        <button type="button" data-copy-touchpoint="${escapeHtml(item.id)}">Copy link</button>
-        <button type="button" class="text-danger" data-remove-touchpoint="${escapeHtml(item.id)}">Remove</button>
-      </div>
-    </article>`;
-  }).join('');
+  const host=document.getElementById('qrTouchpointList'),summary=document.getElementById('qrTouchpointSummary');if(!host)return;
+  const items=getQrTouchpoints();if(summary){const high=items.filter(x=>x.priority==='high').length;summary.textContent=items.length?`${items.length} touchpoint${items.length===1?'':'s'} recorded${high?` · ${high} high priority`:''}.`:'No touchpoints recorded yet.'}
+  if(!items.length){host.innerHTML='<div class="qr-touchpoint-empty">Walk the property with the manager and add opportunities as you see them.</div>';return}
+  const shared=sharedBackendCanUseStableLink();host.innerHTML=items.map(item=>{const url=welcomeSectionUrl(item.destination||'home');const qr=`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&format=png&data=${encodeURIComponent(url)}`;return `<article class="qr-touchpoint-card" data-touchpoint-id="${escapeHtml(item.id)}">
+      ${item.photoKey?`<img class="qr-touchpoint-photo hidden" data-touchpoint-photo-key="${escapeHtml(item.photoKey)}" alt="Audit location photo">`:''}
+      <div class="qr-touchpoint-main"><div class="qr-touchpoint-flags"><div class="qr-touchpoint-priority ${escapeHtml(item.priority||'medium')}">${escapeHtml(qrTouchpointPriorityLabel(item.priority))}</div><div class="qr-touchpoint-mode ${shared?'shared':'snapshot'}">${shared?'Permanent shared QR':'Local snapshot QR'}</div></div><strong>${escapeHtml(item.location||'Property touchpoint')}</strong><span>${escapeHtml(item.existing||'Existing guest information')}</span><div class="qr-touchpoint-destination">→ ${escapeHtml(QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home')}</div>${item.note?`<p>${escapeHtml(item.note)}</p>`:''}<div class="qr-touchpoint-sticker">${escapeHtml(item.label||'Scan for details')}</div></div>
+      <img class="qr-touchpoint-qr" src="${escapeHtml(qr)}" alt="QR preview for ${escapeHtml(item.location||'touchpoint')}"><div class="qr-touchpoint-actions"><a href="${escapeHtml(url)}" target="_blank" rel="noopener">Open destination</a><button type="button" data-copy-touchpoint="${escapeHtml(item.id)}">Copy link</button><button type="button" class="text-danger" data-remove-touchpoint="${escapeHtml(item.id)}">Remove</button></div></article>`}).join('');hydrateQrTouchpointPhotos()
 }
-function addQrTouchpoint(){
-  const value=id=>document.getElementById(id)?.value?.trim?.()||'';
-  const location=value('qrTouchpointLocation'),existing=value('qrTouchpointExisting');
-  if(!location&&!existing){
-    const el=document.getElementById('qrTouchpointLocation');if(el){el.focus();el.placeholder='Add a location or existing item first';}
-    return;
-  }
-  const item={
-    id:papaGolfStableId('touchpoint'),gatewayId:sharedGateway()?.id||'',
-    location,existing,destination:value('qrTouchpointDestination')||'home',
-    label:value('qrTouchpointLabel')||'Scan for details',
-    priority:value('qrTouchpointPriority')||'medium',note:value('qrTouchpointNote'),
-    createdAt:new Date().toISOString()
-  };
-  const items=getQrTouchpoints();items.unshift(item);saveQrTouchpoints(items);
-  ['qrTouchpointLocation','qrTouchpointExisting','qrTouchpointLabel','qrTouchpointNote'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
-  renderQrTouchpoints();
+async function addQrTouchpoint(){
+  const value=id=>document.getElementById(id)?.value?.trim?.()||'',location=value('qrTouchpointLocation'),existing=value('qrTouchpointExisting');if(!location&&!existing){const el=document.getElementById('qrTouchpointLocation');if(el){el.focus();el.placeholder='Add a location or existing item first'}return}
+  const item={id:papaGolfStableId('touchpoint'),gatewayId:sharedGateway()?.id||'',location,existing,destination:value('qrTouchpointDestination')||'home',label:value('qrTouchpointLabel')||'Scan for details',priority:value('qrTouchpointPriority')||'medium',note:value('qrTouchpointNote'),createdAt:new Date().toISOString()};
+  if(pendingQrTouchpointPhoto){item.photoKey=`audit-${item.id}`;await saveAuditAsset(item.photoKey,pendingQrTouchpointPhoto.dataUrl,{name:pendingQrTouchpointPhoto.name,width:pendingQrTouchpointPhoto.width,height:pendingQrTouchpointPhoto.height})}
+  const items=getQrTouchpoints();items.unshift(item);saveQrTouchpoints(items);['qrTouchpointLocation','qrTouchpointExisting','qrTouchpointLabel','qrTouchpointNote'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});clearPendingQrTouchpointPhoto();renderQrTouchpoints()
 }
-async function copyQrTouchpointLink(id){
-  const item=getQrTouchpoints().find(x=>x.id===id);if(!item)return;
-  const url=welcomeSectionUrl(item.destination||'home');
-  try{await navigator.clipboard.writeText(url)}catch{}
-}
-function removeQrTouchpoint(id){
-  const items=getQrTouchpoints().filter(x=>x.id!==id);saveQrTouchpoints(items);renderQrTouchpoints();
-}
+async function copyQrTouchpointLink(id){const item=getQrTouchpoints().find(x=>x.id===id);if(!item)return;const url=welcomeSectionUrl(item.destination||'home');try{await navigator.clipboard.writeText(url)}catch{}}
+async function removeQrTouchpoint(id){const item=getQrTouchpoints().find(x=>x.id===id);if(item?.photoKey)await deleteAuditAsset(item.photoKey);const items=getQrTouchpoints().filter(x=>x.id!==id);saveQrTouchpoints(items);renderQrTouchpoints()}
+async function buildQrAuditReport(){const host=document.getElementById('qrAuditReportContent');if(!host)return;const items=getQrTouchpoints(),d=effectiveWelcome(),high=items.filter(x=>x.priority==='high').length,withPhoto=items.filter(x=>x.photoKey).length;host.innerHTML=`<header class="qr-report-head"><div class="eyebrow">PAPA GOLF · PROPERTY INFORMATION UPGRADE</div><h1>${escapeHtml(d.propertyName||d.name||'Property walkthrough')}</h1><p>${escapeHtml(d.locationLabel||d.address||'')}</p></header><section class="qr-report-summary"><strong>${items.length} opportunity${items.length===1?'':'ies'} identified</strong><span>${high} high priority · ${withPhoto} photographed · existing signage can remain in place where suitable.</span></section><section class="qr-report-items">${items.map((item,i)=>{const url=welcomeSectionUrl(item.destination||'home');const qr=`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&format=png&data=${encodeURIComponent(url)}`;return `<article class="qr-report-item"><div class="qr-report-number">${i+1}</div><div class="qr-report-photo-wrap">${item.photoKey?`<img class="qr-report-photo" data-report-photo-key="${escapeHtml(item.photoKey)}" alt="${escapeHtml(item.location||'Audit location')}">`:'<div class="qr-report-photo-empty">No audit photo</div>'}</div><div class="qr-report-copy"><h2>${escapeHtml(item.location||'Property touchpoint')}</h2><p>${escapeHtml(item.existing||'Existing guest information')}</p><strong>Recommended destination: ${escapeHtml(QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home')}</strong><span>Sticker: “${escapeHtml(item.label||'Scan for details')}”</span>${item.note?`<small>${escapeHtml(item.note)}</small>`:''}<a class="no-print" href="${escapeHtml(url)}" target="_blank" rel="noopener">Open guest demo</a></div><img class="qr-report-qr" src="${escapeHtml(qr)}" alt="QR demo"></article>`}).join('')}</section><footer>Prepared with Papa Golf Platform · Proposal / walkthrough record</footer>`;await Promise.all([...host.querySelectorAll('[data-report-photo-key]')].map(async img=>{const a=await getAuditAsset(img.dataset.reportPhotoKey);if(a?.dataUrl)img.src=a.dataUrl}))}
+async function openQrAuditReport(printAfter=false){const dialog=document.getElementById('qrAuditReportDialog');if(!dialog)return;await buildQrAuditReport();if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');if(printAfter)setTimeout(()=>window.print(),120)}
 
 
 function getPapaGolfPhotoPlaceLinks(){
@@ -3435,6 +3402,8 @@ function applyPapaGolfRoute(route){
     document.getElementById('photosTabBtn')?.classList.add('active');
     window.scrollTo(0,0);return;
   }
+  if(route==='map-view'){welcomeShow(document.getElementById('mapView'));document.getElementById('mapTabBtn')?.classList.add('active');return}
+  if(route==='areas-view'){welcomeShow(document.getElementById('areasView'));document.getElementById('areasTabBtn')?.classList.add('active');return}
   if(route==='welcome-admin'){welcomeShow(page);return}
   if(route==='guest-home'){welcomeShow(preview);showGuestWelcomeHome();return}
   if(route.startsWith('guest-panel:')){welcomeShow(preview);openGuestWelcomePanel(route.slice('guest-panel:'.length));return}
@@ -5036,6 +5005,7 @@ function initWelcomeModule(){
   open?.addEventListener('click',()=>{loadWelcomeEditor();window.papaGolfCollapseAdminSections?.();pushPapaGolfRoute('welcome-admin')});
 
   document.getElementById('welcomeBackBtn')?.addEventListener('click',papaGolfGoBack);
+  document.getElementById('welcomeHomeBtn')?.addEventListener('click',papaGolfGoHome);
   document.getElementById('homeReturnBackBtn')?.addEventListener('click',papaGolfGoBack);
   document.getElementById('welcomeGuestBackBtn')?.addEventListener('click',papaGolfGoBack);
   document.getElementById('welcomeGuestHomeBtn')?.addEventListener('click',papaGolfGoHome);
@@ -5095,6 +5065,13 @@ function initWelcomeModule(){
   renderPapaGolfGatewayManager();
   renderQrTouchpoints();
   document.getElementById('addQrTouchpointBtn')?.addEventListener('click',addQrTouchpoint);
+  document.getElementById('qrTouchpointCameraInput')?.addEventListener('change',e=>selectQrTouchpointPhoto(e.target.files?.[0]));
+  document.getElementById('qrTouchpointPhotoInput')?.addEventListener('change',e=>selectQrTouchpointPhoto(e.target.files?.[0]));
+  document.getElementById('clearQrTouchpointPhotoBtn')?.addEventListener('click',clearPendingQrTouchpointPhoto);
+  document.getElementById('previewQrAuditReportBtn')?.addEventListener('click',()=>openQrAuditReport(false));
+  document.getElementById('printQrAuditReportBtn')?.addEventListener('click',()=>openQrAuditReport(true));
+  document.getElementById('qrAuditReportCloseBtn')?.addEventListener('click',()=>document.getElementById('qrAuditReportDialog')?.close?.());
+  document.getElementById('qrAuditReportPrintBtn')?.addEventListener('click',()=>window.print());
   document.getElementById('qrTouchpointList')?.addEventListener('click',event=>{
     const copy=event.target.closest('[data-copy-touchpoint]');
     if(copy){copyQrTouchpointLink(copy.dataset.copyTouchpoint);const old=copy.textContent;copy.textContent='Copied ✓';setTimeout(()=>copy.textContent=old,1200);return}
@@ -5146,6 +5123,7 @@ function initWelcomeModule(){
     setTimeout(()=>printWelcomeA5(),120);
   });
   document.getElementById('welcomeA5BackBtn')?.addEventListener('click',papaGolfGoBack);
+  document.getElementById('welcomeA5HomeBtn')?.addEventListener('click',papaGolfGoHome);
   document.getElementById('welcomeA5PrintBtn')?.addEventListener('click',printWelcomeA5);
   document.getElementById('saveSharedBackendBtn')?.addEventListener('click',saveSharedBackendSettings);
   document.getElementById('createSharedOwnerBtn')?.addEventListener('click',testSharedBackend);
@@ -5212,11 +5190,7 @@ function initWelcomeModule(){
   });
 
   ['photosTabBtn','mapTabBtn','areasTabBtn'].forEach(id=>{
-    document.getElementById(id)?.addEventListener('click',()=>{
-      page?.classList.add('hidden');preview?.classList.add('hidden');
-      document.querySelector('.library-tools')?.classList.remove('hidden');
-      papaGolfCurrentRoute=id==='photosTabBtn'?'photos-home':id==='mapTabBtn'?'map-view':'areas-view';
-    });
+    document.getElementById(id)?.addEventListener('click',()=>pushPapaGolfRoute(id==='photosTabBtn'?'photos-home':id==='mapTabBtn'?'map-view':'areas-view'));
   });
 }
 window.addEventListener('DOMContentLoaded',initWelcomeModule);

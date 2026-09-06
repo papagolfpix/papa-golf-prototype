@@ -54,7 +54,7 @@ check(app.includes('finishWelcomeEdit'),'Welcome save flow returns to compact ow
 check(app.includes('PAPA_GOLF_WELCOME_SCHEMA_VERSION'),'canonical Welcome schema version declared');
 check(app.includes('buildCanonicalWelcomeModel'),'backend-ready canonical Welcome model builder retained');
 check(app.includes('ensureWelcomeModelIdentity'),'stable property/unit identity migration retained');
-check(app.includes('version: 10'),'backup format v10 includes consolidated Welcome model and QR touchpoints');
+check(app.includes('version: 11'),'backup format v11 includes consolidated Welcome model, QR touchpoints and audit photos');
 check(app.includes('v:4,s:PAPA_GOLF_WELCOME_SCHEMA_VERSION'),'public Welcome payload v4 carries schema version');
 check(publicWelcome.includes('stayPanel')&&publicWelcome.includes('arrivalInfo'),'standalone public Welcome supports structured stay details');
 // v0.39.0 compact guest navigation / personalization foundation
@@ -106,6 +106,18 @@ check(html.includes('id="homeReturnBackBtn"')&&html.includes('pg-home-return-bac
 check(app.includes('function syncPapaGolfHomeReturnNav()')&&app.includes("papaGolfCurrentRoute==='photos-home' && readPapaGolfNavHistory().length>0"),'Home return Back appears only when an in-app route exists');
 check(app.includes("document.getElementById('homeReturnBackBtn')?.addEventListener('click',papaGolfGoBack)"),'Home return Back uses the same Papa Golf navigation stack');
 check(read('styles.css').includes('.pg-home-return-back')&&read('styles.css').includes('min-width:44px'),'Home return Back retains a comfortable touch target');
+
+
+// v0.42.0 navigation normalization + audit photos/reports
+check(html.includes('id="welcomeHomeBtn" class="pg-round-nav-btn')&&html.includes('id="welcomeA5HomeBtn" class="pg-round-nav-btn'),'Welcome admin and A5 preview use standard round Home controls');
+check(!html.includes('id="welcomeBackBtn" class="secondary-btn"')&&!html.includes('id="welcomeA5BackBtn" class="secondary-btn"'),'legacy large Welcome Back buttons removed');
+for(const id of ['qrTouchpointCameraInput','qrTouchpointPhotoInput','clearQrTouchpointPhotoBtn','previewQrAuditReportBtn','printQrAuditReportBtn','qrAuditReportDialog']) check(html.includes(`id="${id}"`),`audit photo/report UI present: ${id}`);
+check(app.includes("PAPA_GOLF_AUDIT_ASSET_DB='papa-golf-audit-assets-v01'")&&app.includes('prepareAuditPhoto'),'private audit photo asset store and compression present');
+check(app.includes('auditPhotoAssets:')&&app.includes('welcome.auditPhotoAssets'),'backup and restore include audit photo assets');
+check(app.includes('version: 11'),'backup format advanced to v11');
+check(app.includes('function buildQrAuditReport()')&&app.includes('Open guest demo'),'manager-facing audit report includes live demo destination');
+check(app.includes("pushPapaGolfRoute(id==='photosTabBtn'?'photos-home':id==='mapTabBtn'?'map-view':'areas-view')"),'main tabs participate in Papa Golf navigation history');
+check(read('styles.css').includes('.qr-audit-report-dialog')&&read('styles.css').includes('.qr-touchpoint-photo-preview'),'audit report and photo capture have responsive styling');
 
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');
