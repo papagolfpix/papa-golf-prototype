@@ -90,3 +90,13 @@
 body.public-menu-dragging{user-select:none;-webkit-user-select:none}
 body.public-menu-dragging .menu-grid{isolation:isolate}
 @media(prefers-reduced-motion:reduce){.menu-row.is-reordering{transform:none}.menu-placeholder{transition:none}}
+
+
+/* v0.41.0 compact public Quick Essentials — same readable density as owner preview */
+.quick-card{padding:12px;margin-bottom:14px;border-radius:16px}
+.section-title{font-size:19px;margin:0 0 8px 2px}
+.quick-action{display:grid;grid-template-columns:38px minmax(0,1fr) 20px;align-items:center;gap:9px;min-height:56px;padding:7px 9px;margin:6px 0;border-radius:13px}
+.quick-action>span{display:grid;place-items:center;width:38px;height:38px;font-size:25px}
+.quick-action strong{font-size:17px;line-height:1.15}.quick-action small{font-size:13px;line-height:1.15;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quick-action::after{content:'›';font-size:25px;line-height:1;color:#e0bc66;text-align:center}
+@media(max-width:390px){.quick-action{min-height:54px}}

@@ -1,4 +1,29 @@
-## v0.40.0 — Property walkthrough & physical QR touchpoints
+## v0.41.0 — Contextual Back/Home navigation + Welcome density polish
+
+This update fixes the owner Guest Preview navigation dead-end and establishes a reusable Papa Golf navigation foundation.
+
+### Owner Guest Preview navigation
+- Replaces the large text “Edit Welcome” control with two compact round controls at top-left:
+  - Back: returns through Papa Golf’s own in-app route history.
+  - Home: jumps to the main Papa Golf Photos landing screen.
+- Back and Home use 44–46px touch targets and remain visible while scrolling.
+- Navigation history is kept in sessionStorage only; it contains route names, not guest/property data.
+- Back from a guest detail returns to the guest menu; another Back returns to Welcome admin.
+- Home is itself reversible with Back, so a user can jump home and return to where they were.
+- A refresh/restore fallback prevents an owner Guest Preview from becoming a dead-end even if Safari restores the preview DOM state without the JS route state.
+- Standalone public Welcome pages do not receive owner/admin Back or Home controls.
+
+### Quick Essentials
+- Owner Guest Preview Quick Essentials rows are significantly more compact without shrinking readable text.
+- The public Welcome page gets the matching density treatment.
+- Wi-Fi, location and host remain large enough for comfortable iPhone taps and now use consistent chevrons.
+
+### Preserved
+- v0.40 Property Walkthrough / QR Touchpoints.
+- Reorder persistence and tactile lift/reflow.
+- Help & Emergency protection.
+- Firebase Shared Data setup assistant and security model.
+- Backup v10, IndexedDB/photo data, Safari Blob hardening and Brand Kit asset protections.
 
 - Added a private **Property Walkthrough · QR Touchpoints** tool under Gateways & A5 / QR.
 - During a hotel/villa walkthrough, Papa Golf can now record the physical location, existing sign/menu/poster, intended digital destination, sticker wording, priority and notes.

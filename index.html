@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.40.0" />
+<link rel="stylesheet" href="styles.css?v=0.41.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.40.0</div>
+      <div class="eyebrow">PAPA GOLF · V0.41.0</div>
       <h1>Papa Golf Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -493,7 +493,10 @@
 
 <section id="welcomeGuestPreview" class="screen hidden">
   <div class="welcome-guest-topbar">
-    <button id="welcomeGuestBackBtn" class="secondary-btn">← Edit Welcome</button>
+    <div class="pg-preview-nav" aria-label="Papa Golf navigation">
+      <button id="welcomeGuestBackBtn" class="pg-round-nav-btn" type="button" aria-label="Back" title="Back">‹</button>
+      <button id="welcomeGuestHomeBtn" class="pg-round-nav-btn" type="button" aria-label="Papa Golf home" title="Papa Golf home">⌂</button>
+    </div>
     <button id="guestTopHelpBtn" class="guest-top-help" type="button" data-welcome-panel="guestEmergencyPanel">🆘 Help</button>
   </div>
 
@@ -802,6 +805,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.40.0" defer></script>
+  <script src="app.js?v=0.41.0" defer></script>
 </body>
 </html>

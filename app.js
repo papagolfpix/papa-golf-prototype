@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.40.0';
+const RUNTIME_VERSION = '0.41.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2698,7 +2698,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.40.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.41.0', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3385,6 +3385,55 @@ function welcomeShow(target){
   if(target===welcome)document.getElementById('openWelcomeModuleBtn')?.classList.add('active');
   window.scrollTo(0,0);
 }
+
+const PG_NAV_HISTORY_KEY = 'papaGolfNavHistoryV1';
+let papaGolfCurrentRoute = 'photos-home';
+function readPapaGolfNavHistory(){
+  try{const v=JSON.parse(sessionStorage.getItem(PG_NAV_HISTORY_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return []}
+}
+function writePapaGolfNavHistory(v){
+  try{sessionStorage.setItem(PG_NAV_HISTORY_KEY,JSON.stringify(v.slice(-30)))}catch{}
+}
+function pushPapaGolfRoute(route){
+  if(!route||route===papaGolfCurrentRoute)return;
+  const h=readPapaGolfNavHistory();
+  h.push(papaGolfCurrentRoute);
+  writePapaGolfNavHistory(h);
+  papaGolfCurrentRoute=route;
+  applyPapaGolfRoute(route);
+}
+function replacePapaGolfRoute(route){papaGolfCurrentRoute=route;applyPapaGolfRoute(route)}
+function papaGolfGoBack(){
+  const preview=document.getElementById('welcomeGuestPreview');
+  if(papaGolfCurrentRoute==='photos-home' && preview && !preview.classList.contains('hidden')){
+    papaGolfCurrentRoute='welcome-admin';applyPapaGolfRoute('welcome-admin');return;
+  }
+  const h=readPapaGolfNavHistory();
+  const previous=h.pop();
+  writePapaGolfNavHistory(h);
+  if(previous){papaGolfCurrentRoute=previous;applyPapaGolfRoute(previous);return}
+  if(papaGolfCurrentRoute.startsWith('guest-panel:')){papaGolfCurrentRoute='guest-home';applyPapaGolfRoute('guest-home');return}
+  if(papaGolfCurrentRoute==='guest-home'){papaGolfCurrentRoute='welcome-admin';applyPapaGolfRoute('welcome-admin');return}
+  papaGolfCurrentRoute='photos-home';applyPapaGolfRoute('photos-home');
+}
+function papaGolfGoHome(){pushPapaGolfRoute('photos-home')}
+function applyPapaGolfRoute(route){
+  const page=document.getElementById('welcomeModule'),preview=document.getElementById('welcomeGuestPreview'),a5=document.getElementById('welcomeA5Preview');
+  if(route==='photos-home'){
+    document.body.classList.remove('welcome-admin-mode','guest-preview-mode','welcome-a5-mode','guest-explore-mode');
+    [page,preview,a5,document.getElementById('mapView'),document.getElementById('areasView')].forEach(el=>el?.classList.add('hidden'));
+    document.getElementById('photosView')?.classList.remove('hidden');
+    document.querySelector('.library-tools')?.classList.remove('hidden');
+    document.querySelectorAll('.view-tab').forEach(el=>el.classList.remove('active'));
+    document.getElementById('photosTabBtn')?.classList.add('active');
+    window.scrollTo(0,0);return;
+  }
+  if(route==='welcome-admin'){welcomeShow(page);return}
+  if(route==='guest-home'){welcomeShow(preview);showGuestWelcomeHome();return}
+  if(route.startsWith('guest-panel:')){welcomeShow(preview);openGuestWelcomePanel(route.slice('guest-panel:'.length));return}
+  if(route==='welcome-a5'){welcomeShow(a5);return}
+}
+
 function welcomeSetupStatus(){
   const p=getWelcomeProperty(),u=getWelcomeUnit();
   const core=[
@@ -4977,18 +5026,11 @@ function initWelcomeModule(){
   const open=document.getElementById('openWelcomeModuleBtn'),page=document.getElementById('welcomeModule'),preview=document.getElementById('welcomeGuestPreview'),a5=document.getElementById('welcomeA5Preview');
   const googlePlacesInput=document.getElementById('welcomeGooglePlacesApiKey');
   if(googlePlacesInput)googlePlacesInput.value=getPapaGolfGooglePlacesKey();
-  open?.addEventListener('click',()=>{loadWelcomeEditor();window.papaGolfCollapseAdminSections?.();welcomeShow(page)});
+  open?.addEventListener('click',()=>{loadWelcomeEditor();window.papaGolfCollapseAdminSections?.();pushPapaGolfRoute('welcome-admin')});
 
-  document.getElementById('welcomeBackBtn')?.addEventListener('click',()=>{
-    document.body.classList.remove('welcome-admin-mode','guest-preview-mode','welcome-a5-mode');
-    page?.classList.add('hidden');preview?.classList.add('hidden');a5?.classList.add('hidden');
-    document.getElementById('photosView')?.classList.remove('hidden');
-    document.querySelector('.library-tools')?.classList.remove('hidden');
-    document.querySelectorAll('.view-tab').forEach(el=>el.classList.remove('active'));
-    document.getElementById('photosTabBtn')?.classList.add('active');
-    window.scrollTo(0,0);
-  });
-  document.getElementById('welcomeGuestBackBtn')?.addEventListener('click',()=>welcomeShow(page));
+  document.getElementById('welcomeBackBtn')?.addEventListener('click',papaGolfGoBack);
+  document.getElementById('welcomeGuestBackBtn')?.addEventListener('click',papaGolfGoBack);
+  document.getElementById('welcomeGuestHomeBtn')?.addEventListener('click',papaGolfGoHome);
 
   [['overrideWelcomeHost','welcomeUnitHost'],['overrideWelcomeEmergency','welcomeUnitEmergency']].forEach(([a,b])=>{
     document.getElementById(a)?.addEventListener('change',()=>welcomeToggle(a,b));
@@ -5071,7 +5113,7 @@ function initWelcomeModule(){
   });
 
   document.getElementById('welcomeReadinessPreviewBtn')?.addEventListener('click',()=>{
-    saveWelcomeProperty(); saveWelcomeUnit(); renderGuestWelcome(); welcomeShow(preview);
+    saveWelcomeProperty(); saveWelcomeUnit(); renderGuestWelcome(); pushPapaGolfRoute('guest-home');
   });
 
   document.getElementById('previewWelcomeGuestBtn')?.addEventListener('click',()=>{
@@ -5079,23 +5121,23 @@ function initWelcomeModule(){
     saveWelcomeUnit();
     saveWelcomeCategories();
     renderGuestWelcome();
-    welcomeShow(preview);
+    pushPapaGolfRoute('guest-home');
   });
 
   document.getElementById('previewWelcomeA5Btn')?.addEventListener('click',()=>{
     saveWelcomeProperty();
     saveWelcomeUnit();
     renderWelcomeA5();
-    welcomeShow(a5);
+    pushPapaGolfRoute('welcome-a5');
   });
   document.getElementById('printWelcomeA5Btn')?.addEventListener('click',()=>{
     saveWelcomeProperty();
     saveWelcomeUnit();
     renderWelcomeA5();
-    welcomeShow(a5);
+    pushPapaGolfRoute('welcome-a5');
     setTimeout(()=>printWelcomeA5(),120);
   });
-  document.getElementById('welcomeA5BackBtn')?.addEventListener('click',()=>welcomeShow(page));
+  document.getElementById('welcomeA5BackBtn')?.addEventListener('click',papaGolfGoBack);
   document.getElementById('welcomeA5PrintBtn')?.addEventListener('click',printWelcomeA5);
   document.getElementById('saveSharedBackendBtn')?.addEventListener('click',saveSharedBackendSettings);
   document.getElementById('createSharedOwnerBtn')?.addEventListener('click',testSharedBackend);
@@ -5149,8 +5191,8 @@ function initWelcomeModule(){
       return;
     }
     const tile=event.target.closest('[data-welcome-panel]');
-    if(tile){openGuestWelcomePanel(tile.dataset.welcomePanel);return}
-    if(event.target.closest('.guest-panel-back')){showGuestWelcomeHome();return}
+    if(tile){pushPapaGolfRoute('guest-panel:'+tile.dataset.welcomePanel);return}
+    if(event.target.closest('.guest-panel-back')){papaGolfGoBack();return}
     const filter=event.target.closest('[data-welcome-filter]');
     if(filter){
       welcomeActiveFilter=filter.dataset.welcomeFilter;
@@ -5165,6 +5207,7 @@ function initWelcomeModule(){
     document.getElementById(id)?.addEventListener('click',()=>{
       page?.classList.add('hidden');preview?.classList.add('hidden');
       document.querySelector('.library-tools')?.classList.remove('hidden');
+      papaGolfCurrentRoute=id==='photosTabBtn'?'photos-home':id==='mapTabBtn'?'map-view':'areas-view';
     });
   });
 }
