@@ -1769,3 +1769,7 @@ body.welcome-admin-mode #welcomeModule>.screen-header p{margin:.1rem 0 .45rem}
   .pg-section-toggle-copy span{font-size:12.5px;line-height:1.22}
 }
 @media(max-width:350px){.welcome-readiness-actions{grid-template-columns:1fr}}
+
+/* v0.44.1 guest-action deduplication + app-bar polish. */
+body.guest-preview-mode .guest-top-help{border:1px solid rgba(255,255,255,.16);background:#c92f2f;color:#fff;font-weight:800;-webkit-appearance:none;appearance:none}
+body.guest-preview-mode .guest-top-help:active{transform:scale(.97);background:#b52828}

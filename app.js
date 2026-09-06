@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.44.0';
+const RUNTIME_VERSION = '0.44.1';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2687,7 +2687,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.44.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.44.1', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3893,7 +3893,7 @@ function renderGuestActivities(){
   const strip=document.getElementById('guestTodayStrip');
   const stripSummary=document.getElementById('guestTodayStripSummary');
   if(strip){
-    strip.classList.toggle('hidden',!todayItems.length);
+    strip.classList.toggle('hidden',todayItems.length<2);
     if(stripSummary){
       const first=todayItems[0];
       const firstTime=first?.startTime?`${first.startTime} · `:'';

@@ -128,15 +128,21 @@ check(!html.includes('guest-panel-back'),'legacy per-panel Back buttons removed 
 check(!app.includes('syncPapaGolfHomeReturnNav')&&!app.includes("closest('.guest-panel-back')"),'obsolete navigation runtime removed');
 check(!publicWelcome.includes('pgGlobalNav')&&!publicWelcome.includes('pgGlobalBackBtn'),'public Welcome does not expose owner/admin global navigation');
 
+// v0.44.0 UI consolidation / dead-code cleanup
+check(!html.includes('welcomeReadinessHint'),'redundant Welcome readiness hint removed');
+for(const legacy of ['guestExploreBackBtn','welcomeA5HomeBtn']) check(!app.includes(legacy),`obsolete runtime navigation reference removed: ${legacy}`);
+for(const dead of ['relatedInheritedPlaceholder','blobsToDataUrls','getResolvedWelcomePartners','replacePapaGolfRoute','welcomeEnabledAutomaticCategories','welcomeBearingDeg','welcomePlaceDetailLine']) check(!app.includes(`function ${dead}`),`unused legacy helper removed: ${dead}`);
+check(styles.includes('v0.44.0 UI consolidation'),'v0.44.0 compact Welcome admin rules present');
+
+// v0.44.1 guest-action deduplication / app-bar polish
+check(app.includes("strip.classList.toggle('hidden',todayItems.length<2)"),'owner preview suppresses redundant Today shortcut for a single event');
+check(publicWelcomeJs.includes("strip.classList.toggle('hidden',todayItems.length<2)"),'public Welcome suppresses redundant Today shortcut for a single event');
+check(styles.includes('v0.44.1 guest-action deduplication + app-bar polish'),'explicit Guest Preview app-bar Help styling present');
+check(styles.includes('background:#c92f2f;color:#fff'),'SOS Help retains protected red visual treatment');
+
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');
   for(const x of fail) console.error('✗',x);
   process.exit(1);
 }
 console.log(`\nPapa Golf validation passed for v${v}.`);
-
-// v0.44.0 UI consolidation / dead-code cleanup
-check(!html.includes('welcomeReadinessHint'),'redundant Welcome readiness hint removed');
-for(const legacy of ['guestExploreBackBtn','welcomeA5HomeBtn']) check(!app.includes(legacy),`obsolete runtime navigation reference removed: ${legacy}`);
-for(const dead of ['relatedInheritedPlaceholder','blobsToDataUrls','getResolvedWelcomePartners','replacePapaGolfRoute','welcomeEnabledAutomaticCategories','welcomeBearingDeg','welcomePlaceDetailLine']) check(!app.includes(`function ${dead}`),`unused legacy helper removed: ${dead}`);
-check(styles.includes('v0.44.0 UI consolidation'),'v0.44.0 compact Welcome admin rules present');

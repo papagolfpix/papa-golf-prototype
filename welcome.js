@@ -62,7 +62,7 @@ function renderActivities(items){
   const summary=document.getElementById('whatsOnSummary');if(summary)summary.textContent=todayItems.length?`${todayItems.length} ${todayItems.length===1?'activity':'activities'} today`:'Weekly activities';
   const strip=document.getElementById('publicTodayStrip'),stripSummary=document.getElementById('publicTodayStripSummary');
   if(strip){
-    strip.classList.toggle('hidden',!todayItems.length);
+    strip.classList.toggle('hidden',todayItems.length<2);
     if(stripSummary){const first=todayItems[0],firstTime=first?.startTime?`${first.startTime} · `:'',extra=todayItems.length>1?` + ${todayItems.length-1} more`:'';stripSummary.textContent=todayItems.length?`${firstTime}${first.title}${extra}`:''}
   }
 }
