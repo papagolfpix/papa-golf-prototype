@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.38.0';
+const RUNTIME_VERSION = '0.39.0';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2696,7 +2696,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.38.0', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.39.0', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -3675,6 +3675,30 @@ function addWelcomePartner(){
   const picker=document.getElementById('welcomeExistingPlaceSelect');if(picker)picker.value='';
   renderWelcomePartnerEditor(); renderWelcomeExistingPlacePicker(); renderPapaGolfPlaceStatus(); renderGuestWelcome();
 }
+
+const GUEST_WELCOME_ORDER_KEY='papaGolfGuestWelcomeOrderV1';
+function welcomeMenuOrder(){try{const v=JSON.parse(localStorage.getItem(GUEST_WELCOME_ORDER_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return []}}
+function applyWelcomeMenuOrder(root=document){
+  root.querySelectorAll('[data-reorder-list="welcome"]').forEach(list=>{
+    const rows=[...list.querySelectorAll('[data-menu-key]')],byKey=new Map(rows.map(x=>[x.dataset.menuKey,x]));
+    const order=welcomeMenuOrder();order.forEach(k=>{const row=byKey.get(k);if(row)list.appendChild(row)});
+    rows.filter(x=>!order.includes(x.dataset.menuKey)).forEach(x=>list.appendChild(x));
+    const system=list.querySelector('.guest-system-tile');if(system)list.appendChild(system);
+  });
+}
+function saveWelcomeMenuOrder(list){try{localStorage.setItem(GUEST_WELCOME_ORDER_KEY,JSON.stringify([...list.querySelectorAll('[data-menu-key]')].map(x=>x.dataset.menuKey)))}catch{}}
+function setupWelcomeMenuReorder(root=document){
+  applyWelcomeMenuOrder(root);
+  root.querySelectorAll('[data-reorder-list="welcome"]').forEach(list=>{
+    if(list.dataset.reorderReady==='1')return;list.dataset.reorderReady='1';let active=null,moved=false;
+    list.addEventListener('pointerdown',e=>{const h=e.target.closest('.guest-menu-drag');if(!h)return;e.preventDefault();e.stopPropagation();active=h.closest('[data-menu-key]');moved=false;active?.classList.add('is-reordering');try{h.setPointerCapture(e.pointerId)}catch{}});
+    list.addEventListener('pointermove',e=>{if(!active)return;e.preventDefault();moved=true;const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-menu-key]');if(!hit||hit===active||hit.parentElement!==list)return;const r=hit.getBoundingClientRect();list.insertBefore(active,e.clientY<r.top+r.height/2?hit:hit.nextSibling)});
+    const finish=e=>{if(!active)return;e?.preventDefault();e?.stopPropagation();active.classList.remove('is-reordering');saveWelcomeMenuOrder(list);active=null;setTimeout(()=>{moved=false},80)};
+    list.addEventListener('pointerup',finish);list.addEventListener('pointercancel',finish);
+    list.addEventListener('click',e=>{if(e.target.closest('.guest-menu-drag')){e.preventDefault();e.stopPropagation()}});
+    list.addEventListener('keydown',e=>{const h=e.target.closest('.guest-menu-drag');if(!h||!['ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();e.stopPropagation();const row=h.closest('[data-menu-key]');const peers=[...list.querySelectorAll('[data-menu-key]')];const i=peers.indexOf(row),j=e.key==='ArrowUp'?i-1:i+1;if(j<0||j>=peers.length)return;if(e.key==='ArrowUp')list.insertBefore(row,peers[j]);else list.insertBefore(row,peers[j].nextSibling);saveWelcomeMenuOrder(list);h.focus()});
+  });
+}
 function showGuestWelcomeHome(){
   document.body.classList.remove('guest-explore-mode');
   document.querySelector('#welcomeGuestPreview .guest-welcome-shell')?.classList.remove('explore-focused');
@@ -3724,6 +3748,7 @@ function renderGuestActivities(){
   const weekly=document.getElementById('guestWeeklyActivities');if(weekly)weekly.innerHTML=[1,2,3,4,5,6,0].map(day=>{const rows=items.filter(x=>(x.days||[]).map(Number).includes(day)).sort((a,b)=>String(a.startTime||'').localeCompare(String(b.startTime||'')));return rows.length?`<section class="welcome-preview-day-group"><h4>${welcomeDayLabel(day)}</h4>${rows.map(welcomeActivityPublicCard).join('')}</section>`:''}).join('')||'<div class="guest-info-card"><p class="muted">No weekly activities have been published yet.</p></div>';
 }
 function renderGuestWelcome(){
+  setupWelcomeMenuReorder(document);
   const d=effectiveWelcome();
   const vis={...WELCOME_DEFAULT_UNIT.presentation,...(d.presentation||{})};
   const logo=document.getElementById('guestWelcomeLogo');

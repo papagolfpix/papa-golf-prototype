@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111111">
   <title>Papa Golf Villa Welcome</title>
-  <link rel="stylesheet" href="welcome.css?v=0.38.0">
+  <link rel="stylesheet" href="welcome.css?v=0.39.0">
 </head>
 <body>
   <main class="public-welcome-shell">
@@ -32,16 +32,16 @@
 
       <button id="publicTodayStrip" class="today-strip hidden" data-panel="whatsOnPanel" type="button" aria-label="Open today’s activities"><span class="today-strip-icon">📅</span><span class="today-strip-copy"><strong>Today at your stay</strong><small id="publicTodayStripSummary"></small></span><span class="today-strip-chevron">›</span></button>
 
-      <nav class="menu-grid" aria-label="Villa welcome menu">
-        <button data-panel="villaPanel"><span>🏠</span><strong>Villa Guide</strong><small>House info & contacts</small></button>
-        <button data-panel="nearbyPanel"><span>🗺</span><strong>Explore Nearby</strong><small>Useful places & directions</small></button>
-        <button id="stayTile" data-panel="stayPanel"><span>🕒</span><strong>Stay Details</strong><small>Arrival, facilities & notices</small></button>
-        <button id="whatsOnTile" data-panel="whatsOnPanel"><span>📅</span><strong>What’s On</strong><small id="whatsOnSummary">Today & weekly activities</small></button>
-        <button id="foodTile" data-panel="foodPanel"><span>🍽</span><strong>Food & Drink</strong><small>Food, delivery & approved places</small></button>
-        <button id="wellnessTile" data-panel="wellnessPanel"><span>🌺</span><strong>Wellness</strong><small>Massage, spa & treatments</small></button>
-        <button id="toursTile" data-panel="toursPanel"><span>⛵</span><strong>Tours & Experiences</strong><small>Trips, excursions & things to do</small></button>
-        <button id="transportTile" data-panel="transportPanel"><span>🛵</span><strong>Transport</strong><small>Getting around</small></button>
-        <button class="system-menu-tile" data-panel="emergencyPanel"><span>🆘</span><strong>Help & Emergency</strong><small>Always available</small></button>
+      <nav class="menu-grid" data-reorder-list="welcome" aria-label="Villa welcome menu">
+        <button id="villaTile" class="menu-row" data-menu-key="villa" data-panel="villaPanel" type="button"><span class="menu-icon" aria-hidden="true">🏠</span><span class="menu-copy"><strong>Villa Guide</strong><small>House info & contacts</small></span><span class="menu-chevron" aria-hidden="true">›</span><span class="menu-drag" role="button" tabindex="0" aria-label="Reorder Villa Guide" title="Drag to reorder">≡</span></button>
+        <button id="nearbyTile" class="menu-row" data-menu-key="nearby" data-panel="nearbyPanel" type="button"><span class="menu-icon" aria-hidden="true">🗺</span><span class="menu-copy"><strong>Explore Nearby</strong><small>Useful places & directions</small></span><span class="menu-chevron" aria-hidden="true">›</span><span class="menu-drag" role="button" tabindex="0" aria-label="Reorder Explore Nearby" title="Drag to reorder">≡</span></button>
+        <button id="stayTile" class="menu-row" data-menu-key="stay" data-panel="stayPanel" type="button"><span class="menu-icon" aria-hidden="true">🕒</span><span class="menu-copy"><strong>Stay Details</strong><small>Arrival, facilities & notices</small></span><span class="menu-chevron" aria-hidden="true">›</span><span class="menu-drag" role="button" tabindex="0" aria-label="Reorder Stay Details" title="Drag to reorder">≡</span></button>
+        <button id="whatsOnTile" class="menu-row" data-menu-key="whats-on" data-panel="whatsOnPanel" type="button"><span class="menu-icon" aria-hidden="true">📅</span><span class="menu-copy"><strong>What’s On</strong><small><span id="whatsOnSummary">Today & weekly activities</span></small></span><span class="menu-chevron" aria-hidden="true">›</span><span class="menu-drag" role="button" tabindex="0" aria-label="Reorder What’s On" title="Drag to reorder">≡</span></button>
+        <button id="foodTile" class="menu-row" data-menu-key="food" data-panel="foodPanel" type="button"><span class="menu-icon" aria-hidden="true">🍽</span><span class="menu-copy"><strong>Food & Drink</strong><small>Food, delivery & approved places</small></span><span class="menu-chevron" aria-hidden="true">›</span><span class="menu-drag" role="button" tabindex="0" aria-label="Reorder Food & Drink" title="Drag to reorder">≡</span></button>
+        <button id="wellnessTile" class="menu-row" data-menu-key="wellness" data-panel="wellnessPanel" type="button"><span class="menu-icon" aria-hidden="true">🌺</span><span class="menu-copy"><strong>Wellness</strong><small>Massage, spa & treatments</small></span><span class="menu-chevron" aria-hidden="true">›</span><span class="menu-drag" role="button" tabindex="0" aria-label="Reorder Wellness" title="Drag to reorder">≡</span></button>
+        <button id="toursTile" class="menu-row" data-menu-key="tours" data-panel="toursPanel" type="button"><span class="menu-icon" aria-hidden="true">⛵</span><span class="menu-copy"><strong>Tours & Experiences</strong><small>Trips, excursions & things to do</small></span><span class="menu-chevron" aria-hidden="true">›</span><span class="menu-drag" role="button" tabindex="0" aria-label="Reorder Tours & Experiences" title="Drag to reorder">≡</span></button>
+        <button id="transportTile" class="menu-row" data-menu-key="transport" data-panel="transportPanel" type="button"><span class="menu-icon" aria-hidden="true">🛵</span><span class="menu-copy"><strong>Transport</strong><small>Getting around</small></span><span class="menu-chevron" aria-hidden="true">›</span><span class="menu-drag" role="button" tabindex="0" aria-label="Reorder Transport" title="Drag to reorder">≡</span></button>
+        <button id="emergencyTile" class="menu-row system-menu-tile" data-panel="emergencyPanel" type="button"><span class="menu-icon" aria-hidden="true">🆘</span><span class="menu-copy"><strong>Help & Emergency</strong><small>Always available</small></span><span class="menu-chevron" aria-hidden="true">›</span></button>
       </nav>
     </section>
 
@@ -60,6 +60,6 @@
 
     <footer>Powered by Papa Golf</footer>
   </main>
-  <script src="welcome.js?v=0.38.0" defer></script>
+  <script src="welcome.js?v=0.39.0" defer></script>
 </body>
 </html>

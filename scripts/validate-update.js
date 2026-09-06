@@ -57,6 +57,14 @@ check(app.includes('ensureWelcomeModelIdentity'),'stable property/unit identity 
 check(app.includes('version: 9'),'backup format v9 includes consolidated Welcome model');
 check(app.includes('v:4,s:PAPA_GOLF_WELCOME_SCHEMA_VERSION'),'public Welcome payload v4 carries schema version');
 check(publicWelcome.includes('stayPanel')&&publicWelcome.includes('arrivalInfo'),'standalone public Welcome supports structured stay details');
+// v0.39.0 compact guest navigation / personalization foundation
+check(html.includes('data-reorder-list="welcome"'), 'owner preview has reorderable slim Welcome list');
+check(html.includes('guest-menu-drag'), 'owner preview has explicit reorder handles');
+check(app.includes("papaGolfGuestWelcomeOrderV1"), 'guest Welcome order persists locally without account');
+check(app.includes('pointerdown') && app.includes('pointermove') && app.includes('saveWelcomeMenuOrder'), 'owner preview touch reorder runtime present');
+check(publicWelcome.includes('data-reorder-list="welcome"') && publicWelcome.includes('menu-drag'), 'public Welcome has reorderable slim list');
+check(publicWelcomeJs.includes("papaGolfGuestWelcomeOrderV1") && publicWelcomeJs.includes('saveMenuOrder'), 'public Welcome order persistence present');
+check(publicWelcome.includes('system-menu-tile') && !publicWelcome.includes('data-menu-key="help"'), 'Help & Emergency remains protected from reordering');
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');
   for(const x of fail) console.error('✗',x);

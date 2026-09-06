@@ -1,4 +1,4 @@
-## v0.38.0 — Secure shared-data setup assistant
+## v0.39.0 — Secure shared-data setup assistant
 
 This update turns the Firebase bridge into a guided, safer owner workflow while retaining the Local Alpha fallback.
 

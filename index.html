@@ -7,12 +7,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.38.0" />
+<link rel="stylesheet" href="styles.css?v=0.39.0" />
 </head>
 <body>
   <header class="app-header">
     <div>
-      <div class="eyebrow">PAPA GOLF · V0.38.0</div>
+      <div class="eyebrow">PAPA GOLF · V0.39.0</div>
       <h1>Papa Golf Prototype</h1>
     </div>
     <button id="manageFieldsBtn" class="ghost-button" type="button">Fields</button>
@@ -472,16 +472,16 @@
         </div>
       </div>
       <button id="guestTodayStrip" class="guest-today-strip hidden" type="button" data-welcome-panel="guestWhatsOnPanel" aria-label="Open today’s activities"><span class="guest-today-icon">📅</span><span class="guest-today-copy"><strong>Today at your stay</strong><small id="guestTodayStripSummary"></small></span><span class="guest-today-chevron">›</span></button>
-      <div class="guest-menu-grid">
-        <button id="guestVillaTile" class="guest-menu-tile" type="button" data-welcome-panel="guestVillaPanel"><span>🏠</span><strong>Villa Guide</strong><small>House info & contacts</small></button>
-        <button id="guestExploreTile" class="guest-menu-tile guest-menu-featured" type="button" data-welcome-panel="guestExplorePanel"><span>🗺</span><strong>Explore Nearby</strong><small>Useful places & directions</small></button>
-        <button id="guestStayTile" class="guest-menu-tile" type="button" data-welcome-panel="guestStayPanel"><span>🕒</span><strong>Stay Details</strong><small>Arrival, facilities & notices</small></button>
-        <button id="guestWhatsOnTile" class="guest-menu-tile" type="button" data-welcome-panel="guestWhatsOnPanel"><span>📅</span><strong>What’s On</strong><small id="guestWhatsOnSummary">Today & weekly activities</small></button>
-        <button id="guestFoodTile" class="guest-menu-tile" type="button" data-welcome-panel="guestFoodPanel"><span>🍽</span><strong>Food & Drink</strong><small>Food, delivery & approved places</small></button>
-        <button id="guestWellnessTile" class="guest-menu-tile" type="button" data-welcome-panel="guestWellnessPanel"><span>🌺</span><strong>Wellness</strong><small>Massage, spa & treatments</small></button>
-        <button id="guestToursTile" class="guest-menu-tile" type="button" data-welcome-panel="guestToursPanel"><span>⛵</span><strong>Tours & Experiences</strong><small>Trips, excursions & things to do</small></button>
-        <button id="guestTransportTile" class="guest-menu-tile" type="button" data-welcome-panel="guestTransportPanel"><span>🛵</span><strong>Transport</strong><small>Getting around</small></button>
-        <button id="guestEmergencyTile" class="guest-menu-tile guest-system-tile" type="button" data-welcome-panel="guestEmergencyPanel"><span>🆘</span><strong>Help & Emergency</strong><small>Always available</small></button>
+      <div class="guest-menu-grid" data-reorder-list="welcome">
+        <button id="guestVillaTile" class="guest-menu-tile" type="button" data-menu-key="villa" data-welcome-panel="guestVillaPanel"><span class="guest-menu-icon" aria-hidden="true">🏠</span><span class="guest-menu-copy"><strong>Villa Guide</strong><small>House info & contacts</small></span><span class="guest-menu-chevron" aria-hidden="true">›</span><span class="guest-menu-drag" role="button" tabindex="0" aria-label="Reorder Villa Guide" title="Drag to reorder">≡</span></button>
+        <button id="guestExploreTile" class="guest-menu-tile guest-menu-featured" type="button" data-menu-key="nearby" data-welcome-panel="guestExplorePanel"><span class="guest-menu-icon" aria-hidden="true">🗺</span><span class="guest-menu-copy"><strong>Explore Nearby</strong><small>Useful places & directions</small></span><span class="guest-menu-chevron" aria-hidden="true">›</span><span class="guest-menu-drag" role="button" tabindex="0" aria-label="Reorder Explore Nearby" title="Drag to reorder">≡</span></button>
+        <button id="guestStayTile" class="guest-menu-tile" type="button" data-menu-key="stay" data-welcome-panel="guestStayPanel"><span class="guest-menu-icon" aria-hidden="true">🕒</span><span class="guest-menu-copy"><strong>Stay Details</strong><small>Arrival, facilities & notices</small></span><span class="guest-menu-chevron" aria-hidden="true">›</span><span class="guest-menu-drag" role="button" tabindex="0" aria-label="Reorder Stay Details" title="Drag to reorder">≡</span></button>
+        <button id="guestWhatsOnTile" class="guest-menu-tile" type="button" data-menu-key="whats-on" data-welcome-panel="guestWhatsOnPanel"><span class="guest-menu-icon" aria-hidden="true">📅</span><span class="guest-menu-copy"><strong>What’s On</strong><small><span id="guestWhatsOnSummary">Today & weekly activities</span></small></span><span class="guest-menu-chevron" aria-hidden="true">›</span><span class="guest-menu-drag" role="button" tabindex="0" aria-label="Reorder What’s On" title="Drag to reorder">≡</span></button>
+        <button id="guestFoodTile" class="guest-menu-tile" type="button" data-menu-key="food" data-welcome-panel="guestFoodPanel"><span class="guest-menu-icon" aria-hidden="true">🍽</span><span class="guest-menu-copy"><strong>Food & Drink</strong><small>Food, delivery & approved places</small></span><span class="guest-menu-chevron" aria-hidden="true">›</span><span class="guest-menu-drag" role="button" tabindex="0" aria-label="Reorder Food & Drink" title="Drag to reorder">≡</span></button>
+        <button id="guestWellnessTile" class="guest-menu-tile" type="button" data-menu-key="wellness" data-welcome-panel="guestWellnessPanel"><span class="guest-menu-icon" aria-hidden="true">🌺</span><span class="guest-menu-copy"><strong>Wellness</strong><small>Massage, spa & treatments</small></span><span class="guest-menu-chevron" aria-hidden="true">›</span><span class="guest-menu-drag" role="button" tabindex="0" aria-label="Reorder Wellness" title="Drag to reorder">≡</span></button>
+        <button id="guestToursTile" class="guest-menu-tile" type="button" data-menu-key="tours" data-welcome-panel="guestToursPanel"><span class="guest-menu-icon" aria-hidden="true">⛵</span><span class="guest-menu-copy"><strong>Tours & Experiences</strong><small>Trips, excursions & things to do</small></span><span class="guest-menu-chevron" aria-hidden="true">›</span><span class="guest-menu-drag" role="button" tabindex="0" aria-label="Reorder Tours & Experiences" title="Drag to reorder">≡</span></button>
+        <button id="guestTransportTile" class="guest-menu-tile" type="button" data-menu-key="transport" data-welcome-panel="guestTransportPanel"><span class="guest-menu-icon" aria-hidden="true">🛵</span><span class="guest-menu-copy"><strong>Transport</strong><small>Getting around</small></span><span class="guest-menu-chevron" aria-hidden="true">›</span><span class="guest-menu-drag" role="button" tabindex="0" aria-label="Reorder Transport" title="Drag to reorder">≡</span></button>
+        <button id="guestEmergencyTile" class="guest-menu-tile guest-system-tile" type="button" data-welcome-panel="guestEmergencyPanel"><span class="guest-menu-icon" aria-hidden="true">🆘</span><span class="guest-menu-copy"><strong>Help & Emergency</strong><small>Always available</small></span><span class="guest-menu-chevron" aria-hidden="true">›</span></button>
       </div>
     </div>
 
@@ -754,6 +754,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.38.0" defer></script>
+  <script src="app.js?v=0.39.0" defer></script>
 </body>
 </html>
