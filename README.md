@@ -1,3 +1,11 @@
+## v0.45.4 — manager preview polish + in-app PDF viewer
+
+- Keeps the v0.45.3 automatic A4 PDF layout unchanged.
+- Reworks the online manager audit preview for compact iPhone-first scanning: fixed photo / information / QR columns, reduced wasted vertical space, and a much shorter mobile summary.
+- `Create A4 PDF` now opens the generated document in a full-screen Papa Golf PDF viewer instead of immediately opening the iOS share/save sheet.
+- PDF viewer adds persistent Back, Home, and Download PDF controls. Download uses the native share sheet when available, with direct file download as fallback.
+- Adds the first reusable document-viewer capability for future Papa Golf generated PDFs.
+
 ## v0.45.3 — automatic A4 PDF manager report
 
 - Removes the manual 4 / 5 / 6 recommendations-per-page workflow and all magnifier density controls.

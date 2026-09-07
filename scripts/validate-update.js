@@ -154,13 +154,13 @@ check(styles.includes('@page{size:A4 portrait')&&styles.includes('break-inside:a
 check(styles.includes('v0.44.3 manager proposal / PDF presentation'),'manager proposal presentation styling present');
 
 
-// v0.45.3 automatic A4 PDF manager report
+// v0.45.4 automatic A4 PDF manager report + viewer
 check(!html.includes('qrAuditZoomInBtn')&&!html.includes('qrAuditPrintPanel'),'manual 4/5/6 report-density controls removed');
 check(app.includes('createQrAuditPdf')&&app.includes('jspdf@2.5.2'),'manager audit uses direct client-side PDF generation');
 check(app.includes('qrAuditPdfItemMeasure')&&app.includes('if(y+itemH>bottom)'),'PDF pagination measures each complete recommendation before page placement');
 check(app.includes('HIGH PRIORITY')||app.includes('qrTouchpointPriorityLabel(item.priority).toUpperCase()'),'compact item header includes priority/status/location workflow');
-check(app.includes("navigator.canShare?.({files:[file]})")&&app.includes("doc.save(filename)"),'generated PDF supports iPhone share sheet and browser download fallback');
-check(styles.includes('v0.45.3 automatic A4 PDF manager audit'),'automatic PDF preview styling present');
+check(app.includes('openQrAuditPdfViewer(blob,file,filename)')&&app.includes('downloadQrAuditPdf'),'generated PDF opens in Papa Golf viewer with explicit download action');
+check(styles.includes('v0.45.4 manager report mobile polish + reusable PDF viewer'),'manager mobile preview and reusable PDF viewer styling present');
 
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');
@@ -170,6 +170,6 @@ if(fail.length){
 console.log(`\nPapa Golf validation passed for v${v}.`);
 
 
-// v0.45.3 deployment freshness guard
+// v0.45.4 deployment freshness guard
 check(read('app.js').includes('checkPapaGolfBuildVersion')&&read('app.js').includes('papaGolfSwReloaded-${RUNTIME_VERSION}'),'iPhone/PWA shell refresh is version-aware');
-check(read('version.json').includes('0.45.3')&&read('service-worker.js').includes('papa-golf-v0453-shell'),'deployment version manifest and cache key bumped');
+check(read('version.json').includes('0.45.4')&&read('service-worker.js').includes('papa-golf-v0454-shell'),'deployment version manifest and cache key bumped');

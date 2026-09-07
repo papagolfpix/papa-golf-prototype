@@ -1850,4 +1850,59 @@ body.guest-preview-mode .guest-top-help:active{transform:scale(.97);background:#
  .qr-report-body,.qr-audit-report-content[data-density="5"] .qr-report-body,.qr-audit-report-content[data-density="6"] .qr-report-body{min-height:0;grid-template-columns:31mm minmax(0,1fr) 20mm;gap:2.5mm;padding:1.5mm 2mm 1.8mm;align-items:center}
  .qr-report-photo,.qr-report-photo-empty,.qr-audit-report-content[data-density="5"] .qr-report-photo,.qr-audit-report-content[data-density="5"] .qr-report-photo-empty,.qr-audit-report-content[data-density="6"] .qr-report-photo,.qr-audit-report-content[data-density="6"] .qr-report-photo-empty{width:31mm;height:22mm;border-radius:1.5mm;background:#eee!important;color:#555!important}.qr-report-copy{gap:1mm}.qr-report-field>span{font-size:6pt;color:#555!important}.qr-report-field p,.qr-report-field strong,.qr-audit-report-content[data-density="5"] .qr-report-field p,.qr-audit-report-content[data-density="5"] .qr-report-field strong,.qr-audit-report-content[data-density="6"] .qr-report-field p,.qr-audit-report-content[data-density="6"] .qr-report-field strong{font-size:7.7pt;line-height:1.15;color:#222!important}.qr-report-field strong{color:#725716!important}.qr-report-note{-webkit-line-clamp:1}.qr-report-detail-link{font-size:7pt;color:#725716!important}.qr-report-qr,.qr-audit-report-content[data-density="5"] .qr-report-qr,.qr-audit-report-content[data-density="6"] .qr-report-qr{width:18mm;height:18mm;padding:1mm;border-radius:1.5mm}.qr-report-demo small{font-size:5.8pt;color:#555!important}.qr-report-wording{display:block}
 }
-\n\n/* v0.45.3 automatic A4 PDF manager audit */\n.qr-audit-report-toolbar{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;min-height:58px;padding:7px 10px;background:rgba(16,16,16,.97);border-bottom:1px solid rgba(255,255,255,.1)}\n.qr-audit-report-title{min-width:0;text-align:center;font-size:13px;font-weight:800;color:#d8d2c7}\n.qr-audit-pdf-status{position:sticky;top:58px;z-index:4;padding:9px 14px;background:#1f2b20;color:#bce5bf;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:800;text-align:center}.qr-audit-pdf-status.error{background:#321d1d;color:#ffc1b9}.qr-audit-pdf-status.hidden{display:none!important}\n.qr-report-preview-document{margin:0;padding:18px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:#121212}\n.qr-report-item{break-inside:avoid;page-break-inside:avoid;margin-bottom:10px}.qr-report-item-line{padding:8px 10px 7px;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px;line-height:1.25}.qr-report-body{grid-template-columns:minmax(120px,20%) minmax(0,60%) minmax(84px,20%);gap:10px;align-items:start}.qr-report-photo,.qr-report-photo-empty{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover}.qr-report-qr{width:min(100%,96px);height:auto;aspect-ratio:1/1}.qr-report-copy{font-size:14px}.qr-report-field p,.qr-report-field strong{font-size:14px;line-height:1.38}.qr-report-note{display:block!important;-webkit-line-clamp:unset!important;overflow:visible!important}.qr-report-wording{display:block!important}\n@media(max-width:680px){.qr-audit-report-toolbar{grid-template-columns:auto 1fr}.qr-audit-report-title{display:none}.qr-audit-report-toolbar .primary-btn{justify-self:end}.qr-report-body{grid-template-columns:92px minmax(0,1fr) 72px;gap:8px}.qr-report-photo,.qr-report-photo-empty{height:auto}.qr-report-field p,.qr-report-field strong{font-size:13px}.qr-report-qr{width:66px}.qr-report-item-line{font-size:11px}}\n
+
+
+/* v0.45.3 automatic A4 PDF manager audit */
+.qr-audit-report-toolbar{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;min-height:58px;padding:7px 10px;background:rgba(16,16,16,.97);border-bottom:1px solid rgba(255,255,255,.1)}
+.qr-audit-report-title{min-width:0;text-align:center;font-size:13px;font-weight:800;color:#d8d2c7}
+.qr-audit-pdf-status{position:sticky;top:58px;z-index:4;padding:9px 14px;background:#1f2b20;color:#bce5bf;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:800;text-align:center}.qr-audit-pdf-status.error{background:#321d1d;color:#ffc1b9}.qr-audit-pdf-status.hidden{display:none!important}
+.qr-report-preview-document{margin:0;padding:18px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:#121212}
+.qr-report-item{break-inside:avoid;page-break-inside:avoid;margin-bottom:10px}.qr-report-item-line{padding:8px 10px 7px;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px;line-height:1.25}.qr-report-body{grid-template-columns:minmax(120px,20%) minmax(0,60%) minmax(84px,20%);gap:10px;align-items:start}.qr-report-photo,.qr-report-photo-empty{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover}.qr-report-qr{width:min(100%,96px);height:auto;aspect-ratio:1/1}.qr-report-copy{font-size:14px}.qr-report-field p,.qr-report-field strong{font-size:14px;line-height:1.38}.qr-report-note{display:block!important;-webkit-line-clamp:unset!important;overflow:visible!important}.qr-report-wording{display:block!important}
+@media(max-width:680px){.qr-audit-report-toolbar{grid-template-columns:auto 1fr}.qr-audit-report-title{display:none}.qr-audit-report-toolbar .primary-btn{justify-self:end}.qr-report-body{grid-template-columns:92px minmax(0,1fr) 72px;gap:8px}.qr-report-photo,.qr-report-photo-empty{height:auto}.qr-report-field p,.qr-report-field strong{font-size:13px}.qr-report-qr{width:66px}.qr-report-item-line{font-size:11px}}
+
+
+/* v0.45.4 manager report mobile polish + reusable PDF viewer */
+.qr-audit-report-dialog{width:min(940px,calc(100vw - 14px));max-height:calc(100dvh - 14px);overflow:auto}
+.qr-audit-report-toolbar{position:sticky;top:0;z-index:6;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;min-height:58px;padding:7px 10px;background:rgba(16,16,16,.98);border-bottom:1px solid rgba(255,255,255,.1)}
+.qr-audit-report-title{min-width:0;text-align:center;font-size:14px;font-weight:800;color:#d8d2c7}
+.qr-audit-report-content{padding:12px}
+.qr-report-preview-document{margin:0;padding:14px;border:1px solid rgba(255,255,255,.11);border-radius:14px;background:#121212}
+.qr-report-cover{padding:4px 0 12px}
+.qr-report-cover h1{font-size:28px;margin:10px 0 3px}
+.qr-report-intro{margin:10px 0 4px;font-size:13px;line-height:1.4}
+.qr-report-summary{margin:12px 0 8px;padding:12px}
+.qr-report-summary-lead strong{font-size:28px}.qr-report-summary-lead span{font-size:16px}
+.qr-report-metrics{margin:9px 0;gap:6px}.qr-report-metrics>div{padding:7px}.qr-report-metrics strong{font-size:17px}
+.qr-report-guide{margin:0 0 10px;padding:8px 10px}.qr-report-guide span{font-size:12px;line-height:1.35}
+.qr-report-page-title{margin:10px 0 7px}.qr-report-page-title span{display:none}
+.qr-report-items{gap:9px}
+.qr-report-item{margin:0!important;border-radius:11px}
+.qr-report-item-line{padding:7px 9px 6px;font-size:11px;line-height:1.25;background:rgba(255,255,255,.025)}
+.qr-report-body{display:grid;grid-template-columns:minmax(95px,20%) minmax(0,60%) minmax(68px,20%);gap:9px;align-items:start;padding:8px 9px 9px}
+.qr-report-photo-wrap{grid-column:auto!important;grid-row:auto!important;min-width:0}
+.qr-report-photo,.qr-report-photo-empty{display:block;width:100%!important;height:auto!important;aspect-ratio:4/3;object-fit:cover;border-radius:8px}
+.qr-report-copy{gap:5px;min-width:0}.qr-report-field>span{font-size:8px;margin-bottom:1px}.qr-report-field p,.qr-report-field strong{font-size:12px;line-height:1.27;overflow-wrap:anywhere}.qr-report-note{display:block!important;-webkit-line-clamp:unset!important;overflow:visible!important;color:#bdb6aa!important}
+.qr-report-detail-link{margin-top:1px!important;font-size:10.5px}
+.qr-report-demo{align-self:start;text-align:center;min-width:0}.qr-report-qr{width:min(100%,76px)!important;height:auto!important;aspect-ratio:1/1;padding:3px;border-radius:7px}.qr-report-demo small{font-size:8px}
+
+.pg-pdf-viewer-dialog{width:min(1100px,100vw);height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;background:#111;color:#f5f5f5}
+.pg-pdf-viewer-dialog::backdrop{background:#111}
+.pg-pdf-viewer-toolbar{position:sticky;top:0;z-index:10;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;min-height:62px;padding:8px max(10px,env(safe-area-inset-right)) 8px max(10px,env(safe-area-inset-left));background:rgba(16,16,16,.98);border-bottom:1px solid rgba(255,255,255,.12)}
+.pg-pdf-viewer-nav{display:flex;align-items:center;gap:7px}.pg-pdf-viewer-title{text-align:center;font-size:14px;font-weight:800;color:#d8d2c7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pg-pdf-download-btn{white-space:nowrap}
+.pg-pdf-viewer-stage{height:calc(100dvh - 62px);background:#2a2a2a}.pg-pdf-viewer-frame{display:block;width:100%;height:100%;border:0;background:#fff}
+
+@media(max-width:680px){
+ .qr-audit-report-dialog{width:calc(100vw - 6px);max-height:calc(100dvh - 6px);border-radius:14px}
+ .qr-audit-report-toolbar{grid-template-columns:auto 1fr;min-height:54px;padding:5px 7px}.qr-audit-report-title{display:none}.qr-audit-report-toolbar .primary-btn{justify-self:end;min-height:40px;padding:.45rem .7rem;font-size:12px}
+ .qr-audit-report-content{padding:7px 6px 12px}.qr-report-preview-document{padding:9px 7px;border-radius:10px}
+ .qr-report-page-header{font-size:9px}.qr-report-page-header span{max-width:62%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .qr-report-cover{padding:3px 0 8px}.qr-report-brand{display:none}.qr-report-cover h1{font-size:23px;margin:7px 0 2px}.qr-report-location{font-size:12px}.qr-report-intro,.qr-report-date{display:none}
+ .qr-report-summary{margin:8px 0 7px;padding:8px}.qr-report-summary-lead{gap:6px}.qr-report-summary-lead strong{font-size:23px}.qr-report-summary-lead span{font-size:13px}.qr-report-metrics{grid-template-columns:repeat(4,1fr);gap:4px;margin:7px 0 0}.qr-report-metrics>div{padding:5px 3px;text-align:center}.qr-report-metrics strong{font-size:15px}.qr-report-metrics span{font-size:7.5px}.qr-report-summary p{display:none}
+ .qr-report-guide{display:none}.qr-report-page-title{margin:8px 0 6px}.qr-report-page-title strong{font-size:14px}
+ .qr-report-body{grid-template-columns:76px minmax(0,1fr) 55px!important;gap:6px;padding:6px 7px 7px;align-items:start}
+ .qr-report-photo-wrap{grid-column:auto!important;grid-row:auto!important}.qr-report-photo,.qr-report-photo-empty{width:76px!important;height:57px!important;aspect-ratio:auto;border-radius:6px}.qr-report-photo-empty{font-size:8px}
+ .qr-report-copy{gap:3px}.qr-report-field>span{font-size:7px;letter-spacing:.04em}.qr-report-field p,.qr-report-field strong{font-size:10.5px!important;line-height:1.2}.qr-report-note{font-size:10px!important}.qr-report-detail-link{font-size:9px}
+ .qr-report-demo{width:55px}.qr-report-qr{width:50px!important;height:50px!important}.qr-report-demo small{font-size:7px;margin-top:2px}.qr-report-item-line{font-size:9.5px;padding:6px 7px 5px}
+ .qr-audit-report-content footer{margin-top:10px;padding-top:7px;font-size:8px}
+ .pg-pdf-viewer-toolbar{grid-template-columns:auto 1fr auto;gap:7px;min-height:58px;padding-top:max(6px,env(safe-area-inset-top));padding-left:max(7px,env(safe-area-inset-left));padding-right:max(7px,env(safe-area-inset-right))}.pg-pdf-viewer-nav{gap:5px}.pg-pdf-viewer-nav .pg-round-nav-btn{width:40px;height:40px;min-width:40px;min-height:40px}.pg-pdf-viewer-title{display:none}.pg-pdf-download-btn{min-height:40px;padding:.45rem .65rem;font-size:12px}.pg-pdf-viewer-stage{height:calc(100dvh - 58px)}
+}

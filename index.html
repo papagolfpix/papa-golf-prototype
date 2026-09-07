@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.45.3" />
+<link rel="stylesheet" href="styles.css?v=0.45.4" />
 </head>
 <body>
   <div id="pgGlobalNav" class="pg-global-nav hidden" aria-label="Papa Golf navigation">
@@ -17,7 +17,7 @@
   <header class="app-header">
     <div class="app-header-left">
       <div>
-        <div class="eyebrow">PAPA GOLF · V0.45.3</div>
+        <div class="eyebrow">PAPA GOLF · V0.45.4</div>
         <h1>Papa Golf Prototype</h1>
       </div>
     </div>
@@ -522,6 +522,20 @@
   <article id="qrAuditReportContent" class="qr-audit-report-content"></article>
 </dialog>
 
+<dialog id="qrAuditPdfViewerDialog" class="pg-pdf-viewer-dialog">
+  <div class="pg-pdf-viewer-toolbar">
+    <div class="pg-pdf-viewer-nav">
+      <button id="qrAuditPdfBackBtn" class="pg-round-nav-btn" type="button" aria-label="Back to report" title="Back to report">‹</button>
+      <button id="qrAuditPdfHomeBtn" class="pg-round-nav-btn" type="button" aria-label="Papa Golf home" title="Papa Golf home">⌂</button>
+    </div>
+    <div class="pg-pdf-viewer-title">A4 PDF preview</div>
+    <button id="qrAuditPdfDownloadBtn" class="primary-btn pg-pdf-download-btn" type="button">Download PDF ↓</button>
+  </div>
+  <div class="pg-pdf-viewer-stage">
+    <iframe id="qrAuditPdfFrame" class="pg-pdf-viewer-frame" title="Papa Golf A4 PDF preview"></iframe>
+  </div>
+</dialog>
+
 <section id="welcomeGuestPreview" class="screen hidden">
   <div class="welcome-guest-topbar">
     <button id="guestTopHelpBtn" class="guest-top-help" type="button" data-welcome-panel="guestEmergencyPanel">🆘 Help</button>
@@ -822,6 +836,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.45.3" defer></script>
+  <script src="app.js?v=0.45.4" defer></script>
 </body>
 </html>
