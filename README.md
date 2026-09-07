@@ -1,3 +1,10 @@
+## v0.45.6 — stable-candidate PDF/report polish
+
+- Leaves the now-working online manager report and responsive A4 PDF viewer layout unchanged.
+- Replaces the unsupported PDF arrow glyph in the clickable “View full recommendation” label with a standard character so jsPDF’s built-in Helvetica renders it consistently across devices.
+- Keeps the responsive PDF.js preview with native-browser PDF fallback and the existing share/download fallback for iPhone, iPad, Android and desktop browsers.
+- Intended as the final low-risk validation build for the current manager-report cleanup batch.
+
 ## v0.45.5 — responsive PDF preview + PDF text-flow fix
 
 - Renders generated audit PDF pages responsively in the Papa Golf viewer so A4 fits phone/tablet width.
