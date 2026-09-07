@@ -153,6 +153,24 @@ check(app.includes('qr-report-qr-link')&&app.includes('qr-report-demo-link'),'ma
 check(styles.includes('@page{size:A4 portrait')&&styles.includes('break-inside:avoid'),'manager report has A4 print pagination safeguards');
 check(styles.includes('v0.44.3 manager proposal / PDF presentation'),'manager proposal presentation styling present');
 
+
+// v0.44.4 manager-report navigation / zoom / mobile formatting hardening
+for(const id of ['qrAuditReportCloseBtn','qrAuditReportHomeBtn','qrAuditReportZoomOutBtn','qrAuditReportZoomLabel','qrAuditReportZoomInBtn','qrAuditReportPrintBtn']) check(html.includes(`id="${id}"`),`manager report control present: ${id}`);
+check(app.includes("QR_AUDIT_REPORT_ZOOM_KEY='papaGolfQrAuditReportZoomV1'")&&app.includes('QR_AUDIT_REPORT_ZOOM_STEPS=[0.8,0.9,1,1.1,1.2]'),'manager report persistent zoom range present');
+check(app.includes('function closeQrAuditReport()')&&app.includes('function homeFromQrAuditReport()'),'manager report has explicit Back/Home handlers');
+check(app.includes("getElementById('qrAuditReportHomeBtn')?.addEventListener('click',homeFromQrAuditReport)"),'manager report Home button wired');
+check(app.includes("getElementById('qrAuditReportZoomOutBtn')?.addEventListener('click',()=>stepQrAuditReportZoom(-1))")&&app.includes("getElementById('qrAuditReportZoomInBtn')?.addEventListener('click',()=>stepQrAuditReportZoom(1))"),'manager report zoom buttons wired');
+check(app.includes("getElementById('qrAuditReportDialog')?.addEventListener('cancel'")&&app.includes('event.preventDefault();closeQrAuditReport()'),'manager report native cancel/Escape returns safely');
+check(styles.includes('v0.44.4 report navigation, zoom and mobile/PDF hardening'),'v0.44.4 report hardening CSS present');
+check(styles.includes('.qr-audit-report-content{zoom:var(--qr-report-zoom)}'),'manager report screen zoom applies to full report content');
+check(styles.includes('.qr-report-body{display:flex!important;flex-direction:column!important'),'narrow-screen report cards stack instead of squeezing text');
+check(styles.includes('height:100dvh!important')&&styles.includes('env(safe-area-inset-top)'),'iPhone report dialog uses full dynamic viewport and safe areas');
+check(styles.includes('.qr-audit-report-content{zoom:var(--qr-report-zoom,1)!important}')&&styles.includes('grid-template-columns:42mm minmax(0,1fr) 28mm!important'),'A4 print respects selected density with explicit print grid');
+check(publicWelcome.includes('public-panel-nav')&&publicWelcome.includes('public-home-btn'),'public Welcome detail panels expose Back and Welcome/Home controls');
+check(publicWelcomeJs.includes('function publicGoBack()')&&publicWelcomeJs.includes('function publicGoHome()')&&publicWelcomeJs.includes('publicPanelHistory'),'public Welcome has local return-navigation history');
+check(publicWelcomeJs.includes('showPanel(panel,false)'),'direct QR deep links do not create a false back-history entry');
+check(read('welcome.css').includes('v0.44.4 public Welcome return-navigation hardening')&&read('welcome.css').includes('min-height:44px'),'public Welcome return controls retain mobile touch targets');
+
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');
   for(const x of fail) console.error('✗',x);

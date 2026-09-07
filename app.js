@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.44.3';
+const RUNTIME_VERSION = '0.44.4';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2687,7 +2687,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.44.3', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.44.4', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2780,7 +2780,32 @@ async function buildQrAuditReport(){
   <section class="qr-report-items">${items.map((item,i)=>{const url=welcomeSectionUrl(item.destination||'home');const qr=`https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=12&format=png&data=${encodeURIComponent(url)}`;return `<article class="qr-report-item"><div class="qr-report-item-head"><div class="qr-report-number">${i+1}</div><div><div class="qr-report-flags"><span class="qr-report-priority ${escapeHtml(item.priority||'medium')}">${escapeHtml(qrTouchpointPriorityLabel(item.priority))}</span><span class="qr-report-status ${escapeHtml(item.status||'proposed')}">${escapeHtml(qrTouchpointStatusLabel(item.status))}</span></div><h2>${escapeHtml(item.location||'Property touchpoint')}</h2></div></div><div class="qr-report-body"><div class="qr-report-photo-wrap">${item.photoKey?`<img class="qr-report-photo" data-report-photo-key="${escapeHtml(item.photoKey)}" alt="${escapeHtml(item.location||'Audit location')}">`:'<div class="qr-report-photo-empty">No audit photo</div>'}</div><div class="qr-report-copy"><div class="qr-report-field"><span>Existing item</span><p>${escapeHtml(item.existing||'Existing guest information')}</p></div><div class="qr-report-field"><span>Proposed digital destination</span><strong>${escapeHtml(QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home')}</strong></div><div class="qr-report-field"><span>Suggested QR wording</span><p>“${escapeHtml(item.label||'Scan for details')}”</p></div>${item.note?`<div class="qr-report-field"><span>Audit note</span><p>${escapeHtml(item.note)}</p></div>`:''}</div><div class="qr-report-demo"><a class="qr-report-qr-link" href="${escapeHtml(url)}" target="_blank" rel="noopener" aria-label="Open demonstration for ${escapeHtml(item.location||'touchpoint')}"><img class="qr-report-qr" src="${escapeHtml(qr)}" alt="Scannable QR demonstration"></a><a class="qr-report-demo-link" href="${escapeHtml(url)}" target="_blank" rel="noopener">View demonstration</a><small>Sample destination</small></div></div></article>`}).join('')}</section><footer><strong>Papa Golf Platform</strong><span>Property Information Upgrade · Demonstration proposal</span></footer>`;
   await Promise.all([...host.querySelectorAll('[data-report-photo-key]')].map(async img=>{const a=await getAuditAsset(img.dataset.reportPhotoKey);if(a?.dataUrl)img.src=a.dataUrl}));
 }
-async function openQrAuditReport(printAfter=false){const dialog=document.getElementById('qrAuditReportDialog');if(!dialog)return;await buildQrAuditReport();if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');if(printAfter)setTimeout(()=>window.print(),120)}
+const QR_AUDIT_REPORT_ZOOM_KEY='papaGolfQrAuditReportZoomV1';
+const QR_AUDIT_REPORT_ZOOM_STEPS=[0.8,0.9,1,1.1,1.2];
+function qrAuditReportZoom(){
+  const saved=Number(localStorage.getItem(QR_AUDIT_REPORT_ZOOM_KEY)||1);
+  return QR_AUDIT_REPORT_ZOOM_STEPS.includes(saved)?saved:1;
+}
+function applyQrAuditReportZoom(value=qrAuditReportZoom()){
+  const dialog=document.getElementById('qrAuditReportDialog'),label=document.getElementById('qrAuditReportZoomLabel');
+  if(!dialog)return;
+  const nearest=QR_AUDIT_REPORT_ZOOM_STEPS.reduce((a,b)=>Math.abs(b-value)<Math.abs(a-value)?b:a,1);
+  dialog.style.setProperty('--qr-report-zoom',String(nearest));
+  dialog.dataset.reportZoom=String(nearest);
+  if(label)label.textContent=`${Math.round(nearest*100)}%`;
+  try{localStorage.setItem(QR_AUDIT_REPORT_ZOOM_KEY,String(nearest))}catch{}
+}
+function stepQrAuditReportZoom(direction){
+  const current=qrAuditReportZoom(),index=Math.max(0,QR_AUDIT_REPORT_ZOOM_STEPS.indexOf(current));
+  const next=QR_AUDIT_REPORT_ZOOM_STEPS[Math.max(0,Math.min(QR_AUDIT_REPORT_ZOOM_STEPS.length-1,index+direction))];
+  applyQrAuditReportZoom(next);
+}
+function closeQrAuditReport(){
+  const dialog=document.getElementById('qrAuditReportDialog');
+  if(dialog?.open&&typeof dialog.close==='function')dialog.close();else dialog?.removeAttribute('open');
+}
+function homeFromQrAuditReport(){closeQrAuditReport();papaGolfGoHome()}
+async function openQrAuditReport(printAfter=false){const dialog=document.getElementById('qrAuditReportDialog');if(!dialog)return;await buildQrAuditReport();applyQrAuditReportZoom();if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');dialog.scrollTop=0;if(printAfter)setTimeout(()=>window.print(),160)}
 
 
 function getPapaGolfPhotoPlaceLinks(){
@@ -5051,8 +5076,12 @@ function initWelcomeModule(){
   document.getElementById('clearQrTouchpointPhotoBtn')?.addEventListener('click',clearPendingQrTouchpointPhoto);
   document.getElementById('previewQrAuditReportBtn')?.addEventListener('click',()=>openQrAuditReport(false));
   document.getElementById('printQrAuditReportBtn')?.addEventListener('click',()=>openQrAuditReport(true));
-  document.getElementById('qrAuditReportCloseBtn')?.addEventListener('click',()=>document.getElementById('qrAuditReportDialog')?.close?.());
+  document.getElementById('qrAuditReportCloseBtn')?.addEventListener('click',closeQrAuditReport);
+  document.getElementById('qrAuditReportHomeBtn')?.addEventListener('click',homeFromQrAuditReport);
+  document.getElementById('qrAuditReportZoomOutBtn')?.addEventListener('click',()=>stepQrAuditReportZoom(-1));
+  document.getElementById('qrAuditReportZoomInBtn')?.addEventListener('click',()=>stepQrAuditReportZoom(1));
   document.getElementById('qrAuditReportPrintBtn')?.addEventListener('click',()=>window.print());
+  document.getElementById('qrAuditReportDialog')?.addEventListener('cancel',event=>{event.preventDefault();closeQrAuditReport()});
   document.getElementById('qrTouchpointList')?.addEventListener('click',event=>{
     const copy=event.target.closest('[data-copy-touchpoint]');
     if(copy){copyQrTouchpointLink(copy.dataset.copyTouchpoint);const old=copy.textContent;copy.textContent='Copied ✓';setTimeout(()=>copy.textContent=old,1200);return}

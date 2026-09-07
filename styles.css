@@ -1795,3 +1795,43 @@ body.guest-preview-mode .guest-top-help:active{transform:scale(.97);background:#
  #qrAuditReportDialog,.qr-audit-report-dialog{position:static!important;display:block!important;inset:auto!important;width:auto!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#fff!important;color:#111!important;box-shadow:none!important;overflow:visible!important}
  .qr-audit-report-content{padding:0!important}.qr-report-cover{padding-top:2mm;border-bottom-color:#8c6d22}.qr-report-demo-badge{color:#725716;border-color:#8c6d22}.qr-report-location,.qr-report-intro,.qr-report-date,.qr-report-summary p,.qr-report-guide span{color:#333!important}.qr-report-summary{background:#f7f4ec!important;border-color:#c8b277!important}.qr-report-summary-lead strong,.qr-report-field strong,.qr-report-demo-link{color:#725716!important}.qr-report-metrics>div{background:#fff!important;border-color:#ccc!important}.qr-report-metrics span,.qr-report-field>span,.qr-report-demo small{color:#555!important}.qr-report-guide{background:#faf7ee!important;border-left-color:#8c6d22}.qr-report-item{break-inside:avoid;page-break-inside:avoid;background:#fff!important;border-color:#aaa!important;margin-bottom:5mm}.qr-report-item-head{border-bottom-color:#ccc!important}.qr-report-flags span{background:#eee!important;color:#222!important}.qr-report-photo-empty{background:#eee!important;color:#555!important}.qr-report-demo-link{font-size:11px}.qr-audit-report-content footer{color:#555!important;border-top-color:#bbb!important}
 }
+
+/* v0.44.4 report navigation, zoom and mobile/PDF hardening */
+.qr-audit-report-dialog{--qr-report-zoom:1}
+.qr-audit-report-content{zoom:var(--qr-report-zoom)}
+.qr-audit-report-toolbar{gap:10px;min-height:64px;padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left))}
+.qr-report-nav-group,.qr-report-zoom-group{display:flex;align-items:center;gap:7px}
+.qr-audit-report-toolbar .pg-round-nav-btn{display:grid;place-items:center;width:46px;height:46px;min-width:46px;min-height:46px;padding:0;border-radius:999px;border:1px solid rgba(224,188,102,.42);background:rgba(22,22,20,.96);color:#f1cf72;font:800 30px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-appearance:none;appearance:none}
+.qr-audit-report-toolbar .pg-home-btn{font-size:24px!important;padding-bottom:3px!important}
+.qr-report-zoom-group{padding:4px 6px;border:1px solid rgba(224,188,102,.28);border-radius:999px;background:#171715}
+.qr-report-zoom-btn{display:grid;place-items:center;min-width:42px;height:42px;padding:0 8px;border:0;border-radius:999px;background:transparent;color:#f1cf72;font:800 18px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-appearance:none;appearance:none}
+.qr-report-zoom-btn:active{background:#29251b;transform:scale(.96)}
+.qr-report-zoom-label{min-width:44px;text-align:center;color:#e7dfd0;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.qr-report-print-btn{min-height:46px;white-space:nowrap}
+@media(max-width:680px){
+  .qr-audit-report-dialog{position:fixed!important;inset:0!important;width:100vw!important;max-width:none!important;height:100dvh!important;max-height:100dvh!important;margin:0!important;border-radius:0!important;border:0!important;overflow:auto!important;padding:0!important}
+  .qr-audit-report-toolbar{position:sticky;top:0;flex-wrap:wrap;justify-content:space-between;background:rgba(16,16,16,.985)}
+  .qr-report-nav-group{order:1}.qr-report-print-btn{order:2}.qr-report-zoom-group{order:3;width:100%;justify-content:center}
+  .qr-audit-report-content{padding:18px 14px 28px}
+  .qr-report-body{display:flex!important;flex-direction:column!important;gap:14px!important}
+  .qr-report-photo-wrap,.qr-report-copy,.qr-report-demo{width:100%!important;grid-column:auto!important}
+  .qr-report-photo,.qr-report-photo-empty{width:100%!important;height:auto!important;min-height:170px;max-height:320px;object-fit:cover}
+  .qr-report-demo{display:flex;align-items:center;justify-content:flex-start;gap:12px;text-align:left;padding-top:2px}
+  .qr-report-demo-link{margin-top:0}.qr-report-demo small{margin-top:0}
+  .qr-report-qr{width:92px;height:92px;flex:0 0 auto}
+}
+@media(max-width:390px){
+  .qr-audit-report-toolbar .pg-round-nav-btn{width:44px;height:44px;min-width:44px;min-height:44px}
+  .qr-report-print-btn{min-height:44px;padding:.55rem .72rem;font-size:14px}
+}
+@media print{
+  .qr-audit-report-content{zoom:var(--qr-report-zoom,1)!important}
+  .qr-report-body{grid-template-columns:42mm minmax(0,1fr) 28mm!important;gap:4mm!important;padding:4mm!important}
+  .qr-report-photo,.qr-report-photo-empty{width:42mm!important;height:30mm!important;min-height:0!important;max-height:none!important}
+  .qr-report-qr{width:26mm!important;height:26mm!important}
+  .qr-report-item{overflow:visible!important;break-inside:avoid!important;page-break-inside:avoid!important}
+  .qr-report-item-head{padding:3.5mm 4mm 2.5mm!important}
+  .qr-report-item-head h2{font-size:15pt!important}
+  .qr-report-field p,.qr-report-field strong{font-size:10.5pt!important}
+  .qr-report-field>span{font-size:7.5pt!important}
+}

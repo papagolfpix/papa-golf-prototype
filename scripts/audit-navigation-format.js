@@ -1,0 +1,22 @@
+const fs=require('fs');
+const path=require('path');
+const root=path.resolve(__dirname,'..');
+const read=f=>fs.readFileSync(path.join(root,f),'utf8');
+const html=read('index.html'),app=read('app.js'),styles=read('styles.css'),welcome=read('welcome.html'),welcomeJs=read('welcome.js'),welcomeCss=read('welcome.css');
+const failures=[];const ok=(v,m)=>{if(!v)failures.push(m)};
+['pgGlobalBackBtn','pgGlobalHomeBtn'].forEach(id=>ok(html.includes(`id="${id}"`),`missing global nav ${id}`));
+['photos-home','map-view','areas-view','welcome-admin','guest-home','welcome-a5'].forEach(r=>ok(app.includes(`'${r}'`),`route missing ${r}`));
+['fieldsDialog','filterDialog','detailDialog','visitorDialog','publishDialog','editDialog','qrAuditReportDialog'].forEach(id=>ok(html.includes(`<dialog id="${id}"`),`dialog missing ${id}`));
+['closeFilterBtn','closeDetailBtn','closeVisitorBtn','closePublishBtn','closeEditBtn','qrAuditReportCloseBtn'].forEach(id=>ok(html.includes(`id="${id}"`),`dialog return control missing ${id}`));
+['qrAuditReportHomeBtn','qrAuditReportZoomOutBtn','qrAuditReportZoomInBtn','qrAuditReportPrintBtn'].forEach(id=>ok(html.includes(`id="${id}"`),`report control missing ${id}`));
+ok(styles.includes('min-width:46px;min-height:46px')||styles.includes('min-width:44px;min-height:44px'),'global nav touch target sizing missing');
+ok(styles.includes('height:100dvh!important'),'manager report not hardened to iPhone dynamic viewport');
+ok(styles.includes('flex-direction:column!important'),'mobile report card does not stack');
+ok(styles.includes('break-inside:avoid!important'),'print card page-break protection missing');
+const panels=(welcome.match(/class="detail-panel hidden"/g)||[]).length;
+const panelNav=(welcome.match(/class="public-panel-nav"/g)||[]).length;
+ok(panels>0&&panelNav===panels,`public Welcome nav mismatch: ${panelNav}/${panels}`);
+ok(welcomeJs.includes('publicGoBack')&&welcomeJs.includes('publicGoHome'),'public Welcome Back/Home logic missing');
+ok(welcomeCss.includes('min-height:44px'),'public Welcome nav touch target missing');
+if(failures.length){console.error('Navigation/format audit FAILED');failures.forEach(x=>console.error('✗',x));process.exit(1)}
+console.log(`Navigation/format audit passed: ${panels} public detail panels + owner routes/dialogs checked.`);

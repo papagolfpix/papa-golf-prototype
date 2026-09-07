@@ -100,3 +100,9 @@ body.public-menu-dragging .menu-grid{isolation:isolate}
 .quick-action strong{font-size:17px;line-height:1.15}.quick-action small{font-size:13px;line-height:1.15;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .quick-action::after{content:'›';font-size:25px;line-height:1;color:#e0bc66;text-align:center}
 @media(max-width:390px){.quick-action{min-height:54px}}
+
+/* v0.44.4 public Welcome return-navigation hardening */
+.public-panel-nav{position:sticky;top:max(8px,env(safe-area-inset-top));z-index:20;display:flex;align-items:center;gap:8px;width:max-content;max-width:100%;margin:0 0 12px;padding:5px;border:1px solid rgba(224,188,102,.28);border-radius:999px;background:rgba(16,16,16,.96);box-shadow:0 8px 22px rgba(0,0,0,.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.public-panel-nav button{min-height:44px;padding:0 14px;border:0;border-radius:999px;background:#211f19;color:#f1cf72;font:800 15px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-appearance:none;appearance:none}
+.public-panel-nav button:active{background:#302b1f;transform:scale(.97)}
+@media(max-width:380px){.public-panel-nav{width:100%;justify-content:space-between}.public-panel-nav button{flex:1;padding:0 10px}}

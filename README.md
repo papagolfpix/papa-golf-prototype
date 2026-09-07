@@ -127,3 +127,13 @@ This update turns the Firebase bridge into a guided, safer owner workflow while 
 
 ### v0.44.3
 Property Walkthrough field workflow: touchpoints can now be edited after capture and tracked as Proposed, Approved or Installed. Manager reports include status. Existing private audit-photo storage and backup protections are preserved.
+
+
+### v0.44.4
+- Hardened manager-report navigation on iPhone: local Back + Home remain available while the modal report is open.
+- Added persistent magnifier minus/plus report zoom (80–120%); the selected scale also carries into Print / Save PDF.
+- Rebuilt narrow-screen manager-report cards so photo, proposal copy and QR demo stack cleanly instead of squeezing copy into a narrow column.
+- Added full-height iPhone report dialog with safe-area-aware sticky controls and explicit Escape/cancel handling.
+- Added guest-safe Back + Welcome/Home controls on every public Welcome detail page, including direct QR deep links.
+- Strengthened A4 print grid sizing and break-inside protection for audit opportunity cards.
+- Extended validation coverage for report navigation, zoom, mobile layout and print safeguards.
