@@ -1,3 +1,10 @@
+## v0.45.5 — responsive PDF preview + PDF text-flow fix
+
+- Renders generated audit PDF pages responsively in the Papa Golf viewer so A4 fits phone/tablet width.
+- Keeps iframe/native PDF as a fallback.
+- Corrected audit-item height measurement and detail-link spacing to prevent guest-prompt/link overlap.
+- Leaves the v0.45.4 online manager report layout unchanged.
+
 ## v0.45.4 — manager preview polish + in-app PDF viewer
 
 - Keeps the v0.45.3 automatic A4 PDF layout unchanged.

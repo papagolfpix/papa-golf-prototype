@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.45.4';
+const RUNTIME_VERSION = '0.45.5';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2687,7 +2687,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.45.4', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.45.5', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2805,25 +2805,45 @@ async function qrAuditFetchDataUrl(url){try{const r=await fetch(url,{mode:'cors'
 function qrAuditPdfSafeName(name){return String(name||'Papa-Golf-Audit').replace(/[^a-z0-9_-]+/gi,'-').replace(/^-+|-+$/g,'').slice(0,70)||'Papa-Golf-Audit'}
 function qrAuditPdfLines(doc,text,width,size=12,style='normal'){doc.setFont('helvetica',style);doc.setFontSize(size);return doc.splitTextToSize(String(text||''),width)}
 function qrAuditPdfItemMeasure(doc,item,centerWidth){
-  let h=8; const line=5.0;
-  h+=qrAuditPdfLines(doc,item.existing||'Existing guest information',centerWidth,12).length*line+4;
-  h+=qrAuditPdfLines(doc,QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home',centerWidth,12,'bold').length*line;
-  if(item.note)h+=qrAuditPdfLines(doc,item.note,centerWidth,12).length*line+2;
-  h+=qrAuditPdfLines(doc,`“${item.label||'Scan for details'}”`,centerWidth,12).length*line+5;
-  return Math.max(34,h+8);
+  const line=5;
+  let body=3; // top inset inside the item body
+  body+=4+qrAuditPdfLines(doc,item.existing||'Existing guest information',centerWidth,12).length*line;
+  body+=2;
+  body+=4+qrAuditPdfLines(doc,QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home',centerWidth,12,'bold').length*line;
+  if(item.note)body+=1+qrAuditPdfLines(doc,item.note,centerWidth,12).length*line;
+  body+=2;
+  body+=4+qrAuditPdfLines(doc,`“${item.label||'Scan for details'}”`,centerWidth,12).length*line;
+  body+=3+5+3; // gap + detail link + bottom padding
+  return Math.max(46,10+body); // 8mm heading + body spacing; also protects QR/photo height
 }
 function qrAuditPdfHeader(doc,d,pageNo){const W=210,m=10;doc.setDrawColor(184,155,85);doc.setLineWidth(.35);doc.line(m,13,W-m,13);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(114,87,22);doc.text('PAPA GOLF',m,9.5);doc.setFont('helvetica','normal');doc.setTextColor(75,75,75);doc.text(`Property Information Upgrade · ${d.propertyName||d.name||'Property'}`,W-m,9.5,{align:'right'});doc.setFontSize(8);doc.text(`Page ${pageNo}`,W-m,291,{align:'right'});doc.setFont('helvetica','bold');doc.text('Papa Golf Platform',m,291);doc.setDrawColor(185,185,185);doc.line(m,287,W-m,287)}
 function qrAuditPdfAddTextBlock(doc,label,text,x,y,w,{bold=false}={}){doc.setTextColor(90,90,90);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text(String(label||'').toUpperCase(),x,y);y+=4;doc.setTextColor(bold?114:35,bold?87:35,bold?22:35);doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(12);const lines=doc.splitTextToSize(String(text||''),w);doc.text(lines,x,y);return y+lines.length*5}
 let qrAuditPdfViewerUrl='',qrAuditPdfViewerFile=null,qrAuditPdfViewerName='Papa-Golf-Audit.pdf';
+function loadQrAuditPdfViewerLibrary(){return new Promise((resolve,reject)=>{if(window.pdfjsLib){window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';return resolve(window.pdfjsLib)}const prior=document.querySelector('script[data-pg-pdfjs]');if(prior){prior.addEventListener('load',()=>window.pdfjsLib?resolve(window.pdfjsLib):reject(new Error('PDF viewer unavailable')),{once:true});prior.addEventListener('error',()=>reject(new Error('PDF viewer failed to load')),{once:true});return}const s=document.createElement('script');s.dataset.pgPdfjs='1';s.src='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';s.onload=()=>{if(!window.pdfjsLib)return reject(new Error('PDF viewer unavailable'));window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';resolve(window.pdfjsLib)};s.onerror=()=>reject(new Error('PDF viewer failed to load'));document.head.appendChild(s)})}
+async function renderQrAuditPdfPreview(blob){
+  const pages=document.getElementById('qrAuditPdfPages'),frame=document.getElementById('qrAuditPdfFrame'),stage=document.getElementById('qrAuditPdfStage');if(!pages||!stage)return;
+  pages.innerHTML='<div class="pg-pdf-loading">Preparing preview…</div>';pages.classList.remove('hidden');frame?.classList.add('hidden');
+  try{
+    const pdfjs=await loadQrAuditPdfViewerLibrary(),data=await blob.arrayBuffer(),pdf=await pdfjs.getDocument({data}).promise;pages.innerHTML='';
+    const available=Math.max(240,stage.clientWidth-18),dpr=Math.min(window.devicePixelRatio||1,2);
+    for(let n=1;n<=pdf.numPages;n++){
+      const page=await pdf.getPage(n),base=page.getViewport({scale:1}),cssScale=Math.min(1.4,available/base.width),renderScale=cssScale*dpr,viewport=page.getViewport({scale:renderScale});
+      const shell=document.createElement('div');shell.className='pg-pdf-page-shell';const canvas=document.createElement('canvas');canvas.className='pg-pdf-page-canvas';canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);canvas.style.width=`${Math.floor(base.width*cssScale)}px`;canvas.style.height=`${Math.floor(base.height*cssScale)}px`;shell.appendChild(canvas);pages.appendChild(shell);
+      await page.render({canvasContext:canvas.getContext('2d',{alpha:false}),viewport}).promise;
+    }
+  }catch(error){
+    console.warn('Responsive PDF preview fallback',error);pages.classList.add('hidden');if(frame){frame.classList.remove('hidden');frame.src=`${qrAuditPdfViewerUrl}#view=FitH&zoom=page-width`;}
+  }
+}
 function closeQrAuditPdfViewer(){
   const dialog=document.getElementById('qrAuditPdfViewerDialog');if(dialog?.open)dialog.close();else dialog?.removeAttribute('open');
-  const frame=document.getElementById('qrAuditPdfFrame');if(frame)frame.removeAttribute('src');
+  const frame=document.getElementById('qrAuditPdfFrame');if(frame){frame.removeAttribute('src');frame.classList.add('hidden')}const pages=document.getElementById('qrAuditPdfPages');if(pages)pages.innerHTML='';
   if(qrAuditPdfViewerUrl){URL.revokeObjectURL(qrAuditPdfViewerUrl);qrAuditPdfViewerUrl=''}
 }
 function openQrAuditPdfViewer(blob,file,filename){
   closeQrAuditPdfViewer();qrAuditPdfViewerFile=file;qrAuditPdfViewerName=filename||'Papa-Golf-Audit.pdf';qrAuditPdfViewerUrl=URL.createObjectURL(blob);
-  const frame=document.getElementById('qrAuditPdfFrame'),dialog=document.getElementById('qrAuditPdfViewerDialog');if(frame)frame.src=qrAuditPdfViewerUrl;
-  if(typeof dialog?.showModal==='function'&&!dialog.open)dialog.showModal();else dialog?.setAttribute('open','');
+  const dialog=document.getElementById('qrAuditPdfViewerDialog');if(typeof dialog?.showModal==='function'&&!dialog.open)dialog.showModal();else dialog?.setAttribute('open','');
+  requestAnimationFrame(()=>renderQrAuditPdfPreview(blob));
 }
 async function downloadQrAuditPdf(){
   const file=qrAuditPdfViewerFile;if(!file||!qrAuditPdfViewerUrl)return;
@@ -2854,7 +2874,7 @@ async function createQrAuditPdf(){
       const bodyY=y+10,photoH=24,photoX=x+2,centerX=x+2+photoW+gap,qrX=x+contentW-qrW-2;
       const photo=assets.get(item.photoKey||'');if(photo){try{doc.addImage(photo,photo.startsWith('data:image/png')?'PNG':photo.startsWith('data:image/webp')?'WEBP':'JPEG',photoX,bodyY,photoW-2,photoH,undefined,'FAST')}catch{doc.setFillColor(238,238,238);doc.rect(photoX,bodyY,photoW-2,photoH,'F')}}else{doc.setFillColor(238,238,238);doc.rect(photoX,bodyY,photoW-2,photoH,'F');doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(110,110,110);doc.text('No audit photo',photoX+(photoW-2)/2,bodyY+13,{align:'center'})}
       let cy=bodyY+3;cy=qrAuditPdfAddTextBlock(doc,'Recognise',item.existing||'Existing guest information',centerX,cy,centerW);cy+=2;cy=qrAuditPdfAddTextBlock(doc,'Suggested upgrade',QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home',centerX,cy,centerW,{bold:true});if(item.note){cy+=1;doc.setTextColor(40,40,40);doc.setFont('helvetica','normal');doc.setFontSize(12);const l=doc.splitTextToSize(item.note,centerW);doc.text(l,centerX,cy);cy+=l.length*5}cy+=2;cy=qrAuditPdfAddTextBlock(doc,'Guest prompt',`“${item.label||'Scan for details'}”`,centerX,cy,centerW);
-      const url=welcomeSectionUrl(item.destination||'home'),qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=8&format=png&data=${encodeURIComponent(url)}`,qrData=await qrAuditFetchDataUrl(qrUrl);if(qrData){try{doc.addImage(qrData,'PNG',qrX,bodyY,qrW-2,qrW-2,undefined,'FAST')}catch{}}doc.link(qrX,bodyY,qrW-2,qrW-2,{url});doc.setTextColor(114,87,22);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text('OPEN DETAILS',qrX+(qrW-2)/2,bodyY+qrW+1,{align:'center'});doc.link(centerX,Math.min(y+itemH-6,cy+1),42,5,{url});doc.text('View full recommendation →',centerX,Math.min(y+itemH-3,cy+4));
+      const url=welcomeSectionUrl(item.destination||'home'),qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=8&format=png&data=${encodeURIComponent(url)}`,qrData=await qrAuditFetchDataUrl(qrUrl);if(qrData){try{doc.addImage(qrData,'PNG',qrX,bodyY,qrW-2,qrW-2,undefined,'FAST')}catch{}}doc.link(qrX,bodyY,qrW-2,qrW-2,{url});doc.setTextColor(114,87,22);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text('OPEN DETAILS',qrX+(qrW-2)/2,bodyY+qrW+1,{align:'center'});const linkY=cy+4;doc.link(centerX,linkY-3,44,5,{url});doc.text('View full recommendation →',centerX,linkY);
       y+=itemH+3;
     }
     const filename=`${qrAuditPdfSafeName(d.propertyName||d.name||'Papa-Golf')}-Audit.pdf`,blob=doc.output('blob'),file=new File([blob],filename,{type:'application/pdf'});
