@@ -171,6 +171,17 @@ check(publicWelcomeJs.includes('function publicGoBack()')&&publicWelcomeJs.inclu
 check(publicWelcomeJs.includes('showPanel(panel,false)'),'direct QR deep links do not create a false back-history entry');
 check(read('welcome.css').includes('v0.44.4 public Welcome return-navigation hardening')&&read('welcome.css').includes('min-height:44px'),'public Welcome return controls retain mobile touch targets');
 
+
+// v0.44.5 compact phone report + fixed-density A4 print pages
+for(const id of ['qrAuditPrintOptionsDialog','qrPrintDensityLessBtn','qrPrintDensityValue','qrPrintDensityMoreBtn','qrAuditPrintCancelBtn','qrAuditPrintConfirmBtn']) check(html.includes(`id="${id}"`),`print-layout control present: ${id}`);
+check(app.includes("QR_AUDIT_PRINT_DENSITIES=[4,5,6]")&&app.includes('function buildQrAuditPrintPages'),'manager report regenerates exact 4/5/6-density print pages');
+check(app.includes("getElementById('qrAuditReportPrintBtn')?.addEventListener('click',openQrAuditPrintOptions)"),'report Print button opens layout chooser before native iOS print');
+check(app.includes('if(printAfter)setTimeout(openQrAuditPrintOptions,160)'),'direct walkthrough print also uses layout chooser');
+check(styles.includes('v0.44.5 compact phone report + controlled 4–6 item A4 print layout'),'v0.44.5 compact report CSS present');
+check(styles.includes('height:155px!important')&&styles.includes('height:135px!important'),'phone audit photos are capped to compact heights');
+check(styles.includes('.qr-report-print-page.density-4 .qr-report-print-grid{grid-template-rows:repeat(2')&&styles.includes('.density-5 .qr-report-print-grid,.qr-report-print-page.density-6'),'A4 print pages explicitly support 4, 5 and 6 items');
+check(styles.includes('#qrAuditReportContent,.qr-audit-report-content{zoom:1!important}'),'print layout is isolated from on-screen zoom');
+
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');
   for(const x of fail) console.error('✗',x);

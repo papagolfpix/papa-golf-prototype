@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.44.4" />
+<link rel="stylesheet" href="styles.css?v=0.44.5" />
 </head>
 <body>
   <div id="pgGlobalNav" class="pg-global-nav hidden" aria-label="Papa Golf navigation">
@@ -17,7 +17,7 @@
   <header class="app-header">
     <div class="app-header-left">
       <div>
-        <div class="eyebrow">PAPA GOLF · V0.44.4</div>
+        <div class="eyebrow">PAPA GOLF · V0.44.5</div>
         <h1>Papa Golf Prototype</h1>
       </div>
     </div>
@@ -528,6 +528,22 @@
   <article id="qrAuditReportContent" class="qr-audit-report-content"></article>
 </dialog>
 
+<dialog id="qrAuditPrintOptionsDialog" class="qr-audit-print-options no-print">
+  <div class="qr-audit-print-options-card">
+    <h2>Print layout</h2>
+    <p>Choose how many audit opportunities to fit on each A4 page.</p>
+    <div class="qr-print-density-control" aria-label="Items per page">
+      <button id="qrPrintDensityLessBtn" type="button" class="qr-report-zoom-btn" aria-label="Fewer items per page" title="Fewer items per page">⌕−</button>
+      <div><strong id="qrPrintDensityValue">4</strong><span>per page</span></div>
+      <button id="qrPrintDensityMoreBtn" type="button" class="qr-report-zoom-btn" aria-label="More items per page" title="More items per page">⌕+</button>
+    </div>
+    <div class="qr-audit-print-options-actions">
+      <button id="qrAuditPrintCancelBtn" type="button" class="secondary-btn">Cancel</button>
+      <button id="qrAuditPrintConfirmBtn" type="button" class="primary-btn">Open Print / Save PDF</button>
+    </div>
+  </div>
+</dialog>
+
 <section id="welcomeGuestPreview" class="screen hidden">
   <div class="welcome-guest-topbar">
     <button id="guestTopHelpBtn" class="guest-top-help" type="button" data-welcome-panel="guestEmergencyPanel">🆘 Help</button>
@@ -828,6 +844,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.44.4" defer></script>
+  <script src="app.js?v=0.44.5" defer></script>
 </body>
 </html>

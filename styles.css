@@ -1835,3 +1835,57 @@ body.guest-preview-mode .guest-top-help:active{transform:scale(.97);background:#
   .qr-report-field p,.qr-report-field strong{font-size:10.5pt!important}
   .qr-report-field>span{font-size:7.5pt!important}
 }
+
+/* v0.44.5 compact phone report + controlled 4–6 item A4 print layout */
+.qr-report-print-pages{display:none}
+.qr-audit-print-options{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;overflow:hidden!important}
+.qr-audit-print-options::backdrop{background:rgba(0,0,0,.72)}
+.qr-audit-print-options-card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,calc(100vw - 30px));padding:20px;border:1px solid rgba(224,188,102,.4);border-radius:20px;background:#151515;color:#f5f0e6;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.qr-audit-print-options-card h2{margin:0 0 6px;font-size:23px}.qr-audit-print-options-card p{margin:0 0 17px;color:#bcb5a9;line-height:1.42}
+.qr-print-density-control{display:grid;grid-template-columns:54px minmax(0,1fr) 54px;align-items:center;gap:8px;padding:8px;border:1px solid rgba(224,188,102,.28);border-radius:16px;background:#10100f}
+.qr-print-density-control>div{text-align:center}.qr-print-density-control strong{display:block;font-size:27px;color:#f1cf72;line-height:1}.qr-print-density-control span{display:block;margin-top:3px;color:#a9a297;font-size:12px;font-weight:700}
+.qr-audit-print-options-actions{display:grid;grid-template-columns:1fr 1.45fr;gap:9px;margin-top:16px}.qr-audit-print-options-actions button{min-height:48px}
+@media(max-width:680px){
+  .qr-report-photo-wrap{display:flex;justify-content:flex-start}
+  .qr-report-photo,.qr-report-photo-empty{width:min(100%,420px)!important;height:155px!important;min-height:0!important;max-height:155px!important;object-fit:cover!important}
+  .qr-report-body{gap:11px!important}
+  .qr-report-copy{gap:8px!important}
+  .qr-report-item-head{padding:11px 14px 9px!important}
+}
+@media(max-width:390px){
+  .qr-report-photo,.qr-report-photo-empty{height:135px!important;max-height:135px!important}
+  .qr-audit-print-options-actions{grid-template-columns:1fr}
+}
+@media print{
+  /* The cover/summary is page one; detailed cards are regenerated into fixed-density print pages. */
+  .qr-report-items,.qr-audit-report-content>footer{display:none!important}
+  .qr-report-guide{break-after:page!important;page-break-after:always!important;margin-bottom:0!important}
+  .qr-report-print-pages{display:block!important}
+  .qr-report-print-page{display:flex!important;flex-direction:column!important;min-height:267mm!important;height:267mm!important;break-after:page!important;page-break-after:always!important;overflow:hidden!important}
+  .qr-report-print-page:last-child{break-after:auto!important;page-break-after:auto!important}
+  .qr-report-print-page-head{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:8mm!important;height:9mm!important;padding:0 1mm 2mm!important;border-bottom:1px solid #bba66f!important;color:#111!important;font-size:8pt!important}
+  .qr-report-print-page-head strong{font-size:9pt!important}.qr-report-print-page-head span{color:#555!important}
+  .qr-report-print-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:3mm!important;flex:1!important;min-height:0!important;padding:3mm 0 2mm!important;align-content:stretch!important}
+  .qr-report-print-page.density-4 .qr-report-print-grid{grid-template-rows:repeat(2,minmax(0,1fr))!important}
+  .qr-report-print-page.density-5 .qr-report-print-grid,.qr-report-print-page.density-6 .qr-report-print-grid{grid-template-rows:repeat(3,minmax(0,1fr))!important}
+  .qr-report-print-grid .qr-report-item{display:flex!important;flex-direction:column!important;height:100%!important;min-height:0!important;margin:0!important;border-radius:3mm!important;overflow:hidden!important;break-inside:avoid!important;page-break-inside:avoid!important}
+  .qr-report-print-grid .qr-report-item-head{flex:0 0 auto!important;padding:2.2mm 2.5mm 1.8mm!important;gap:2mm!important}
+  .qr-report-print-grid .qr-report-number{width:6.5mm!important;height:6.5mm!important;min-width:6.5mm!important;font-size:8pt!important}
+  .qr-report-print-grid .qr-report-flags{gap:1mm!important}.qr-report-print-grid .qr-report-flags span{font-size:5.5pt!important;padding:1mm 1.5mm!important}
+  .qr-report-print-grid .qr-report-item-head h2{margin:1mm 0 0!important;font-size:10pt!important;line-height:1.12!important}
+  .qr-report-print-grid .qr-report-body{display:grid!important;grid-template-columns:25mm minmax(0,1fr) 18mm!important;gap:2.2mm!important;align-items:start!important;flex:1!important;min-height:0!important;padding:2.3mm!important}
+  .qr-report-print-grid .qr-report-photo-wrap{display:block!important;width:25mm!important}
+  .qr-report-print-grid .qr-report-photo,.qr-report-print-grid .qr-report-photo-empty{width:25mm!important;height:19mm!important;min-height:0!important;max-height:none!important;border-radius:2mm!important;object-fit:cover!important;font-size:6pt!important}
+  .qr-report-print-grid .qr-report-copy{gap:1.8mm!important;min-width:0!important}
+  .qr-report-print-grid .qr-report-field>span{font-size:5.4pt!important;line-height:1.15!important;margin-bottom:.5mm!important}
+  .qr-report-print-grid .qr-report-field p,.qr-report-print-grid .qr-report-field strong{font-size:7.3pt!important;line-height:1.22!important;overflow-wrap:anywhere!important}
+  .qr-report-print-grid .qr-report-field:last-child p{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:4!important;overflow:hidden!important}
+  .qr-report-print-grid .qr-report-demo{width:18mm!important;text-align:center!important;display:block!important;padding:0!important}
+  .qr-report-print-grid .qr-report-qr{width:17mm!important;height:17mm!important;padding:1mm!important;border-radius:1.5mm!important}
+  .qr-report-print-grid .qr-report-demo-link{font-size:5.8pt!important;line-height:1.1!important;margin-top:1mm!important}.qr-report-print-grid .qr-report-demo small{font-size:5.2pt!important;line-height:1.1!important}
+  .qr-report-print-page.density-4 .qr-report-photo,.qr-report-print-page.density-4 .qr-report-photo-empty{height:23mm!important}
+  .qr-report-print-page.density-4 .qr-report-field p,.qr-report-print-page.density-4 .qr-report-field strong{font-size:8pt!important}.qr-report-print-page.density-4 .qr-report-field>span{font-size:5.8pt!important}.qr-report-print-page.density-4 .qr-report-item-head h2{font-size:10.5pt!important}
+  .qr-report-print-page-foot{display:flex!important;justify-content:space-between!important;align-items:center!important;height:7mm!important;padding-top:1.5mm!important;border-top:1px solid #ccc!important;color:#666!important;font-size:6.5pt!important}
+}
+
+@media print{#qrAuditReportContent,.qr-audit-report-content{zoom:1!important}}

@@ -137,3 +137,11 @@ Property Walkthrough field workflow: touchpoints can now be edited after capture
 - Added guest-safe Back + Welcome/Home controls on every public Welcome detail page, including direct QR deep links.
 - Strengthened A4 print grid sizing and break-inside protection for audit opportunity cards.
 - Extended validation coverage for report navigation, zoom, mobile layout and print safeguards.
+
+
+### v0.44.5
+- Restores controlled compact A4 audit-report printing with a centered 4/5/6 opportunities-per-page selector before iOS Print / Save PDF.
+- Print output now regenerates touchpoints into fixed-density A4 pages instead of allowing the mobile card layout to expand to roughly one item per page.
+- QR codes and View demonstration links remain live/clickable in PDF output.
+- Manager-report photos are substantially smaller in the iPhone digital view while remaining easy to inspect.
+- Report Back/Home/zoom controls from v0.44.4 are retained.
