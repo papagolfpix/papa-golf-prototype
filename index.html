@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Papa Golf Photo Prototype</title>
-<link rel="stylesheet" href="styles.css?v=0.44.7" />
+<link rel="stylesheet" href="styles.css?v=0.45.3" />
 </head>
 <body>
   <div id="pgGlobalNav" class="pg-global-nav hidden" aria-label="Papa Golf navigation">
@@ -17,7 +17,7 @@
   <header class="app-header">
     <div class="app-header-left">
       <div>
-        <div class="eyebrow">PAPA GOLF · V0.44.7</div>
+        <div class="eyebrow">PAPA GOLF · V0.45.3</div>
         <h1>Papa Golf Prototype</h1>
       </div>
     </div>
@@ -513,22 +513,14 @@
 </section>
 
 <dialog id="qrAuditReportDialog" class="qr-audit-report-dialog">
-  <div class="qr-audit-report-toolbar no-print" aria-label="Manager report controls">
-    <div class="qr-report-nav-group">
-      <button id="qrAuditReportCloseBtn" class="pg-round-nav-btn" type="button" aria-label="Back to Property Walkthrough" title="Back">‹</button>
-      <button id="qrAuditReportHomeBtn" class="pg-round-nav-btn pg-home-btn" type="button" aria-label="Papa Golf home" title="Home">⌂</button>
-    </div>
-    <div class="qr-report-zoom-group" aria-label="Report zoom">
-      <button id="qrAuditReportZoomOutBtn" class="qr-report-zoom-btn" type="button" aria-label="Zoom out" title="Zoom out">⌕−</button>
-      <span id="qrAuditReportZoomLabel" class="qr-report-zoom-label" aria-live="polite">100%</span>
-      <button id="qrAuditReportZoomInBtn" class="qr-report-zoom-btn" type="button" aria-label="Zoom in" title="Zoom in">⌕+</button>
-    </div>
-    <button id="qrAuditReportPrintBtn" class="primary-btn qr-report-print-btn" type="button">Print / Save PDF</button>
+  <div class="qr-audit-report-toolbar">
+    <button id="qrAuditReportCloseBtn" class="pg-round-nav-btn" type="button" aria-label="Close report" title="Close">‹</button>
+    <div class="qr-audit-report-title">Manager audit report preview</div>
+    <button id="qrAuditReportPrintBtn" class="primary-btn" type="button">Create A4 PDF</button>
   </div>
+  <div id="qrAuditPdfStatus" class="qr-audit-pdf-status hidden" role="status" aria-live="polite"></div>
   <article id="qrAuditReportContent" class="qr-audit-report-content"></article>
 </dialog>
-
-
 
 <section id="welcomeGuestPreview" class="screen hidden">
   <div class="welcome-guest-topbar">
@@ -830,6 +822,6 @@
   </template>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="app.js?v=0.44.7" defer></script>
+  <script src="app.js?v=0.45.3" defer></script>
 </body>
 </html>

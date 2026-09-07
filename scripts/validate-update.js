@@ -105,7 +105,7 @@ for(const id of ['qrTouchpointCameraInput','qrTouchpointPhotoInput','clearQrTouc
 check(app.includes("PAPA_GOLF_AUDIT_ASSET_DB='papa-golf-audit-assets-v01'")&&app.includes('prepareAuditPhoto'),'private audit photo asset store and compression present');
 check(app.includes('auditPhotoAssets:')&&app.includes('welcome.auditPhotoAssets'),'backup and restore include audit photo assets');
 check(app.includes('version: 11'),'backup format advanced to v11');
-check(app.includes('function buildQrAuditReport()')&&app.includes('View demonstration'),'manager-facing audit report includes demonstration destination');
+check(app.includes('function buildQrAuditReport()')&&app.includes('View full recommendation'),'manager-facing audit report includes expanded recommendation destination');
 check(app.includes("pushPapaGolfRoute(id==='photosTabBtn'?'photos-home':id==='mapTabBtn'?'map-view':'areas-view')"),'main tabs participate in Papa Golf navigation history');
 check(read('styles.css').includes('.qr-audit-report-dialog')&&read('styles.css').includes('.qr-touchpoint-photo-preview'),'audit report and photo capture have responsive styling');
 
@@ -149,43 +149,18 @@ check(styles.includes('v0.44.2 field audit workflow'), 'field audit workflow sty
 
 // v0.44.3 manager proposal / PDF presentation
 check(app.includes('DEMONSTRATION PROPOSAL')&&app.includes('How to review this proposal'),'manager report clearly labels pre-sale/sample destinations');
-check(app.includes('qr-report-qr-link')&&app.includes('qr-report-demo-link'),'manager report provides clickable QR and demonstration links');
+check(app.includes('qr-report-qr-link')&&app.includes('qr-report-detail-link'),'manager report provides clickable QR and full recommendation links');
 check(styles.includes('@page{size:A4 portrait')&&styles.includes('break-inside:avoid'),'manager report has A4 print pagination safeguards');
 check(styles.includes('v0.44.3 manager proposal / PDF presentation'),'manager proposal presentation styling present');
 
 
-// v0.44.4 manager-report navigation / zoom / mobile formatting hardening
-for(const id of ['qrAuditReportCloseBtn','qrAuditReportHomeBtn','qrAuditReportZoomOutBtn','qrAuditReportZoomLabel','qrAuditReportZoomInBtn','qrAuditReportPrintBtn']) check(html.includes(`id="${id}"`),`manager report control present: ${id}`);
-check(app.includes("QR_AUDIT_REPORT_ZOOM_KEY='papaGolfQrAuditReportZoomV1'")&&app.includes('QR_AUDIT_REPORT_ZOOM_STEPS=[0.8,0.9,1,1.1,1.2]'),'manager report persistent zoom range present');
-check(app.includes('function closeQrAuditReport()')&&app.includes('function homeFromQrAuditReport()'),'manager report has explicit Back/Home handlers');
-check(app.includes("getElementById('qrAuditReportHomeBtn')?.addEventListener('click',homeFromQrAuditReport)"),'manager report Home button wired');
-check(app.includes("getElementById('qrAuditReportZoomOutBtn')?.addEventListener('click',()=>stepQrAuditReportZoom(-1))")&&app.includes("getElementById('qrAuditReportZoomInBtn')?.addEventListener('click',()=>stepQrAuditReportZoom(1))"),'manager report zoom buttons wired');
-check(app.includes("getElementById('qrAuditReportDialog')?.addEventListener('cancel'")&&app.includes('event.preventDefault();closeQrAuditReport()'),'manager report native cancel/Escape returns safely');
-check(styles.includes('v0.44.4 report navigation, zoom and mobile/PDF hardening'),'v0.44.4 report hardening CSS present');
-check(styles.includes('.qr-audit-report-content{zoom:var(--qr-report-zoom)}'),'manager report screen zoom applies to full report content');
-check(styles.includes('.qr-report-body{display:flex!important;flex-direction:column!important'),'narrow-screen report cards stack instead of squeezing text');
-check(styles.includes('height:100dvh!important')&&styles.includes('env(safe-area-inset-top)'),'iPhone report dialog uses full dynamic viewport and safe areas');
-check(styles.includes('.qr-audit-report-content{zoom:var(--qr-report-zoom,1)!important}')&&styles.includes('grid-template-columns:20% 60% 20%!important'),'A4 print keeps report zoom isolated and uses explicit print columns');
-check(publicWelcome.includes('public-panel-nav')&&publicWelcome.includes('public-home-btn'),'public Welcome detail panels expose Back and Welcome/Home controls');
-check(publicWelcomeJs.includes('function publicGoBack()')&&publicWelcomeJs.includes('function publicGoHome()')&&publicWelcomeJs.includes('publicPanelHistory'),'public Welcome has local return-navigation history');
-check(publicWelcomeJs.includes('showPanel(panel,false)'),'direct QR deep links do not create a false back-history entry');
-check(read('welcome.css').includes('v0.44.4 public Welcome return-navigation hardening')&&read('welcome.css').includes('min-height:44px'),'public Welcome return controls retain mobile touch targets');
-
-
-// v0.44.7 automatic content-aware A4 pagination
-check(!html.includes('qrAuditPrintOptionsDialog')&&!html.includes('qrPrintDensityValue'),'manual 4/5/6 print-density chooser removed');
-check(app.includes('function qrAuditEstimatedPrintHeight')&&app.includes('function buildQrAuditPrintPages')&&app.includes('pageCapacityMm=246'),'manager report uses automatic content-aware A4 pagination');
-check(app.includes("getElementById('qrAuditReportPrintBtn')?.addEventListener('click',printQrAuditReport)"),'report Print button builds automatic pages then opens native print');
-check(app.includes('if(printAfter)setTimeout(printQrAuditReport,160)'),'direct walkthrough print uses automatic pagination');
-check(styles.includes('v0.44.7 deterministic automatic A4 audit pagination'),'v0.44.7 deterministic print CSS present');
-check(styles.includes('grid-template-columns:20% 60% 20%!important'),'print opportunity body uses 20% photo / 60% information / 20% QR');
-check(styles.includes('white-space:nowrap!important')&&styles.includes('.qr-print-head-location'),'item number, priority, status and location share one print header line');
-check(styles.includes('height:var(--qr-print-item-height)!important')&&styles.includes('break-inside:avoid!important'),'print item has computed indivisible height and cannot split across pages');
-check(styles.includes('font-size:10pt!important')&&styles.includes('width:24mm!important;height:24mm!important'),'print text and QR retain fixed readable sizing');
-check(app.includes('function welcomeAuditReportLinkUrl')&&app.includes("params.set('from','audit-report')"),'manager report builds return-aware same-tab demonstration links');
-check(!app.includes('class="qr-report-demo-link" href="${escapeHtml(url)}" target="_blank"'),'manager report demonstration links no longer force a new tab');
-check(publicWelcomeJs.includes("sharedHashParams().get('from')==='audit-report'")&&publicWelcomeJs.includes('history.back()'),'public Welcome Back returns to manager report when opened from a report link');
-check(styles.includes('#qrAuditReportContent,.qr-audit-report-content{zoom:1!important}'),'print layout is isolated from on-screen zoom');
+// v0.45.3 automatic A4 PDF manager report
+check(!html.includes('qrAuditZoomInBtn')&&!html.includes('qrAuditPrintPanel'),'manual 4/5/6 report-density controls removed');
+check(app.includes('createQrAuditPdf')&&app.includes('jspdf@2.5.2'),'manager audit uses direct client-side PDF generation');
+check(app.includes('qrAuditPdfItemMeasure')&&app.includes('if(y+itemH>bottom)'),'PDF pagination measures each complete recommendation before page placement');
+check(app.includes('HIGH PRIORITY')||app.includes('qrTouchpointPriorityLabel(item.priority).toUpperCase()'),'compact item header includes priority/status/location workflow');
+check(app.includes("navigator.canShare?.({files:[file]})")&&app.includes("doc.save(filename)"),'generated PDF supports iPhone share sheet and browser download fallback');
+check(styles.includes('v0.45.3 automatic A4 PDF manager audit'),'automatic PDF preview styling present');
 
 if(fail.length){
   console.error('\nPapa Golf validation FAILED:');
@@ -193,3 +168,8 @@ if(fail.length){
   process.exit(1);
 }
 console.log(`\nPapa Golf validation passed for v${v}.`);
+
+
+// v0.45.3 deployment freshness guard
+check(read('app.js').includes('checkPapaGolfBuildVersion')&&read('app.js').includes('papaGolfSwReloaded-${RUNTIME_VERSION}'),'iPhone/PWA shell refresh is version-aware');
+check(read('version.json').includes('0.45.3')&&read('service-worker.js').includes('papa-golf-v0453-shell'),'deployment version manifest and cache key bumped');

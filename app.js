@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.44.7';
+const RUNTIME_VERSION = '0.45.3';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2680,19 +2680,34 @@ if ('serviceWorker' in navigator) {
 
     // Reload once when a newly deployed Papa Golf worker takes control.
     // This affects only the app shell; IndexedDB photo records are untouched.
-    const key = 'papaGolfSwReloaded0260';
+    const key = `papaGolfSwReloaded-${RUNTIME_VERSION}`;
     if (!sessionStorage.getItem(key)) {
       sessionStorage.setItem(key, '1');
       window.location.reload();
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.44.7', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.45.3', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
     .catch(() => {});
 }
+// Keep long-lived iPhone/PWA sessions on the deployed build instead of silently showing an old shell.
+async function checkPapaGolfBuildVersion(){
+  try{
+    const res=await fetch(`./version.json?ts=${Date.now()}`,{cache:'no-store'});
+    if(!res.ok)return;
+    const deployed=String((await res.json())?.version||'').trim();
+    if(deployed && deployed!==RUNTIME_VERSION){
+      const key=`papaGolfBuildRefresh-${deployed}`;
+      if(!sessionStorage.getItem(key)){sessionStorage.setItem(key,'1');window.location.reload()}
+    }
+  }catch(_){}
+}
+checkPapaGolfBuildVersion();
+setInterval(checkPapaGolfBuildVersion,60000);
+
 renderGallery().catch(error => { backupStatus.textContent = `Storage error: ${error.message || error}`; });
 
 
@@ -2745,10 +2760,6 @@ function welcomeSectionUrl(section='home'){
   const base=welcomePublicUrl();
   try{const u=new URL(base);const hash=u.hash.replace(/^#/,'');const params=new URLSearchParams(hash);params.set('s',section||'home');u.hash=params.toString();return u.href}catch{return base}
 }
-function welcomeAuditReportLinkUrl(section='home'){
-  const base=welcomeSectionUrl(section);
-  try{const u=new URL(base);const params=new URLSearchParams(u.hash.replace(/^#/,''));params.set('from','audit-report');u.hash=params.toString();return u.href}catch{return base}
-}
 function qrTouchpointPriorityLabel(priority){return priority==='high'?'High priority':priority==='low'?'Low priority':'Medium priority'}
 function qrTouchpointStatusLabel(status){return status==='installed'?'Installed':status==='approved'?'Approved':'Proposed'}
 let editingQrTouchpointId='';
@@ -2773,89 +2784,66 @@ async function addQrTouchpoint(){
 }
 async function copyQrTouchpointLink(id){const item=getQrTouchpoints().find(x=>x.id===id);if(!item)return;const url=welcomeSectionUrl(item.destination||'home');try{await navigator.clipboard.writeText(url)}catch{}}
 async function removeQrTouchpoint(id){const item=getQrTouchpoints().find(x=>x.id===id);if(item?.photoKey)await deleteAuditAsset(item.photoKey);const items=getQrTouchpoints().filter(x=>x.id!==id);saveQrTouchpoints(items);renderQrTouchpoints()}
+function qrAuditPageHeader(d){return `<header class="qr-report-page-header"><strong>PAPA GOLF</strong><span>Property Information Upgrade · ${escapeHtml(d.propertyName||d.name||'Property')}</span></header>`}
+function qrAuditPageFooter(){return `<footer class="qr-report-page-footer"><strong>Papa Golf Platform</strong><span>Automatic A4 document layout</span></footer>`}
+function qrAuditItemHtml(item,i){
+  const url=welcomeSectionUrl(item.destination||'home'),qr=`https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&format=png&data=${encodeURIComponent(url)}`;
+  return `<article class="qr-report-item"><div class="qr-report-item-line"><strong>${i+1} · ${escapeHtml(qrTouchpointPriorityLabel(item.priority).toUpperCase())} · ${escapeHtml(qrTouchpointStatusLabel(item.status).toUpperCase())} · ${escapeHtml(item.location||'Property touchpoint')}</strong></div><div class="qr-report-body"><div class="qr-report-photo-wrap">${item.photoKey?`<img class="qr-report-photo" data-report-photo-key="${escapeHtml(item.photoKey)}" alt="${escapeHtml(item.location||'Audit location')}">`:'<div class="qr-report-photo-empty">No audit photo</div>'}</div><div class="qr-report-copy"><div class="qr-report-field"><span>Recognise</span><p>${escapeHtml(item.existing||'Existing guest information')}</p></div><div class="qr-report-field"><span>Suggested upgrade</span><strong>${escapeHtml(QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home')}</strong>${item.note?`<p class="qr-report-note">${escapeHtml(item.note)}</p>`:''}</div><div class="qr-report-field"><span>Guest prompt</span><p>“${escapeHtml(item.label||'Scan for details')}”</p></div><a class="qr-report-detail-link" href="${escapeHtml(url)}" target="_blank" rel="noopener">View full recommendation →</a></div><div class="qr-report-demo"><a class="qr-report-qr-link" href="${escapeHtml(url)}" target="_blank" rel="noopener"><img class="qr-report-qr" src="${escapeHtml(qr)}" alt="Scannable QR link"></a><small>Open details</small></div></div></article>`
+}
 async function buildQrAuditReport(){
   const host=document.getElementById('qrAuditReportContent');if(!host)return;
   const items=getQrTouchpoints(),d=effectiveWelcome();
-  const counts={high:items.filter(x=>x.priority==='high').length,medium:items.filter(x=>(x.priority||'medium')==='medium').length,low:items.filter(x=>x.priority==='low').length,proposed:items.filter(x=>(x.status||'proposed')==='proposed').length,approved:items.filter(x=>x.status==='approved').length,installed:items.filter(x=>x.status==='installed').length,photos:items.filter(x=>x.photoKey).length};
+  const counts={high:items.filter(x=>x.priority==='high').length,approved:items.filter(x=>x.status==='approved').length,installed:items.filter(x=>x.status==='installed').length,photos:items.filter(x=>x.photoKey).length};
   const prepared=new Date().toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'});
-  host.innerHTML=`<header class="qr-report-cover"><div class="qr-report-brand"><div class="eyebrow">PAPA GOLF · PROPERTY INFORMATION UPGRADE</div><div class="qr-report-demo-badge">DEMONSTRATION PROPOSAL</div></div><h1>${escapeHtml(d.propertyName||d.name||'Property walkthrough')}</h1><p class="qr-report-location">${escapeHtml(d.locationLabel||d.address||'')}</p><p class="qr-report-intro">A practical review of existing guest-information touchpoints and opportunities to connect them to useful digital information and services.</p><div class="qr-report-date">Prepared ${escapeHtml(prepared)}</div></header>
-  <section class="qr-report-summary"><div class="qr-report-summary-lead"><strong>${items.length}</strong><span>guest-information opportunit${items.length===1?'y':'ies'} identified</span></div><div class="qr-report-metrics"><div><strong>${counts.high}</strong><span>High priority</span></div><div><strong>${counts.approved}</strong><span>Approved</span></div><div><strong>${counts.installed}</strong><span>Installed</span></div><div><strong>${counts.photos}</strong><span>Photographed</span></div></div><p>Existing signs, photographs and printed material can remain in place where suitable. Papa Golf adds a small QR touchpoint that connects guests to richer, updateable information.</p></section>
-  <section class="qr-report-guide"><strong>How to review this proposal</strong><span>Scan a QR code with another phone, or tap the QR / “View demonstration” link in the PDF. These links open sample Papa Golf information for demonstration purposes and are not yet an official property publication.</span></section>
-  <section class="qr-report-items">${items.map((item,i)=>{const url=welcomeSectionUrl(item.destination||'home');const linkUrl=welcomeAuditReportLinkUrl(item.destination||'home');const qr=`https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=12&format=png&data=${encodeURIComponent(url)}`;return `<article class="qr-report-item"><div class="qr-report-item-head"><div class="qr-report-number">${i+1}</div><div><div class="qr-report-flags"><span class="qr-report-priority ${escapeHtml(item.priority||'medium')}">${escapeHtml(qrTouchpointPriorityLabel(item.priority))}</span><span class="qr-report-status ${escapeHtml(item.status||'proposed')}">${escapeHtml(qrTouchpointStatusLabel(item.status))}</span></div><h2>${escapeHtml(item.location||'Property touchpoint')}</h2></div></div><div class="qr-report-body"><div class="qr-report-photo-wrap">${item.photoKey?`<img class="qr-report-photo" data-report-photo-key="${escapeHtml(item.photoKey)}" alt="${escapeHtml(item.location||'Audit location')}">`:'<div class="qr-report-photo-empty">No audit photo</div>'}</div><div class="qr-report-copy"><div class="qr-report-field"><span>Existing item</span><p>${escapeHtml(item.existing||'Existing guest information')}</p></div><div class="qr-report-field"><span>Proposed digital destination</span><strong>${escapeHtml(QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home')}</strong></div><div class="qr-report-field"><span>Suggested QR wording</span><p>“${escapeHtml(item.label||'Scan for details')}”</p></div>${item.note?`<div class="qr-report-field"><span>Audit note</span><p>${escapeHtml(item.note)}</p></div>`:''}</div><div class="qr-report-demo"><a class="qr-report-qr-link" href="${escapeHtml(linkUrl)}" aria-label="Open demonstration for ${escapeHtml(item.location||'touchpoint')}"><img class="qr-report-qr" src="${escapeHtml(qr)}" alt="Scannable QR demonstration"></a><a class="qr-report-demo-link" href="${escapeHtml(linkUrl)}">View demonstration</a><small>Sample destination</small></div></div></article>`}).join('')}</section><section id="qrAuditReportPrintPages" class="qr-report-print-pages" aria-hidden="true"></section><footer><strong>Papa Golf Platform</strong><span>Property Information Upgrade · Demonstration proposal</span></footer>`;
+  host.innerHTML=`<section class="qr-report-preview-document">${qrAuditPageHeader(d)}<div class="qr-report-cover"><div class="qr-report-brand"><div class="eyebrow">PAPA GOLF · PROPERTY INFORMATION UPGRADE</div><div class="qr-report-demo-badge">DEMONSTRATION PROPOSAL</div></div><h1>${escapeHtml(d.propertyName||d.name||'Property walkthrough')}</h1><p class="qr-report-location">${escapeHtml(d.locationLabel||d.address||'')}</p><p class="qr-report-intro">A practical review of existing guest-information touchpoints and opportunities to connect them to useful digital information and services.</p><div class="qr-report-date">Prepared ${escapeHtml(prepared)}</div></div><section class="qr-report-summary"><div class="qr-report-summary-lead"><strong>${items.length}</strong><span>guest-information opportunit${items.length===1?'y':'ies'} identified</span></div><div class="qr-report-metrics"><div><strong>${counts.high}</strong><span>High priority</span></div><div><strong>${counts.approved}</strong><span>Approved</span></div><div><strong>${counts.installed}</strong><span>Installed</span></div><div><strong>${counts.photos}</strong><span>Photographed</span></div></div><p>Existing signs, photographs and printed material can remain in place where suitable. Papa Golf adds a small QR touchpoint that connects guests to richer, updateable information.</p></section><section class="qr-report-guide"><strong>How to review this proposal</strong><span>Each recommendation remains one complete block in the generated PDF. Photo and QR sizes stay consistent while the information column expands naturally for longer descriptions.</span></section><div class="qr-report-page-title"><strong>Audit opportunities</strong><span>Automatic pagination · no split items</span></div><section class="qr-report-items">${items.length?items.map(qrAuditItemHtml).join(''):'<div class="qr-report-empty">No audit opportunities have been recorded yet.</div>'}</section>${qrAuditPageFooter()}</section>`;
   await Promise.all([...host.querySelectorAll('[data-report-photo-key]')].map(async img=>{const a=await getAuditAsset(img.dataset.reportPhotoKey);if(a?.dataUrl)img.src=a.dataUrl}));
-  buildQrAuditPrintPages();
 }
-// v0.44.7 automatic A4 pagination: each opportunity is indivisible.
-// Photo and QR are fixed; the 60% information column determines extra row height.
-function qrAuditEstimatedPrintHeight(item){
-  const fields=[item.existing||'',QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home',item.label||'Scan for details',item.note||''];
-  const chars=fields.reduce((n,v)=>n+String(v).length,0);
-  const explicitLines=fields.reduce((n,v)=>n+(String(v).match(/\n/g)||[]).length,0);
-  // At ~60% of A4 printable width, 70-80 average characters occupy about one 10pt line.
-  const textLines=Math.ceil(chars/74)+explicitLines+7; // field labels + normal wrapping allowance
-  const minMm=39; // fixed photo/QR + one-line item header
-  const textMm=17+textLines*3.75;
-  return Math.max(minMm,Math.min(78,textMm));
+async function openQrAuditReport(createPdf=false){const dialog=document.getElementById('qrAuditReportDialog');if(!dialog)return;await buildQrAuditReport();if(typeof dialog.showModal==='function'&&!dialog.open)dialog.showModal();else dialog.setAttribute('open','');if(createPdf)await createQrAuditPdf()}
+function setQrAuditPdfStatus(message='',isError=false){const el=document.getElementById('qrAuditPdfStatus');if(!el)return;el.textContent=message;el.classList.toggle('hidden',!message);el.classList.toggle('error',!!isError)}
+function loadQrAuditPdfLibrary(){return new Promise((resolve,reject)=>{if(window.jspdf?.jsPDF)return resolve(window.jspdf.jsPDF);const prior=document.querySelector('script[data-pg-jspdf]');if(prior){prior.addEventListener('load',()=>window.jspdf?.jsPDF?resolve(window.jspdf.jsPDF):reject(new Error('PDF library unavailable')),{once:true});prior.addEventListener('error',()=>reject(new Error('PDF library failed to load')),{once:true});return}const s=document.createElement('script');s.dataset.pgJspdf='1';s.src='https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';s.onload=()=>window.jspdf?.jsPDF?resolve(window.jspdf.jsPDF):reject(new Error('PDF library unavailable'));s.onerror=()=>reject(new Error('PDF library failed to load'));document.head.appendChild(s)})}
+async function qrAuditFetchDataUrl(url){try{const r=await fetch(url,{mode:'cors',cache:'no-store'});if(!r.ok)throw new Error('image fetch');const b=await r.blob();return await new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(String(fr.result||''));fr.onerror=()=>reject(fr.error);fr.readAsDataURL(b)})}catch{return ''}}
+function qrAuditPdfSafeName(name){return String(name||'Papa-Golf-Audit').replace(/[^a-z0-9_-]+/gi,'-').replace(/^-+|-+$/g,'').slice(0,70)||'Papa-Golf-Audit'}
+function qrAuditPdfLines(doc,text,width,size=12,style='normal'){doc.setFont('helvetica',style);doc.setFontSize(size);return doc.splitTextToSize(String(text||''),width)}
+function qrAuditPdfItemMeasure(doc,item,centerWidth){
+  let h=8; const line=5.0;
+  h+=qrAuditPdfLines(doc,item.existing||'Existing guest information',centerWidth,12).length*line+4;
+  h+=qrAuditPdfLines(doc,QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home',centerWidth,12,'bold').length*line;
+  if(item.note)h+=qrAuditPdfLines(doc,item.note,centerWidth,12).length*line+2;
+  h+=qrAuditPdfLines(doc,`“${item.label||'Scan for details'}”`,centerWidth,12).length*line+5;
+  return Math.max(34,h+8);
 }
-function buildQrAuditPrintPages(){
-  const host=document.getElementById('qrAuditReportPrintPages'),content=document.getElementById('qrAuditReportContent');
-  if(!host||!content)return;
-  const sourceItems=getQrTouchpoints();
-  const domItems=[...content.querySelectorAll('.qr-report-items > .qr-report-item')];
-  const d=effectiveWelcome();
-  const pageCapacityMm=246; // A4 printable body after page header/footer.
-  const gapMm=2.4;
-  const pages=[];let page=[],used=0;
-  domItems.forEach((node,index)=>{
-    const h=qrAuditEstimatedPrintHeight(sourceItems[index]||{});
-    const needed=h+(page.length?gapMm:0);
-    if(page.length&&used+needed>pageCapacityMm){pages.push(page);page=[];used=0}
-    page.push({node,height:h,item:sourceItems[index]||{}});used+=h+(page.length>1?gapMm:0);
-  });
-  if(page.length)pages.push(page);
-  host.innerHTML='';
-  pages.forEach((entries,pageIndex)=>{
-    const sheet=document.createElement('section');sheet.className='qr-report-print-page';
-    const head=document.createElement('header');head.className='qr-report-print-page-head';
-    head.innerHTML=`<strong>${escapeHtml(d.propertyName||d.name||'Property walkthrough')}</strong><span>Property Information Upgrade</span>`;
-    const list=document.createElement('div');list.className='qr-report-print-list';
-    entries.forEach(entry=>{const clone=entry.node.cloneNode(true);clone.style.setProperty('--qr-print-item-height',`${entry.height}mm`);const h=clone.querySelector('.qr-report-item-head'),item=entry.item||{};if(h)h.innerHTML=`<span class="qr-print-head-number">${escapeHtml(String(sourceItems.indexOf(item)+1))}</span><span class="qr-print-head-priority">${escapeHtml(qrTouchpointPriorityLabel(item.priority))}</span><span class="qr-print-head-status">${escapeHtml(qrTouchpointStatusLabel(item.status))}</span><strong class="qr-print-head-location">${escapeHtml(item.location||'Property touchpoint')}</strong>`;list.appendChild(clone)});
-    const foot=document.createElement('footer');foot.className='qr-report-print-page-foot';
-    foot.innerHTML=`<span>Papa Golf Platform · Demonstration proposal</span><span>${pageIndex+1} / ${pages.length}</span>`;
-    sheet.append(head,list,foot);host.appendChild(sheet);
-  });
+function qrAuditPdfHeader(doc,d,pageNo){const W=210,m=10;doc.setDrawColor(184,155,85);doc.setLineWidth(.35);doc.line(m,13,W-m,13);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(114,87,22);doc.text('PAPA GOLF',m,9.5);doc.setFont('helvetica','normal');doc.setTextColor(75,75,75);doc.text(`Property Information Upgrade · ${d.propertyName||d.name||'Property'}`,W-m,9.5,{align:'right'});doc.setFontSize(8);doc.text(`Page ${pageNo}`,W-m,291,{align:'right'});doc.setFont('helvetica','bold');doc.text('Papa Golf Platform',m,291);doc.setDrawColor(185,185,185);doc.line(m,287,W-m,287)}
+function qrAuditPdfAddTextBlock(doc,label,text,x,y,w,{bold=false}={}){doc.setTextColor(90,90,90);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text(String(label||'').toUpperCase(),x,y);y+=4;doc.setTextColor(bold?114:35,bold?87:35,bold?22:35);doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(12);const lines=doc.splitTextToSize(String(text||''),w);doc.text(lines,x,y);return y+lines.length*5}
+async function createQrAuditPdf(){
+  const btn=document.getElementById('qrAuditReportPrintBtn');if(btn?.disabled)return;btn?.setAttribute('disabled','');setQrAuditPdfStatus('Building A4 PDF…');
+  try{
+    const JsPDF=await loadQrAuditPdfLibrary(),doc=new JsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true}),items=getQrTouchpoints(),d=effectiveWelcome();
+    const margin=10,contentW=190,top=18,bottom=284,photoW=36,qrW=30,gap=4,centerW=contentW-photoW-qrW-gap*2;
+    let page=1,y=top; qrAuditPdfHeader(doc,d,page);
+    doc.setTextColor(114,87,22);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text('PAPA GOLF · PROPERTY INFORMATION UPGRADE',margin,y);y+=7;
+    doc.setTextColor(25,25,25);doc.setFontSize(24);doc.text(doc.splitTextToSize(d.propertyName||d.name||'Property walkthrough',contentW),margin,y);y+=12;
+    doc.setFont('helvetica','normal');doc.setFontSize(11);doc.setTextColor(70,70,70);if(d.locationLabel||d.address){doc.text(doc.splitTextToSize(d.locationLabel||d.address,contentW),margin,y);y+=7}
+    const summary=`${items.length} opportunities identified · ${items.filter(x=>x.priority==='high').length} high priority · ${items.filter(x=>x.status==='approved').length} approved · ${items.filter(x=>x.status==='installed').length} installed`;
+    doc.setFillColor(248,246,240);doc.roundedRect(margin,y,contentW,18,2,2,'F');doc.setTextColor(35,35,35);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text(doc.splitTextToSize(summary,contentW-8),margin+4,y+7);y+=24;
+    doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(70,70,70);const intro=doc.splitTextToSize('Existing signs, photographs and printed material can remain where suitable. Papa Golf adds useful digital information through compact QR touchpoints. Each recommendation below is kept intact and moves to the next page automatically if it will not fit.',contentW);doc.text(intro,margin,y);y+=intro.length*4.5+7;
+    doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(25,25,25);doc.text('Audit opportunities',margin,y);y+=7;
+    const assets=new Map();for(const item of items){if(item.photoKey){const a=await getAuditAsset(item.photoKey);if(a?.dataUrl)assets.set(item.photoKey,a.dataUrl)}}
+    for(let i=0;i<items.length;i++){
+      const item=items[i],itemH=qrAuditPdfItemMeasure(doc,item,centerW-2);
+      if(y+itemH>bottom){doc.addPage();page++;qrAuditPdfHeader(doc,d,page);y=top}
+      const x=margin;doc.setDrawColor(175,175,175);doc.setLineWidth(.3);doc.roundedRect(x,y,contentW,itemH,2,2,'S');
+      doc.setFillColor(246,246,246);doc.rect(x,y,contentW,8,'F');doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(30,30,30);doc.text(`${i+1} · ${qrTouchpointPriorityLabel(item.priority).toUpperCase()} · ${qrTouchpointStatusLabel(item.status).toUpperCase()} · ${item.location||'Property touchpoint'}`,x+2.5,y+5.3,{maxWidth:contentW-5});
+      const bodyY=y+10,photoH=24,photoX=x+2,centerX=x+2+photoW+gap,qrX=x+contentW-qrW-2;
+      const photo=assets.get(item.photoKey||'');if(photo){try{doc.addImage(photo,photo.startsWith('data:image/png')?'PNG':photo.startsWith('data:image/webp')?'WEBP':'JPEG',photoX,bodyY,photoW-2,photoH,undefined,'FAST')}catch{doc.setFillColor(238,238,238);doc.rect(photoX,bodyY,photoW-2,photoH,'F')}}else{doc.setFillColor(238,238,238);doc.rect(photoX,bodyY,photoW-2,photoH,'F');doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(110,110,110);doc.text('No audit photo',photoX+(photoW-2)/2,bodyY+13,{align:'center'})}
+      let cy=bodyY+3;cy=qrAuditPdfAddTextBlock(doc,'Recognise',item.existing||'Existing guest information',centerX,cy,centerW);cy+=2;cy=qrAuditPdfAddTextBlock(doc,'Suggested upgrade',QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home',centerX,cy,centerW,{bold:true});if(item.note){cy+=1;doc.setTextColor(40,40,40);doc.setFont('helvetica','normal');doc.setFontSize(12);const l=doc.splitTextToSize(item.note,centerW);doc.text(l,centerX,cy);cy+=l.length*5}cy+=2;cy=qrAuditPdfAddTextBlock(doc,'Guest prompt',`“${item.label||'Scan for details'}”`,centerX,cy,centerW);
+      const url=welcomeSectionUrl(item.destination||'home'),qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=8&format=png&data=${encodeURIComponent(url)}`,qrData=await qrAuditFetchDataUrl(qrUrl);if(qrData){try{doc.addImage(qrData,'PNG',qrX,bodyY,qrW-2,qrW-2,undefined,'FAST')}catch{}}doc.link(qrX,bodyY,qrW-2,qrW-2,{url});doc.setTextColor(114,87,22);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text('OPEN DETAILS',qrX+(qrW-2)/2,bodyY+qrW+1,{align:'center'});doc.link(centerX,Math.min(y+itemH-6,cy+1),42,5,{url});doc.text('View full recommendation →',centerX,Math.min(y+itemH-3,cy+4));
+      y+=itemH+3;
+    }
+    const filename=`${qrAuditPdfSafeName(d.propertyName||d.name||'Papa-Golf')}-Audit.pdf`,blob=doc.output('blob'),file=new File([blob],filename,{type:'application/pdf'});
+    if(navigator.share&&navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'Papa Golf manager audit report'})}else{doc.save(filename)}
+    setQrAuditPdfStatus('A4 PDF created successfully.');setTimeout(()=>setQrAuditPdfStatus(''),3500)
+  }catch(error){console.error(error);setQrAuditPdfStatus(`Could not create PDF: ${error.message||error}`,true)}finally{btn?.removeAttribute('disabled')}
 }
-function printQrAuditReport(){
-  buildQrAuditPrintPages();
-  setTimeout(()=>window.print(),80);
-}
-
-const QR_AUDIT_REPORT_ZOOM_KEY='papaGolfQrAuditReportZoomV1';
-const QR_AUDIT_REPORT_ZOOM_STEPS=[0.8,0.9,1,1.1,1.2];
-function qrAuditReportZoom(){
-  const saved=Number(localStorage.getItem(QR_AUDIT_REPORT_ZOOM_KEY)||1);
-  return QR_AUDIT_REPORT_ZOOM_STEPS.includes(saved)?saved:1;
-}
-function applyQrAuditReportZoom(value=qrAuditReportZoom()){
-  const dialog=document.getElementById('qrAuditReportDialog'),label=document.getElementById('qrAuditReportZoomLabel');
-  if(!dialog)return;
-  const nearest=QR_AUDIT_REPORT_ZOOM_STEPS.reduce((a,b)=>Math.abs(b-value)<Math.abs(a-value)?b:a,1);
-  dialog.style.setProperty('--qr-report-zoom',String(nearest));
-  dialog.dataset.reportZoom=String(nearest);
-  if(label)label.textContent=`${Math.round(nearest*100)}%`;
-  try{localStorage.setItem(QR_AUDIT_REPORT_ZOOM_KEY,String(nearest))}catch{}
-}
-function stepQrAuditReportZoom(direction){
-  const current=qrAuditReportZoom(),index=Math.max(0,QR_AUDIT_REPORT_ZOOM_STEPS.indexOf(current));
-  const next=QR_AUDIT_REPORT_ZOOM_STEPS[Math.max(0,Math.min(QR_AUDIT_REPORT_ZOOM_STEPS.length-1,index+direction))];
-  applyQrAuditReportZoom(next);
-}
-function closeQrAuditReport(){
-  const dialog=document.getElementById('qrAuditReportDialog');
-  if(dialog?.open&&typeof dialog.close==='function')dialog.close();else dialog?.removeAttribute('open');
-}
-function homeFromQrAuditReport(){closeQrAuditReport();papaGolfGoHome()}
-async function openQrAuditReport(printAfter=false){const dialog=document.getElementById('qrAuditReportDialog');if(!dialog)return;await buildQrAuditReport();applyQrAuditReportZoom();if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');dialog.scrollTop=0;if(printAfter)setTimeout(printQrAuditReport,160)}
 
 
 function getPapaGolfPhotoPlaceLinks(){
@@ -5126,12 +5114,8 @@ function initWelcomeModule(){
   document.getElementById('clearQrTouchpointPhotoBtn')?.addEventListener('click',clearPendingQrTouchpointPhoto);
   document.getElementById('previewQrAuditReportBtn')?.addEventListener('click',()=>openQrAuditReport(false));
   document.getElementById('printQrAuditReportBtn')?.addEventListener('click',()=>openQrAuditReport(true));
-  document.getElementById('qrAuditReportCloseBtn')?.addEventListener('click',closeQrAuditReport);
-  document.getElementById('qrAuditReportHomeBtn')?.addEventListener('click',homeFromQrAuditReport);
-  document.getElementById('qrAuditReportZoomOutBtn')?.addEventListener('click',()=>stepQrAuditReportZoom(-1));
-  document.getElementById('qrAuditReportZoomInBtn')?.addEventListener('click',()=>stepQrAuditReportZoom(1));
-  document.getElementById('qrAuditReportPrintBtn')?.addEventListener('click',printQrAuditReport);
-  document.getElementById('qrAuditReportDialog')?.addEventListener('cancel',event=>{event.preventDefault();closeQrAuditReport()});
+  document.getElementById('qrAuditReportCloseBtn')?.addEventListener('click',()=>document.getElementById('qrAuditReportDialog')?.close?.());
+  document.getElementById('qrAuditReportPrintBtn')?.addEventListener('click',createQrAuditPdf);
   document.getElementById('qrTouchpointList')?.addEventListener('click',event=>{
     const copy=event.target.closest('[data-copy-touchpoint]');
     if(copy){copyQrTouchpointLink(copy.dataset.copyTouchpoint);const old=copy.textContent;copy.textContent='Copied ✓';setTimeout(()=>copy.textContent=old,1200);return}

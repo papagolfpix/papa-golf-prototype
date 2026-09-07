@@ -1,3 +1,27 @@
+## v0.45.3 — automatic A4 PDF manager report
+
+- Removes the manual 4 / 5 / 6 recommendations-per-page workflow and all magnifier density controls.
+- Replaces the manager audit report's HTML/AirPrint output with a genuine client-generated A4 PDF.
+- Each recommendation is an indivisible block: fixed recognition photo and QR columns, readable 12 pt information text, and variable height driven by the actual copy.
+- The PDF adds a new page before a complete recommendation would overflow; recommendations are never split between pages.
+- Uses the agreed compact header line: number · priority · status · location.
+- Preserves clickable recommendation destinations and QR links, with Papa Golf header/footer and page numbers on every A4 page.
+- On supported iPhones the generated PDF is handed to the native share sheet; other browsers download the PDF directly.
+
+## v0.45.2 — viewport-centred print sizing panel
+
+- Fixes the audit report Print / Save PDF sizing panel on iPhone when the report has been scrolled down.
+- The 4/5/6-per-page selector is now fixed to the visible viewport and opens centred on screen rather than relative to the report's scroll position.
+- Adds safe-area padding and internal overflow protection for smaller iPhone screens.
+
+## v0.45.1 — compact audit report + eyesight-aware print density
+
+- Rebuilds the Property Information Upgrade report as a compact recognition-and-decision document rather than one large card per page.
+- Adds familiar magnifying-glass − / + controls. The preference is remembered on-device and maps automatically to 4 (Large / Easy Read), 5 (Standard), or 6 (Compact) recommendations per A4 page.
+- Adds a pre-print confirmation panel explaining that the current viewing size controls print density; printing is now initiated only by the final user tap to avoid Safari automatic-print blocking.
+- Adds deterministic A4 result sheets with Papa Golf header/footer and page numbering on every page, small recognition photos, brief proposed-upgrade copy, QR, and a clickable “View full recommendation” link.
+- Keeps the mobile report compact: recognition photo, short description and action stay visible without the previous oversized stacked image layout.
+
 ## v0.44.0 — UI consolidation and redundancy audit
 
 - Reduced unnecessary vertical space in the Welcome admin dashboard without shrinking readable text or touch targets.
@@ -127,35 +151,3 @@ This update turns the Firebase bridge into a guided, safer owner workflow while 
 
 ### v0.44.3
 Property Walkthrough field workflow: touchpoints can now be edited after capture and tracked as Proposed, Approved or Installed. Manager reports include status. Existing private audit-photo storage and backup protections are preserved.
-
-
-### v0.44.4
-- Hardened manager-report navigation on iPhone: local Back + Home remain available while the modal report is open.
-- Added persistent magnifier minus/plus report zoom (80–120%); the selected scale also carries into Print / Save PDF.
-- Rebuilt narrow-screen manager-report cards so photo, proposal copy and QR demo stack cleanly instead of squeezing copy into a narrow column.
-- Added full-height iPhone report dialog with safe-area-aware sticky controls and explicit Escape/cancel handling.
-- Added guest-safe Back + Welcome/Home controls on every public Welcome detail page, including direct QR deep links.
-- Strengthened A4 print grid sizing and break-inside protection for audit opportunity cards.
-- Extended validation coverage for report navigation, zoom, mobile layout and print safeguards.
-
-
-### v0.44.5
-- Restores controlled compact A4 audit-report printing with a centered 4/5/6 opportunities-per-page selector before iOS Print / Save PDF.
-- Print output now regenerates touchpoints into fixed-density A4 pages instead of allowing the mobile card layout to expand to roughly one item per page.
-- QR codes and View demonstration links remain live/clickable in PDF output.
-- Manager-report photos are substantially smaller in the iPhone digital view while remaining easy to inspect.
-- Report Back/Home/zoom controls from v0.44.4 are retained.
-
-
-### v0.44.7
-- Restores full-width stacked opportunity rows in A4/PDF output: 4, 5 or 6 opportunities means that many rows per page, not a 2-column mini-card grid.
-- Makes manager-report demonstration links open in the same browser tab. The public Welcome Back control returns to the report when entered from a report link.
-- Keeps the QR image itself encoded to the generic demonstration destination, so scanning it from another device remains independent of the report-return behavior.
-- Further reduces audit-photo height in the iPhone manager view.
-
-### v0.44.7
-- Removed the manual 4/5/6-per-page print selector.
-- Property Audit PDF pagination is now automatic and content-aware: each opportunity remains indivisible and moves intact to the next A4 page when required.
-- Print opportunity header is a single line: item number, priority, approval status, location.
-- Print body uses a fixed 20% photo / 60% information / 20% QR structure with readable text and fixed photo/QR sizing.
-- Short records naturally pack more densely; longer notes expand the item and reduce the number that fit on that sheet.
