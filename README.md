@@ -147,8 +147,15 @@ Property Walkthrough field workflow: touchpoints can now be edited after capture
 - Report Back/Home/zoom controls from v0.44.4 are retained.
 
 
-### v0.44.6
+### v0.44.7
 - Restores full-width stacked opportunity rows in A4/PDF output: 4, 5 or 6 opportunities means that many rows per page, not a 2-column mini-card grid.
 - Makes manager-report demonstration links open in the same browser tab. The public Welcome Back control returns to the report when entered from a report link.
 - Keeps the QR image itself encoded to the generic demonstration destination, so scanning it from another device remains independent of the report-return behavior.
 - Further reduces audit-photo height in the iPhone manager view.
+
+### v0.44.7
+- Removed the manual 4/5/6-per-page print selector.
+- Property Audit PDF pagination is now automatic and content-aware: each opportunity remains indivisible and moves intact to the next A4 page when required.
+- Print opportunity header is a single line: item number, priority, approval status, location.
+- Print body uses a fixed 20% photo / 60% information / 20% QR structure with readable text and fixed photo/QR sizing.
+- Short records naturally pack more densely; longer notes expand the item and reduce the number that fit on that sheet.

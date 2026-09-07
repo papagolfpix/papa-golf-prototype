@@ -165,23 +165,25 @@ check(styles.includes('v0.44.4 report navigation, zoom and mobile/PDF hardening'
 check(styles.includes('.qr-audit-report-content{zoom:var(--qr-report-zoom)}'),'manager report screen zoom applies to full report content');
 check(styles.includes('.qr-report-body{display:flex!important;flex-direction:column!important'),'narrow-screen report cards stack instead of squeezing text');
 check(styles.includes('height:100dvh!important')&&styles.includes('env(safe-area-inset-top)'),'iPhone report dialog uses full dynamic viewport and safe areas');
-check(styles.includes('.qr-audit-report-content{zoom:var(--qr-report-zoom,1)!important}')&&styles.includes('grid-template-columns:42mm minmax(0,1fr) 28mm!important'),'A4 print respects selected density with explicit print grid');
+check(styles.includes('.qr-audit-report-content{zoom:var(--qr-report-zoom,1)!important}')&&styles.includes('grid-template-columns:20% 60% 20%!important'),'A4 print keeps report zoom isolated and uses explicit print columns');
 check(publicWelcome.includes('public-panel-nav')&&publicWelcome.includes('public-home-btn'),'public Welcome detail panels expose Back and Welcome/Home controls');
 check(publicWelcomeJs.includes('function publicGoBack()')&&publicWelcomeJs.includes('function publicGoHome()')&&publicWelcomeJs.includes('publicPanelHistory'),'public Welcome has local return-navigation history');
 check(publicWelcomeJs.includes('showPanel(panel,false)'),'direct QR deep links do not create a false back-history entry');
 check(read('welcome.css').includes('v0.44.4 public Welcome return-navigation hardening')&&read('welcome.css').includes('min-height:44px'),'public Welcome return controls retain mobile touch targets');
 
 
-// v0.44.5 compact phone report + fixed-density A4 print pages
-for(const id of ['qrAuditPrintOptionsDialog','qrPrintDensityLessBtn','qrPrintDensityValue','qrPrintDensityMoreBtn','qrAuditPrintCancelBtn','qrAuditPrintConfirmBtn']) check(html.includes(`id="${id}"`),`print-layout control present: ${id}`);
-check(app.includes("QR_AUDIT_PRINT_DENSITIES=[4,5,6]")&&app.includes('function buildQrAuditPrintPages'),'manager report regenerates exact 4/5/6-density print pages');
-check(app.includes("getElementById('qrAuditReportPrintBtn')?.addEventListener('click',openQrAuditPrintOptions)"),'report Print button opens layout chooser before native iOS print');
-check(app.includes('if(printAfter)setTimeout(openQrAuditPrintOptions,160)'),'direct walkthrough print also uses layout chooser');
-check(styles.includes('v0.44.5 compact phone report + controlled 4–6 item A4 print layout'),'v0.44.5 compact report CSS present');
-check(styles.includes('height:120px!important')&&styles.includes('height:105px!important'),'phone audit photos are capped to compact heights');
-check(styles.includes('v0.44.6 report print rows + return-aware demonstrations')&&styles.includes('grid-template-columns:1fr!important')&&styles.includes('density-4 .qr-report-print-grid{grid-template-rows:repeat(4')&&styles.includes('density-5 .qr-report-print-grid{grid-template-rows:repeat(5')&&styles.includes('density-6 .qr-report-print-grid{grid-template-rows:repeat(6'),'A4 print uses full-width 4/5/6 opportunity rows rather than a 2-column mini-card grid');
+// v0.44.7 automatic content-aware A4 pagination
+check(!html.includes('qrAuditPrintOptionsDialog')&&!html.includes('qrPrintDensityValue'),'manual 4/5/6 print-density chooser removed');
+check(app.includes('function qrAuditEstimatedPrintHeight')&&app.includes('function buildQrAuditPrintPages')&&app.includes('pageCapacityMm=246'),'manager report uses automatic content-aware A4 pagination');
+check(app.includes("getElementById('qrAuditReportPrintBtn')?.addEventListener('click',printQrAuditReport)"),'report Print button builds automatic pages then opens native print');
+check(app.includes('if(printAfter)setTimeout(printQrAuditReport,160)'),'direct walkthrough print uses automatic pagination');
+check(styles.includes('v0.44.7 deterministic automatic A4 audit pagination'),'v0.44.7 deterministic print CSS present');
+check(styles.includes('grid-template-columns:20% 60% 20%!important'),'print opportunity body uses 20% photo / 60% information / 20% QR');
+check(styles.includes('white-space:nowrap!important')&&styles.includes('.qr-print-head-location'),'item number, priority, status and location share one print header line');
+check(styles.includes('height:var(--qr-print-item-height)!important')&&styles.includes('break-inside:avoid!important'),'print item has computed indivisible height and cannot split across pages');
+check(styles.includes('font-size:10pt!important')&&styles.includes('width:24mm!important;height:24mm!important'),'print text and QR retain fixed readable sizing');
 check(app.includes('function welcomeAuditReportLinkUrl')&&app.includes("params.set('from','audit-report')"),'manager report builds return-aware same-tab demonstration links');
-check(!app.includes('class=\"qr-report-demo-link\" href=\"${escapeHtml(url)}\" target=\"_blank\"'),'manager report demonstration links no longer force a new tab');
+check(!app.includes('class="qr-report-demo-link" href="${escapeHtml(url)}" target="_blank"'),'manager report demonstration links no longer force a new tab');
 check(publicWelcomeJs.includes("sharedHashParams().get('from')==='audit-report'")&&publicWelcomeJs.includes('history.back()'),'public Welcome Back returns to manager report when opened from a report link');
 check(styles.includes('#qrAuditReportContent,.qr-audit-report-content{zoom:1!important}'),'print layout is isolated from on-screen zoom');
 

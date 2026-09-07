@@ -1,4 +1,4 @@
-const RUNTIME_VERSION = '0.44.6';
+const RUNTIME_VERSION = '0.44.7';
 console.info('Papa Golf runtime', RUNTIME_VERSION);
 const DB_NAME = 'papa-golf-v01';
 const STORE_NAME = 'photos';
@@ -2687,7 +2687,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('./service-worker.js?v=0.44.6', { updateViaCache: 'none' })
+  navigator.serviceWorker.register('./service-worker.js?v=0.44.7', { updateViaCache: 'none' })
     .then(async reg => {
       try { await reg.update(); } catch (_) {}
     })
@@ -2785,61 +2785,49 @@ async function buildQrAuditReport(){
   await Promise.all([...host.querySelectorAll('[data-report-photo-key]')].map(async img=>{const a=await getAuditAsset(img.dataset.reportPhotoKey);if(a?.dataUrl)img.src=a.dataUrl}));
   buildQrAuditPrintPages();
 }
-const QR_AUDIT_PRINT_DENSITY_KEY='papaGolfQrAuditPrintDensityV1';
-const QR_AUDIT_PRINT_DENSITIES=[4,5,6];
-function qrAuditPrintDensity(){
-  const saved=Number(localStorage.getItem(QR_AUDIT_PRINT_DENSITY_KEY)||4);
-  return QR_AUDIT_PRINT_DENSITIES.includes(saved)?saved:4;
+// v0.44.7 automatic A4 pagination: each opportunity is indivisible.
+// Photo and QR are fixed; the 60% information column determines extra row height.
+function qrAuditEstimatedPrintHeight(item){
+  const fields=[item.existing||'',QR_TOUCHPOINT_DESTINATIONS[item.destination]||'Welcome home',item.label||'Scan for details',item.note||''];
+  const chars=fields.reduce((n,v)=>n+String(v).length,0);
+  const explicitLines=fields.reduce((n,v)=>n+(String(v).match(/\n/g)||[]).length,0);
+  // At ~60% of A4 printable width, 70-80 average characters occupy about one 10pt line.
+  const textLines=Math.ceil(chars/74)+explicitLines+7; // field labels + normal wrapping allowance
+  const minMm=39; // fixed photo/QR + one-line item header
+  const textMm=17+textLines*3.75;
+  return Math.max(minMm,Math.min(78,textMm));
 }
-function applyQrAuditPrintDensity(value=qrAuditPrintDensity(),persist=true){
-  const dialog=document.getElementById('qrAuditReportDialog'),label=document.getElementById('qrPrintDensityValue');
-  const nearest=QR_AUDIT_PRINT_DENSITIES.reduce((a,b)=>Math.abs(b-value)<Math.abs(a-value)?b:a,4);
-  if(dialog)dialog.dataset.printDensity=String(nearest);
-  if(label)label.textContent=String(nearest);
-  if(persist){try{localStorage.setItem(QR_AUDIT_PRINT_DENSITY_KEY,String(nearest))}catch{}}
-  buildQrAuditPrintPages(nearest);
-  return nearest;
-}
-function stepQrAuditPrintDensity(direction){
-  const current=qrAuditPrintDensity(),index=Math.max(0,QR_AUDIT_PRINT_DENSITIES.indexOf(current));
-  const next=QR_AUDIT_PRINT_DENSITIES[Math.max(0,Math.min(QR_AUDIT_PRINT_DENSITIES.length-1,index+direction))];
-  applyQrAuditPrintDensity(next);
-}
-function buildQrAuditPrintPages(density=qrAuditPrintDensity()){
+function buildQrAuditPrintPages(){
   const host=document.getElementById('qrAuditReportPrintPages'),content=document.getElementById('qrAuditReportContent');
   if(!host||!content)return;
-  const items=[...content.querySelectorAll('.qr-report-items > .qr-report-item')];
+  const sourceItems=getQrTouchpoints();
+  const domItems=[...content.querySelectorAll('.qr-report-items > .qr-report-item')];
   const d=effectiveWelcome();
+  const pageCapacityMm=246; // A4 printable body after page header/footer.
+  const gapMm=2.4;
+  const pages=[];let page=[],used=0;
+  domItems.forEach((node,index)=>{
+    const h=qrAuditEstimatedPrintHeight(sourceItems[index]||{});
+    const needed=h+(page.length?gapMm:0);
+    if(page.length&&used+needed>pageCapacityMm){pages.push(page);page=[];used=0}
+    page.push({node,height:h,item:sourceItems[index]||{}});used+=h+(page.length>1?gapMm:0);
+  });
+  if(page.length)pages.push(page);
   host.innerHTML='';
-  for(let i=0;i<items.length;i+=density){
-    const page=document.createElement('section');
-    page.className=`qr-report-print-page density-${density}`;
-    const head=document.createElement('header');
-    head.className='qr-report-print-page-head';
+  pages.forEach((entries,pageIndex)=>{
+    const sheet=document.createElement('section');sheet.className='qr-report-print-page';
+    const head=document.createElement('header');head.className='qr-report-print-page-head';
     head.innerHTML=`<strong>${escapeHtml(d.propertyName||d.name||'Property walkthrough')}</strong><span>Property Information Upgrade</span>`;
-    const grid=document.createElement('div');
-    grid.className='qr-report-print-grid';
-    items.slice(i,i+density).forEach(item=>grid.appendChild(item.cloneNode(true)));
-    const foot=document.createElement('footer');
-    foot.className='qr-report-print-page-foot';
-    foot.innerHTML=`<span>Papa Golf Platform · Demonstration proposal</span><span>${Math.floor(i/density)+1} / ${Math.max(1,Math.ceil(items.length/density))}</span>`;
-    page.append(head,grid,foot);host.appendChild(page);
-  }
+    const list=document.createElement('div');list.className='qr-report-print-list';
+    entries.forEach(entry=>{const clone=entry.node.cloneNode(true);clone.style.setProperty('--qr-print-item-height',`${entry.height}mm`);const h=clone.querySelector('.qr-report-item-head'),item=entry.item||{};if(h)h.innerHTML=`<span class="qr-print-head-number">${escapeHtml(String(sourceItems.indexOf(item)+1))}</span><span class="qr-print-head-priority">${escapeHtml(qrTouchpointPriorityLabel(item.priority))}</span><span class="qr-print-head-status">${escapeHtml(qrTouchpointStatusLabel(item.status))}</span><strong class="qr-print-head-location">${escapeHtml(item.location||'Property touchpoint')}</strong>`;list.appendChild(clone)});
+    const foot=document.createElement('footer');foot.className='qr-report-print-page-foot';
+    foot.innerHTML=`<span>Papa Golf Platform · Demonstration proposal</span><span>${pageIndex+1} / ${pages.length}</span>`;
+    sheet.append(head,list,foot);host.appendChild(sheet);
+  });
 }
-function openQrAuditPrintOptions(){
-  const options=document.getElementById('qrAuditPrintOptionsDialog');
-  applyQrAuditPrintDensity(qrAuditPrintDensity(),false);
-  if(!options)return window.print();
-  if(typeof options.showModal==='function')options.showModal();else options.setAttribute('open','');
-}
-function closeQrAuditPrintOptions(){
-  const options=document.getElementById('qrAuditPrintOptionsDialog');
-  if(options?.open&&typeof options.close==='function')options.close();else options?.removeAttribute('open');
-}
-function confirmQrAuditPrint(){
-  applyQrAuditPrintDensity(qrAuditPrintDensity());
-  closeQrAuditPrintOptions();
-  setTimeout(()=>window.print(),100);
+function printQrAuditReport(){
+  buildQrAuditPrintPages();
+  setTimeout(()=>window.print(),80);
 }
 
 const QR_AUDIT_REPORT_ZOOM_KEY='papaGolfQrAuditReportZoomV1';
@@ -2867,7 +2855,7 @@ function closeQrAuditReport(){
   if(dialog?.open&&typeof dialog.close==='function')dialog.close();else dialog?.removeAttribute('open');
 }
 function homeFromQrAuditReport(){closeQrAuditReport();papaGolfGoHome()}
-async function openQrAuditReport(printAfter=false){const dialog=document.getElementById('qrAuditReportDialog');if(!dialog)return;await buildQrAuditReport();applyQrAuditReportZoom();applyQrAuditPrintDensity(qrAuditPrintDensity(),false);if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');dialog.scrollTop=0;if(printAfter)setTimeout(openQrAuditPrintOptions,160)}
+async function openQrAuditReport(printAfter=false){const dialog=document.getElementById('qrAuditReportDialog');if(!dialog)return;await buildQrAuditReport();applyQrAuditReportZoom();if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');dialog.scrollTop=0;if(printAfter)setTimeout(printQrAuditReport,160)}
 
 
 function getPapaGolfPhotoPlaceLinks(){
@@ -5142,12 +5130,7 @@ function initWelcomeModule(){
   document.getElementById('qrAuditReportHomeBtn')?.addEventListener('click',homeFromQrAuditReport);
   document.getElementById('qrAuditReportZoomOutBtn')?.addEventListener('click',()=>stepQrAuditReportZoom(-1));
   document.getElementById('qrAuditReportZoomInBtn')?.addEventListener('click',()=>stepQrAuditReportZoom(1));
-  document.getElementById('qrAuditReportPrintBtn')?.addEventListener('click',openQrAuditPrintOptions);
-  document.getElementById('qrPrintDensityLessBtn')?.addEventListener('click',()=>stepQrAuditPrintDensity(-1));
-  document.getElementById('qrPrintDensityMoreBtn')?.addEventListener('click',()=>stepQrAuditPrintDensity(1));
-  document.getElementById('qrAuditPrintCancelBtn')?.addEventListener('click',closeQrAuditPrintOptions);
-  document.getElementById('qrAuditPrintConfirmBtn')?.addEventListener('click',confirmQrAuditPrint);
-  document.getElementById('qrAuditPrintOptionsDialog')?.addEventListener('cancel',event=>{event.preventDefault();closeQrAuditPrintOptions()});
+  document.getElementById('qrAuditReportPrintBtn')?.addEventListener('click',printQrAuditReport);
   document.getElementById('qrAuditReportDialog')?.addEventListener('cancel',event=>{event.preventDefault();closeQrAuditReport()});
   document.getElementById('qrTouchpointList')?.addEventListener('click',event=>{
     const copy=event.target.closest('[data-copy-touchpoint]');
