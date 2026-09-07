@@ -178,8 +178,11 @@ check(app.includes("QR_AUDIT_PRINT_DENSITIES=[4,5,6]")&&app.includes('function b
 check(app.includes("getElementById('qrAuditReportPrintBtn')?.addEventListener('click',openQrAuditPrintOptions)"),'report Print button opens layout chooser before native iOS print');
 check(app.includes('if(printAfter)setTimeout(openQrAuditPrintOptions,160)'),'direct walkthrough print also uses layout chooser');
 check(styles.includes('v0.44.5 compact phone report + controlled 4–6 item A4 print layout'),'v0.44.5 compact report CSS present');
-check(styles.includes('height:155px!important')&&styles.includes('height:135px!important'),'phone audit photos are capped to compact heights');
-check(styles.includes('.qr-report-print-page.density-4 .qr-report-print-grid{grid-template-rows:repeat(2')&&styles.includes('.density-5 .qr-report-print-grid,.qr-report-print-page.density-6'),'A4 print pages explicitly support 4, 5 and 6 items');
+check(styles.includes('height:120px!important')&&styles.includes('height:105px!important'),'phone audit photos are capped to compact heights');
+check(styles.includes('v0.44.6 report print rows + return-aware demonstrations')&&styles.includes('grid-template-columns:1fr!important')&&styles.includes('density-4 .qr-report-print-grid{grid-template-rows:repeat(4')&&styles.includes('density-5 .qr-report-print-grid{grid-template-rows:repeat(5')&&styles.includes('density-6 .qr-report-print-grid{grid-template-rows:repeat(6'),'A4 print uses full-width 4/5/6 opportunity rows rather than a 2-column mini-card grid');
+check(app.includes('function welcomeAuditReportLinkUrl')&&app.includes("params.set('from','audit-report')"),'manager report builds return-aware same-tab demonstration links');
+check(!app.includes('class=\"qr-report-demo-link\" href=\"${escapeHtml(url)}\" target=\"_blank\"'),'manager report demonstration links no longer force a new tab');
+check(publicWelcomeJs.includes("sharedHashParams().get('from')==='audit-report'")&&publicWelcomeJs.includes('history.back()'),'public Welcome Back returns to manager report when opened from a report link');
 check(styles.includes('#qrAuditReportContent,.qr-audit-report-content{zoom:1!important}'),'print layout is isolated from on-screen zoom');
 
 if(fail.length){

@@ -40,7 +40,7 @@ let publicCurrentPanel='home';
 const publicPanelHistory=[];
 function showHome(pushHistory=false){if(pushHistory&&publicCurrentPanel!=='home')publicPanelHistory.push(publicCurrentPanel);publicCurrentPanel='home';document.getElementById('publicHome')?.classList.remove('hidden');document.querySelectorAll('.detail-panel').forEach(x=>x.classList.add('hidden'));scrollTo(0,0)}
 function showPanel(id,pushHistory=true){if(!id)return showHome(pushHistory);if(pushHistory&&publicCurrentPanel!==id)publicPanelHistory.push(publicCurrentPanel);publicCurrentPanel=id;document.getElementById('publicHome')?.classList.add('hidden');document.querySelectorAll('.detail-panel').forEach(x=>x.classList.toggle('hidden',x.id!==id));scrollTo(0,0)}
-function publicGoBack(){const previous=publicPanelHistory.pop();if(previous&&previous!=='home')showPanel(previous,false);else showHome(false)}
+function publicGoBack(){const previous=publicPanelHistory.pop();if(previous&&previous!=='home'){showPanel(previous,false);return}if(sharedHashParams().get('from')==='audit-report'&&history.length>1){history.back();return}showHome(false)}
 function publicGoHome(){publicPanelHistory.length=0;showHome(false)}
 const PUBLIC_SECTION_PANELS={home:'',wifi:'wifiPanel',villa:'villaPanel',nearby:'nearbyPanel',stay:'stayPanel','whats-on':'whatsOnPanel',food:'foodPanel',wellness:'wellnessPanel',tours:'toursPanel',transport:'transportPanel',help:'emergencyPanel'};
 function openRequestedPublicSection(){

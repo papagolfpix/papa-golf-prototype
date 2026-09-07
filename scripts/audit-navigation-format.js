@@ -18,5 +18,9 @@ const panelNav=(welcome.match(/class="public-panel-nav"/g)||[]).length;
 ok(panels>0&&panelNav===panels,`public Welcome nav mismatch: ${panelNav}/${panels}`);
 ok(welcomeJs.includes('publicGoBack')&&welcomeJs.includes('publicGoHome'),'public Welcome Back/Home logic missing');
 ok(welcomeCss.includes('min-height:44px'),'public Welcome nav touch target missing');
+// v0.44.6 report return + print-row assertions
+ok(app.includes('function welcomeAuditReportLinkUrl'), 'report demo link helper exists');
+ok(welcomeJs.includes("sharedHashParams().get('from')==='audit-report'") && welcomeJs.includes('history.back()'), 'public demo Back can return to report');
+ok(styles.includes('v0.44.6 report print rows + return-aware demonstrations') && styles.includes('grid-template-columns:1fr!important'), 'print audit uses full-width stacked rows');
 if(failures.length){console.error('Navigation/format audit FAILED');failures.forEach(x=>console.error('✗',x));process.exit(1)}
 console.log(`Navigation/format audit passed: ${panels} public detail panels + owner routes/dialogs checked.`);

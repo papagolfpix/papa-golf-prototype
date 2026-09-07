@@ -145,3 +145,10 @@ Property Walkthrough field workflow: touchpoints can now be edited after capture
 - QR codes and View demonstration links remain live/clickable in PDF output.
 - Manager-report photos are substantially smaller in the iPhone digital view while remaining easy to inspect.
 - Report Back/Home/zoom controls from v0.44.4 are retained.
+
+
+### v0.44.6
+- Restores full-width stacked opportunity rows in A4/PDF output: 4, 5 or 6 opportunities means that many rows per page, not a 2-column mini-card grid.
+- Makes manager-report demonstration links open in the same browser tab. The public Welcome Back control returns to the report when entered from a report link.
+- Keeps the QR image itself encoded to the generic demonstration destination, so scanning it from another device remains independent of the report-return behavior.
+- Further reduces audit-photo height in the iPhone manager view.

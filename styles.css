@@ -1889,3 +1889,40 @@ body.guest-preview-mode .guest-top-help:active{transform:scale(.97);background:#
 }
 
 @media print{#qrAuditReportContent,.qr-audit-report-content{zoom:1!important}}
+
+
+/* v0.44.6 report print rows + return-aware demonstrations */
+@media(max-width:680px){
+  .qr-report-photo,.qr-report-photo-empty{height:120px!important;max-height:120px!important}
+}
+@media(max-width:390px){
+  .qr-report-photo,.qr-report-photo-empty{height:105px!important;max-height:105px!important}
+}
+@media print{
+  /* A density value means full-width opportunities per A4 page, not mini-pages in a 2-column grid. */
+  .qr-report-print-grid{grid-template-columns:1fr!important;gap:2.2mm!important}
+  .qr-report-print-page.density-4 .qr-report-print-grid{grid-template-rows:repeat(4,minmax(0,1fr))!important}
+  .qr-report-print-page.density-5 .qr-report-print-grid{grid-template-rows:repeat(5,minmax(0,1fr))!important}
+  .qr-report-print-page.density-6 .qr-report-print-grid{grid-template-rows:repeat(6,minmax(0,1fr))!important}
+  .qr-report-print-grid .qr-report-item{width:100%!important;min-width:0!important}
+  .qr-report-print-grid .qr-report-item-head{padding:1.6mm 2.4mm 1.2mm!important;gap:1.8mm!important}
+  .qr-report-print-grid .qr-report-number{width:5.8mm!important;height:5.8mm!important;min-width:5.8mm!important;font-size:7.5pt!important}
+  .qr-report-print-grid .qr-report-item-head h2{margin:.7mm 0 0!important;font-size:9.3pt!important}
+  .qr-report-print-grid .qr-report-body{grid-template-columns:31mm minmax(0,1fr) 23mm!important;gap:3mm!important;padding:1.8mm 2.4mm 2mm!important;align-items:center!important}
+  .qr-report-print-grid .qr-report-photo-wrap{width:31mm!important}
+  .qr-report-print-grid .qr-report-photo,.qr-report-print-grid .qr-report-photo-empty{width:31mm!important;height:22mm!important;object-fit:cover!important}
+  .qr-report-print-grid .qr-report-copy{gap:1.2mm!important}
+  .qr-report-print-grid .qr-report-field>span{font-size:5.6pt!important;margin-bottom:.25mm!important}
+  .qr-report-print-grid .qr-report-field p,.qr-report-print-grid .qr-report-field strong{font-size:7.4pt!important;line-height:1.18!important}
+  .qr-report-print-grid .qr-report-field:last-child p{-webkit-line-clamp:3!important}
+  .qr-report-print-grid .qr-report-demo{width:23mm!important}
+  .qr-report-print-grid .qr-report-qr{width:19mm!important;height:19mm!important}
+  .qr-report-print-grid .qr-report-demo-link{font-size:5.8pt!important;margin-top:.6mm!important}
+  .qr-report-print-grid .qr-report-demo small{font-size:5pt!important;margin-top:.4mm!important}
+  .qr-report-print-page.density-4 .qr-report-photo,.qr-report-print-page.density-4 .qr-report-photo-empty{height:27mm!important}
+  .qr-report-print-page.density-4 .qr-report-body{grid-template-columns:36mm minmax(0,1fr) 25mm!important}
+  .qr-report-print-page.density-4 .qr-report-photo-wrap{width:36mm!important}
+  .qr-report-print-page.density-4 .qr-report-photo,.qr-report-print-page.density-4 .qr-report-photo-empty{width:36mm!important}
+  .qr-report-print-page.density-4 .qr-report-qr{width:21mm!important;height:21mm!important}
+  .qr-report-print-page.density-4 .qr-report-field p,.qr-report-print-page.density-4 .qr-report-field strong{font-size:8pt!important}
+}
