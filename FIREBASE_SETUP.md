@@ -24,7 +24,7 @@ The rules are generated with the exact Firebase owner UID created on the admin d
 Do not replace them with `allow read, write: if true` or Test Mode rules.
 
 ## Important Alpha identity note
-For this Beta the owner identity is Firebase Anonymous Authentication stored in this browser. Do not clear Safari website data after publishing, because the Firestore rules will be bound to that owner UID. Proper named Papa Golf accounts will replace this temporary owner identity before production.
+For this Beta the owner identity is Firebase Anonymous Authentication stored in this browser. Do not clear Safari website data after publishing, because the Firestore rules will be bound to that owner UID. Treat this anonymous owner identity as temporary and keep the bound browser data secure.
 
 ## Acceptance test
 1. Publish Magic Dragon Villa once.

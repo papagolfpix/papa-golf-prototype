@@ -1,4 +1,12 @@
-## v0.45.6 — stable-candidate PDF/report polish
+## v0.45.7 - stable milestone / IP hygiene audit
+
+- Marks the manager audit + A4 PDF workflow as the first stable milestone after successful iPhone testing.
+- Keeps the working manager report, automatic PDF pagination and responsive PDF viewer unchanged.
+- Removes unnecessary future-roadmap language from public/demo UI copy so deployable source does not advertise private strategy.
+- Keeps roadmap/idea planning outside the application package; future private blueprint information is maintained separately.
+- Re-runs version/cache/reference/storage/security validation with no data-clearing changes.
+
+## v0.45.7 — stable-candidate PDF/report polish
 
 - Leaves the now-working online manager report and responsive A4 PDF viewer layout unchanged.
 - Replaces the unsupported PDF arrow glyph in the clickable “View full recommendation” label with a standard character so jsPDF’s built-in Helvetica renders it consistently across devices.
